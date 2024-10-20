@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>æ Label Website</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Top bar with system information -->
+    <div id="top-bar" role="banner">
+        <span id="battery-icon" aria-label="Battery status">🔋 Loading...</span>
+        <span id="volume-icon" aria-label="Volume level">🔊 50%</span>
+        <span id="date-time" aria-label="Current date and time">Date & Time</span>
+    </div>
+
+    <!-- Desktop area -->
+    <div id="desktop" role="main">
+        <!-- Selection box for multiple selections -->
+        <div id="selection-box" style="display: none;" aria-hidden="true"></div>
+        
+        <!-- Folder icons with labels -->
+        <div class="folder window-opener" data-window="artists-window" role="button" tabindex="0">
+            <img src="assets/icons/folder-icon.png" alt="Artists Folder" />
+            <span class="folder-label">Artists</span>
+        </div>
+        <div class="folder window-opener" data-window="resources-window" role="button" tabindex="0">
+            <img src="assets/icons/folder-icon.png" alt="Resources Folder" />
+            <span class="folder-label">Resources</span>
+        </div>
+        <div class="folder window-opener" data-window="archive-window" role="button" tabindex="0">
+            <img src="assets/icons/folder-icon.png" alt="Archive Folder" />
+            <span class="folder-label">Archive</span>
+        </div>
+
+        <!-- Artists folder window -->
+        <div id="artists-window" class="window" style="display: none;">
+            <div class="window-header">
+                <div class="window-controls">
+                    <button class="close-button" aria-label="Close Artists window"></button>
+                    <button class="minimize-button" aria-label="Minimize Artists window"></button>
+                    <button class="fullscreen-button" aria-label="Maximize Artists window"></button>
+                </div>
+                <span class="window-title">Artists Folder</span>
+            </div>
+            <div class="window-content">
+                <p>This is the content of the Artists folder.</p>
+            </div>
+        </div>
+
+        <!-- Resources folder window -->
+        <div id="resources-window" class="window" style="display: none;">
+            <div class="window-header">
+                <div class="window-controls">
+                    <button class="close-button" aria-label="Close Resources window"></button>
+                    <button class="minimize-button" aria-label="Minimize Resources window"></button>
+                    <button class="fullscreen-button" aria-label="Maximize Resources window"></button>
+                </div>
+                <span class="window-title">Resources Folder</span>
+            </div>
+            <div class="window-content">
+                <p>This is the content of the Resources folder.</p>
+            </div>
+        </div>
+
+        <!-- Archive folder window -->
+        <div id="archive-window" class="window" style="display: none;">
+            <div class="window-header">
+                <div class="window-controls">
+                    <button class="close-button" aria-label="Close Archive window"></button>
+                    <button class="minimize-button" aria-label="Minimize Archive window"></button>
+                    <button class="fullscreen-button" aria-label="Maximize Archive window"></button>
+                </div>
+                <span class="window-title">Archive Folder</span>
+            </div>
+            <div class="window-content">
+                <p>This is the content of the Archive folder.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom dock -->
+    <div id="dock-wrapper">
+        <div id="dock">
+            <div class="dock-item window-opener" data-window="trash-window" role="button" tabindex="0">
+                <img src="assets/icons/terminal-icon.png" alt="Terminal" />
+            </div>
+            <div class="dock-item window-opener" data-window="audio-player-window" role="button" tabindex="0">
+                <img src="assets/icons/dock-audio.png" alt="Audio Player" />
+            </div>
+            <div class="dock-item window-opener" data-window="files-window" role="button" tabindex="0">
+                <img src="assets/icons/dock-files.png" alt="Files" />
+            </div>
+            <div class="dock-item window-opener" data-window="trash-window" role="button" tabindex="0">
+                <img src="assets/icons/trash-icon.png" alt="Trash" />
+            </div>            
+        </div>
+    </div>
+
+    <!-- Trash window -->
+    <div id="trash-window" class="window" style="display: none;">
+        <div class="window-header">
+            <div class="window-controls">
+                <button class="close-button" aria-label="Close Trash window"></button>
+                <button class="minimize-button" aria-label="Minimize Trash window"></button>
+                <button class="fullscreen-button" aria-label="Maximize Trash window"></button>
+            </div>
+            <span class="window-title">Trash</span>
+        </div>
+        <div class="window-content">
+            <p>This is the trash window. You can manage your deleted items here.</p>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+    <script src="scripts.js"></script>
+
+</body>
+</html>
