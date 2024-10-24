@@ -1,13 +1,14 @@
 let isSelecting = false;
-let isDraggingFolder = false; // Ensure this is accessible globally
+let isDraggingFolder = false;
 let startX, startY, offsetX, offsetY, draggedFolder;
 
+// Create selection box element
 const selectionBoxDiv = document.createElement('div');
 selectionBoxDiv.id = 'selection-box';
 selectionBoxDiv.style.display = 'none';
 document.body.appendChild(selectionBoxDiv);
 
-// Handle the desktop mousedown event for starting the selection box
+// Handle selection box start (mousedown)
 document.getElementById('desktop').addEventListener('mousedown', function (event) {
     // Prevent selection box if dragging a folder or interacting with a window
     if (isDraggingFolder || event.target.closest('.window')) return;
@@ -29,7 +30,7 @@ document.getElementById('desktop').addEventListener('mousedown', function (event
     }
 });
 
-// Handle the mousemove event for adjusting the selection box size
+// Handle mouse movement for adjusting the selection box size
 document.getElementById('desktop').addEventListener('mousemove', function (event) {
     if (!isSelecting || isDraggingFolder) return;
 
@@ -56,18 +57,17 @@ document.getElementById('desktop').addEventListener('mousemove', function (event
     });
 });
 
-// Handle the mouseup event to end the selection process
+// Handle mouseup event for ending both selection and folder dragging
 document.addEventListener('mouseup', function () {
+    // End selection
     if (isSelecting) {
         isSelecting = false;
         selectionBoxDiv.style.display = 'none';
     }
+
+    // End dragging
     if (isDraggingFolder) {
-        isDraggingFolder = false;
-        draggedFolder.style.zIndex = ''; // Reset z-index after dragging
-        draggedFolder = null; // Reset dragged folder
-        document.removeEventListener('mousemove', onDragFolder); // Stop folder dragging
-        document.removeEventListener('mouseup', stopDragFolder); // Remove event listeners
+        stopDragFolder();  // Call function to finalize dragging
     }
 });
 
@@ -83,17 +83,17 @@ folders.forEach(folder => {
     folder.addEventListener('mousedown', function (event) {
         if (event.button === 0) {
             isDraggingFolder = true;
-            draggedFolder = folder; // Set the currently dragged folder
+            draggedFolder = folder;
             const rect = folder.getBoundingClientRect();
             offsetX = event.clientX - rect.left;
             offsetY = event.clientY - rect.top;
 
-            folder.style.position = 'absolute'; // Ensure absolute positioning for dragging
+            folder.style.position = 'absolute';
             folder.style.zIndex = '1000'; // Bring folder to front
 
             // Attach mousemove and mouseup for dragging
             document.addEventListener('mousemove', onDragFolder);
-            document.addEventListener('mouseup', stopDragFolder);
+            document.addEventListener('mouseup', stopDragFolder); // Listener is removed when stopDragFolder is called
         }
     });
 });
@@ -103,16 +103,32 @@ function onDragFolder(event) {
     if (isDraggingFolder && draggedFolder) {
         draggedFolder.style.left = (event.clientX - offsetX) + 'px';
         draggedFolder.style.top = (event.clientY - offsetY) + 'px';
+        checkTrashProximity(draggedFolder); // Check if near trash
     }
 }
 
-// Function to stop dragging the folder
+// Function to stop dragging the folder and cleanup
 function stopDragFolder() {
-    isDraggingFolder = false;
-    if (draggedFolder) {
-        draggedFolder.style.zIndex = ''; // Reset z-index after dragging
+    if (isDraggingFolder) {
+        isDraggingFolder = false;
+
+        if (draggedFolder) {
+            // Check if the trash is enlarged
+            if (trash.classList.contains('trash-enlarged')) {
+                // If trash is enlarged, hide the folder
+                console.log("Trash is enlarged, hiding the folder.");
+                draggedFolder.style.display = 'none';  // Hide the folder
+                draggedFolder.classList.add('in-trash');  // Mark the folder as in the trash
+                trashIcon.src = 'assets/icons/trash-icon-full.png'; // Change trash icon to full
+            }
+
+            draggedFolder.style.zIndex = '';  // Reset z-index after dragging
+        }
+
+        draggedFolder = null;
+
+        // Remove event listeners for dragging
+        document.removeEventListener('mousemove', onDragFolder);
+        document.removeEventListener('mouseup', stopDragFolder);
     }
-    draggedFolder = null;
-    document.removeEventListener('mousemove', onDragFolder); // Stop folder dragging
-    document.removeEventListener('mouseup', stopDragFolder); // Remove event listeners
 }

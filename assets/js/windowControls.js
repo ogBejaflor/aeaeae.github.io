@@ -18,7 +18,7 @@ document.querySelectorAll('.minimize-button').forEach(button => {
 // Function to handle folder double-click
 document.querySelectorAll('.folder').forEach(folder => {
     folder.addEventListener('dblclick', function () {
-        openFolder(folder);
+        openFolder(folder); // Call openFolder when a folder is double-clicked
     });
 });
 
@@ -33,8 +33,8 @@ function openFolder(folder) {
         restoreMinimizedWindow(minimizedWindow, windowElement);
     } else {
         if (windowElement) {
-            windowElement.style.display = 'block';
-            windowElement.style.zIndex = '1001';  // Bring to front
+            windowElement.style.display = 'block'; // Show the folder window
+            windowElement.style.zIndex = '1001';  // Bring the window to the front
         }
     }
 }
@@ -87,7 +87,7 @@ function restoreMinimizedWindow(minimizedWindow, windowElement) {
     windowElement.style.transform = `translate(${translateX}px, ${translateY}px) scale(0.2, 1.5)`;
     windowElement.style.opacity = '0';
 
-    windowElement.offsetHeight;
+    windowElement.offsetHeight; // Force reflow
 
     windowElement.classList.add('restoring');
     windowElement.style.transform = 'translate(0, 0) scale(1, 1)';
@@ -100,6 +100,7 @@ function restoreMinimizedWindow(minimizedWindow, windowElement) {
     }, 500);
 }
 
+// Handle window close functionality
 document.querySelectorAll('.close-button').forEach(button => {
     button.addEventListener('click', function () {
         const windowElement = this.closest('.window');
@@ -111,6 +112,7 @@ document.querySelectorAll('.close-button').forEach(button => {
     });
 });
 
+// Handle fullscreen functionality
 document.querySelectorAll('.fullscreen-button').forEach(button => {
     button.addEventListener('click', function () {
         const windowElement = this.closest('.window');
@@ -125,3 +127,31 @@ document.querySelectorAll('.fullscreen-button').forEach(button => {
         }
     });
 });
+
+// Open the trash window when trash icon is clicked
+trash.addEventListener('click', function () {
+    openTrashWindow(); // Open the trash window
+});
+
+function openTrashWindow() {
+    const trashWindow = document.getElementById('trash-window');
+    const trashContent = trashWindow.querySelector('.window-content');
+    
+    // Clear any existing content
+    trashContent.innerHTML = '';
+
+    // Loop through trashed folders and display them in the trash window
+    if (trashedFolders.length > 0) {
+        trashedFolders.forEach(folder => {
+            const clonedFolder = folder.cloneNode(true);
+            clonedFolder.style.display = 'block'; // Ensure the folder is visible inside the trash
+            clonedFolder.classList.remove('in-trash'); // Remove any 'in-trash' class
+            trashContent.appendChild(clonedFolder); // Add the cloned folder to the trash window
+        });
+    } else {
+        trashContent.innerHTML = '<p>The trash is empty.</p>'; // Display message if trash is empty
+    }
+
+    trashWindow.style.display = 'block'; // Show the trash window
+    trashWindow.style.zIndex = '1001';  // Bring the trash window to the front
+}

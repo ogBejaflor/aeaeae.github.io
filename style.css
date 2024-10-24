@@ -8,8 +8,8 @@
 body {
     font-family: Arial, sans-serif;
     background-image: url('assets/images/desktop-background.jpg');
-    background-size: cover;  /* Ensures the background image covers the entire screen */
-    background-position: center;  /* Centers the background image */
+    background-size: cover;
+    background-position: center;
     color: white;
     height: 100vh;
     display: flex;
@@ -20,19 +20,19 @@ body {
 #top-bar {
     height: 30px;
     background-color: rgba(255, 255, 255, 0.5); /* White with 50% opacity */
-    color: #2e3440; /* Dark text color for contrast */
+    color: #2e3440;
     display: flex;
-    justify-content: flex-end; /* Align items to the right */
+    justify-content: flex-end;
     align-items: center;
     padding: 0 10px;
     font-size: 14px;
-    gap: 10px; /* Spacing between the system icons */
-    backdrop-filter: blur(10px); /* Optional: add a blur effect to the background */
+    gap: 10px;
+    backdrop-filter: blur(10px);
 }
 
 /* Align icons to the right */
 #battery-icon, #volume-icon, #date-time {
-    margin-left: 10px; /* Add some spacing between the icons */
+    margin-left: 10px;
 }
 
 /* Desktop Area */
@@ -41,17 +41,17 @@ body {
     padding: 20px;
     display: flex;
     flex-direction: column;
-    align-items: flex-end; /* Aligns folders to the right */
+    align-items: flex-end;
     gap: 20px;
     user-select: none; /* Prevent text selection in the desktop area */
 }
 
 #selection-box {
     position: absolute;
-    border: 2px solid #ffffff; /* Continuous border */
-    background-color: rgba(255, 255, 255, 0.514); /* Light transparent background */
-    pointer-events: none; /* Allow clicks to go through */
-    z-index: 999; /* Make sure it's above other elements */
+    border: 2px solid #ffffff;
+    background-color: rgba(255, 255, 255, 0.514);
+    pointer-events: none;
+    z-index: 999;
 }
 
 /* Folders */
@@ -77,8 +77,8 @@ body {
 }
 
 .folder.selected {
-    background-color: rgba(94, 129, 172, 0); /* Change color to indicate selection */
-    border: 1px solid rgba(255, 255, 255, 0.8); /* Add a border for better visibility */
+    background-color: rgba(94, 129, 172, 0);
+    border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 /* Window Design */
@@ -88,35 +88,34 @@ body {
     position: absolute;
     top: 50px;
     left: 50px;
-    background-image: url('assets/images/window-background.png'); /* Main window background image */
+    background-image: url('assets/images/window-background.png');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center;
-    backdrop-filter: blur(10px); /* Blur effect for the window */
+    backdrop-filter: blur(10px);
     border: 1px solid #ccc;
-    border-radius: 15px; /* Fully rounded corners for the window */
+    border-radius: 15px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     z-index: 1000;
-    overflow: hidden; /* Ensure content doesn't overflow the window */
+    overflow: hidden;
 }
 
 /* Slimmer Window Header */
 .window-header {
-    height: 30px; /* Slim header */
-    backdrop-filter: blur(10px); /* Blur effect for the header */
-    background-image: url('assets/images/window-header-background.png'); /* Header background */
-    background-size: cover; /* Make sure the image covers the entire header */
-    background-position: top; /* Ensure the image reaches the top */
+    height: 30px;
+    backdrop-filter: blur(10px);
+    background-image: url('assets/images/window-header-background.png');
+    background-size: cover;
+    background-position: top;
     background-repeat: no-repeat;
     display: flex;
-    justify-content: center; /* Centers the title */
+    justify-content: center;
     align-items: center;
     padding: 0 10px;
-    box-sizing: border-box; /* Includes padding and border in element's width/height */
-    border-radius: 15px 15px 0 0; /* Rounded top corners */
-    z-index: 1010; /* Ensures header is above the window background */
+    border-radius: 15px 15px 0 0;
+    z-index: 1010;
 }
 
 /* Window Title - centered */
@@ -125,7 +124,7 @@ body {
     left: 50%;
     transform: translateX(-50%);
     color: white;
-    font-size: 13px; /* Slightly smaller font to match the slimmer header */
+    font-size: 13px;
     font-weight: bold;
     text-align: center;
 }
@@ -133,65 +132,57 @@ body {
 /* Window Controls (Close, Minimize, Fullscreen) */
 .window-controls {
     position: absolute;
-    left: 10px; /* Keep the controls on the left side */
+    left: 10px;
     display: flex;
-    gap: 8px; /* Smaller gap between the buttons */
-}
-
-/* Window Controls (Close, Minimize, Fullscreen) */
-.window-controls {
-    position: absolute;
-    left: 10px; /* Keep the controls on the left side */
-    display: flex;
-    gap: 8px; /* Smaller gap between the buttons */
+    gap: 8px;
 }
 
 .close-button,
 .minimize-button,
 .fullscreen-button {
-    width: 10px;  /* Smaller size */
-    height: 10px; /* Smaller size */
+    width: 10px;
+    height: 10px;
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
     border: none;
     cursor: pointer;
-    border-radius: 50%; /* Make the buttons circular */
-    background-color: transparent; /* Remove any default button background */
-    overflow: hidden; /* Ensure the circular button doesn't show overflow */
-    padding: 0; /* Remove any default padding */
+    border-radius: 50%;
+    background-color: transparent;
+    overflow: hidden;
+    padding: 0;
 }
 
 .close-button {
-    background-image: url('assets/images/close-button-image.png'); /* Custom close button */
+    background-image: url('assets/images/close-button-image.png');
 }
 
 .minimize-button {
-    background-image: url('assets/images/minimize-button-image.png'); /* Custom minimize button */
+    background-image: url('assets/images/minimize-button-image.png');
 }
 
 .fullscreen-button {
-    background-image: url('assets/images/fullscreen-button-image.png'); /* Custom fullscreen button */
+    background-image: url('assets/images/fullscreen-button-image.png');
 }
 
 /* Initial state for minimized window */
 .window.minimizing {
     transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
     transform-origin: top left;
-    opacity: 0.7; /* Reduce opacity during minimize */
+    opacity: 0.7;
 }
 
 /* Final state of minimized window (shrinking to dock with vertical stretch) */
 .window.minimized {
-    transform: scale(0.2, 1.5); /* Shrinks horizontally (0.2), stretches vertically (1.5) */
-    opacity: 0; /* Fade out as it shrinks */
+    transform: scale(0.2, 1.5);
+    opacity: 0;
 }
 
 /* Initial state for genie restore animation */
 .window.restoring {
     transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
-    transform-origin: bottom left; /* Anchor the animation from the bottom */
-    opacity: 0; /* Start with the window transparent */
+    transform-origin: bottom left;
+    opacity: 0;
 }
 
 /* Final state for restored window (grows back from dock to normal) */
@@ -203,8 +194,8 @@ body {
 #trash-window {
     width: 400px;
     height: 300px;
-    background-color: #4c566a; /* Background color for trash window */
-    border: 1px solid #eceff4; /* Border for the window */
+    background-color: #4c566a;
+    border: 1px solid #eceff4;
     position: absolute;
     top: 150px;
     left: 150px;
@@ -240,15 +231,16 @@ body {
     display: flex;
     justify-content: center;
     position: fixed;
-    bottom: -80px; /* Initially hide it (below the screen) */
-    left: 0;
-    right: 0;
-    transition: bottom 0.3s ease; /* Smooth transition for showing/hiding */
+    bottom: -80px; /* Initially hide it */
+    left: 50%;
+    transform: translateX(-50%);
+    transition: bottom 0.3s ease, width 0.3s ease;
+    z-index: 999; /* Make sure the dock stays on top */
 }
 
 /* When the dock is visible */
 #dock-wrapper.show {
-    bottom: 0; /* Moves the dock into view */
+    bottom: 0; /* Move the dock into view */
 }
 
 /* Dock */
@@ -257,6 +249,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 20px;
+    transition: width 0.3s ease; /* Smooth expansion of the dock */
 }
 
 /* Dock Items */
@@ -302,7 +295,6 @@ body {
     position: absolute;
     bottom: 0;
     right: 0;
-    cursor: nwse-resize; /* Resizing cursor */
+    cursor: nwse-resize;
     z-index: 1001;
 }
-
