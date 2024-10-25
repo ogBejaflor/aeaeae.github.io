@@ -46,7 +46,46 @@
                 <span class="window-title">Artists Folder</span>
             </div>
             <div class="window-content">
-                <p>This is the content of the Artists folder.</p>
+                <!-- Subfolders for each artist -->
+                <div class="folder window-opener" data-window="artist1-window" role="button" tabindex="0">
+                    <img src="assets/icons/folder-icon.png" alt="Artist 1 Folder" />
+                    <span class="folder-label">Artist 1</span>
+                </div>
+                <div class="folder window-opener" data-window="artist2-window" role="button" tabindex="0">
+                    <img src="assets/icons/folder-icon.png" alt="Artist 2 Folder" />
+                    <span class="folder-label">Artist 2</span>
+                </div>
+                <!-- Add more artist subfolders here -->
+            </div>
+        </div>
+
+        <!-- Artist 1 folder window -->
+        <div id="artist1-window" class="window" style="display: none;">
+            <div class="window-header">
+                <div class="window-controls">
+                    <button class="close-button" aria-label="Close Artist 1 window"></button>
+                    <button class="minimize-button" aria-label="Minimize Artist 1 window"></button>
+                    <button class="fullscreen-button" aria-label="Maximize Artist 1 window"></button>
+                </div>
+                <span class="window-title">Artist 1 Folder</span>
+            </div>
+            <div class="window-content">
+                <p>Artist 1 details and content go here.</p>
+            </div>
+        </div>
+
+        <!-- Artist 2 folder window -->
+        <div id="artist2-window" class="window" style="display: none;">
+            <div class="window-header">
+                <div class="window-controls">
+                    <button class="close-button" aria-label="Close Artist 2 window"></button>
+                    <button class="minimize-button" aria-label="Minimize Artist 2 window"></button>
+                    <button class="fullscreen-button" aria-label="Maximize Artist 2 window"></button>
+                </div>
+                <span class="window-title">Artist 2 Folder</span>
+            </div>
+            <div class="window-content">
+                <p>Artist 2 details and content go here.</p>
             </div>
         </div>
 

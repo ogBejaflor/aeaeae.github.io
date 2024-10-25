@@ -1,6 +1,6 @@
 let isSelecting = false;
 let isDraggingFolder = false;
-let startX, startY, offsetX, offsetY, draggedFolder;
+let startX, startY, offsetX, offsetY, draggedFolder, parentRect;
 
 // Create selection box element
 const selectionBoxDiv = document.createElement('div');
@@ -10,7 +10,6 @@ document.body.appendChild(selectionBoxDiv);
 
 // Handle selection box start (mousedown)
 document.getElementById('desktop').addEventListener('mousedown', function (event) {
-    // Prevent selection box if dragging a folder or interacting with a window
     if (isDraggingFolder || event.target.closest('.window')) return;
 
     if (event.button === 0) {
@@ -24,7 +23,6 @@ document.getElementById('desktop').addEventListener('mousedown', function (event
         selectionBoxDiv.style.height = '0';
         selectionBoxDiv.style.display = 'block';
 
-        // Remove selection from previously selected folders
         const folders = document.querySelectorAll('.folder');
         folders.forEach(folder => folder.classList.remove('selected'));
     }
@@ -59,51 +57,95 @@ document.getElementById('desktop').addEventListener('mousemove', function (event
 
 // Handle mouseup event for ending both selection and folder dragging
 document.addEventListener('mouseup', function () {
-    // End selection
     if (isSelecting) {
         isSelecting = false;
         selectionBoxDiv.style.display = 'none';
     }
 
-    // End dragging
     if (isDraggingFolder) {
-        stopDragFolder();  // Call function to finalize dragging
+        stopDragFolder();
     }
 });
 
 // Folder dragging functionality
 const folders = document.querySelectorAll('.folder');
-
 folders.forEach(folder => {
-    // Prevent default drag behavior for folders
-    folder.addEventListener('dragstart', (e) => {
-        e.preventDefault();
-    });
+    folder.addEventListener('dragstart', (e) => e.preventDefault());
 
     folder.addEventListener('mousedown', function (event) {
         if (event.button === 0) {
             isDraggingFolder = true;
             draggedFolder = folder;
+
             const rect = folder.getBoundingClientRect();
+            parentRect = folder.closest('.window') ? folder.closest('.window').getBoundingClientRect() : document.body.getBoundingClientRect();
+
             offsetX = event.clientX - rect.left;
             offsetY = event.clientY - rect.top;
 
             folder.style.position = 'absolute';
-            folder.style.zIndex = '1000'; // Bring folder to front
+            folder.style.zIndex = '1000';
 
-            // Attach mousemove and mouseup for dragging
             document.addEventListener('mousemove', onDragFolder);
-            document.addEventListener('mouseup', stopDragFolder); // Listener is removed when stopDragFolder is called
+            document.addEventListener('mouseup', stopDragFolder);
         }
     });
 });
 
-// Function to handle folder dragging
+// Extend functionality to allow moving folders into folder icons
 function onDragFolder(event) {
     if (isDraggingFolder && draggedFolder) {
-        draggedFolder.style.left = (event.clientX - offsetX) + 'px';
-        draggedFolder.style.top = (event.clientY - offsetY) + 'px';
-        checkTrashProximity(draggedFolder); // Check if near trash
+        const x = event.clientX - parentRect.left - offsetX;
+        const y = event.clientY - parentRect.top - offsetY;
+
+        draggedFolder.style.left = `${x}px`;
+        draggedFolder.style.top = `${y}px`;
+
+        // Detect if dragged folder is within any open window
+        const windows = document.querySelectorAll('.window');
+        let movedToWindow = false;
+        windows.forEach(win => {
+            const winRect = win.getBoundingClientRect();
+            if (
+                event.clientX > winRect.left &&
+                event.clientX < winRect.right &&
+                event.clientY > winRect.top &&
+                event.clientY < winRect.bottom
+            ) {
+                // If within window bounds, append to window and update parentRect
+                win.querySelector('.window-content').appendChild(draggedFolder);
+                parentRect = winRect;
+                movedToWindow = true;
+                console.log("Folder moved to window:", win.id);
+            }
+        });
+
+        // If dragged outside of all windows, move to desktop
+        if (!movedToWindow && draggedFolder.closest('.window')) {
+            const desktop = document.getElementById('desktop');
+            desktop.appendChild(draggedFolder);
+            parentRect = desktop.getBoundingClientRect();
+            console.log("Folder moved to the desktop");
+        }
+
+        // Check if dragged folder is hovering over any other folder icons
+        const folderIcons = document.querySelectorAll('.folder:not(.in-trash)');
+        folderIcons.forEach(icon => {
+            const iconRect = icon.getBoundingClientRect();
+            if (
+                event.clientX > iconRect.left &&
+                event.clientX < iconRect.right &&
+                event.clientY > iconRect.top &&
+                event.clientY < iconRect.bottom &&
+                icon !== draggedFolder
+            ) {
+                icon.classList.add('folder-target');
+            } else {
+                icon.classList.remove('folder-target');
+            }
+        });
+
+        checkTrashProximity(draggedFolder);
     }
 }
 
@@ -113,21 +155,35 @@ function stopDragFolder() {
         isDraggingFolder = false;
 
         if (draggedFolder) {
-            // Check if the trash is enlarged
-            if (trash.classList.contains('trash-enlarged')) {
-                // If trash is enlarged, hide the folder
-                console.log("Trash is enlarged, hiding the folder.");
-                draggedFolder.style.display = 'none';  // Hide the folder
-                draggedFolder.classList.add('in-trash');  // Mark the folder as in the trash
-                trashIcon.src = 'assets/icons/trash-icon-full.png'; // Change trash icon to full
-            }
+            const targetFolder = document.querySelector('.folder-target');
 
-            draggedFolder.style.zIndex = '';  // Reset z-index after dragging
+            if (targetFolder) {
+                targetFolder.classList.remove('folder-target');
+                const windowId = targetFolder.getAttribute('data-window');
+                const targetWindow = document.getElementById(windowId);
+
+                if (targetWindow) {
+                    const targetContent = targetWindow.querySelector('.window-content');
+                    targetContent.appendChild(draggedFolder);
+
+                    // Reset position inside the new window
+                    draggedFolder.style.left = '10px';
+                    draggedFolder.style.top = '10px';
+                    draggedFolder.style.zIndex = '';
+                    openFolder(targetFolder); // Open the target folder window if not open
+                    console.log(`Folder moved to ${windowId} window.`);
+                }
+            } else if (trash.classList.contains('trash-enlarged')) {
+                console.log("Trash is enlarged, hiding the folder.");
+                draggedFolder.style.display = 'none';
+                draggedFolder.classList.add('in-trash');
+                trashIcon.src = 'assets/icons/trash-icon-full.png';
+            } else {
+                draggedFolder.style.zIndex = '';
+            }
         }
 
         draggedFolder = null;
-
-        // Remove event listeners for dragging
         document.removeEventListener('mousemove', onDragFolder);
         document.removeEventListener('mouseup', stopDragFolder);
     }

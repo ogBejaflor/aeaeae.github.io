@@ -30,7 +30,6 @@ body {
     backdrop-filter: blur(10px);
 }
 
-/* Align icons to the right */
 #battery-icon, #volume-icon, #date-time {
     margin-left: 10px;
 }
@@ -188,6 +187,28 @@ body {
 /* Final state for restored window (grows back from dock to normal) */
 .window {
     transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+}
+
+/* Folder icons inside the window */
+.window-content .folder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 80px;
+    margin: 10px;
+}
+
+.window-content .folder img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+
+.window-content .folder-label {
+    margin-top: 5px;
+    color: white;
+    text-align: center;
+    font-size: 11px;
 }
 
 /* Trash window styling */
