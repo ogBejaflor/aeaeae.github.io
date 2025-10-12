@@ -1,75 +1,115 @@
-// Select the trash and its icon
-const trash = document.querySelector('.dock-item[data-window="trash-window"]');
-const trashIcon = trash.querySelector('img');
-let trashIconOriginalSrc = trashIcon.src;
+// assets/js/trashBehavior.js
 
-console.log("Trash and trash icon initialized.");
+// Global store shared across files
+window.trashedFolders = window.trashedFolders || [];
 
-// Check proximity between dragged folder and trash icon
-function checkTrashProximity(draggedFolder) {
-    const trashRect = trash.getBoundingClientRect();
-    const folderRect = draggedFolder.getBoundingClientRect();
+/* -------------------- Safely get dock trash elements -------------------- */
+const trashDockItem = document.querySelector('.dock-item[data-window="trash-window"]');
 
-    console.log(`Dragged folder rect: ${JSON.stringify(folderRect)}`);
-    console.log(`Trash rect: ${JSON.stringify(trashRect)}`);
+// Expose globals even if missing so other files don't crash
+window.trash = trashDockItem || null;
+window.trashIcon = trashDockItem ? trashDockItem.querySelector('img') : null;
 
-    // Check if the folder is near the trash icon (within 50px range)
-    if (
-        folderRect.right > trashRect.left - 50 &&
-        folderRect.left < trashRect.right + 50 &&
-        folderRect.bottom > trashRect.top - 50 &&
-        folderRect.top < trashRect.bottom + 50
-    ) {
-        console.log("Folder is near the trash icon. Enlarging trash icon...");
-        enlargeTrash(); // Enlarge trash icon when folder is near
-    } else {
-        console.log("Folder is not near the trash icon. Resetting trash size...");
-        resetTrashSize(); // Reset trash icon size if folder is away
+if (!window.trash || !window.trashIcon) {
+  console.warn('Trash dock item not found. trashBehavior.js will no-op.');
+  // Safe no-ops
+  window.checkTrashProximity = () => {};
+  window.addToTrash = () => {};
+  window.setTrashIconByState = () => {};
+  window.resetTrashSize = () => {};
+  window.enlargeTrash = () => {};
+} else {
+  const emptyIconSrc = 'assets/icons/trash-icon.png';
+  const fullIconSrc  = 'assets/icons/trash-icon-full.png';
+
+  /* -------------------- Helpers -------------------- */
+
+  function setTrashIconByState() {
+    const hasItems = (window.trashedFolders || []).some(
+      el => el && el.classList && el.classList.contains('in-trash')
+    );
+    window.trashIcon.src = hasItems ? fullIconSrc : emptyIconSrc;
+  }
+
+  function enlargeTrash() {
+    if (!window.trash || !window.trashIcon) return;
+    window.trashIcon.style.transform = 'scale(1.5)';
+    window.trashIcon.style.transition = 'transform 0.2s ease';
+    window.trash.classList.add('trash-enlarged');
+  }
+
+  function resetTrashSize() {
+    if (!window.trash || !window.trashIcon) return;
+    window.trashIcon.style.transform = 'scale(1)';
+    window.trashIcon.style.transition = 'transform 0.2s ease';
+    window.trash.classList.remove('trash-enlarged');
+  }
+
+  /**
+   * Pointer-aware proximity check.
+   * Accepts either a MouseEvent (preferred) or a folder element (fallback).
+   */
+  function checkTrashProximity(arg) {
+    if (!window.trash || !window.trashIcon) return;
+
+    const trashRect = window.trash.getBoundingClientRect();
+
+    // If we got a mouse event, use pointer location
+    if (arg && typeof arg.clientX === 'number' && typeof arg.clientY === 'number') {
+      const { clientX: x, clientY: y } = arg;
+      const near =
+        x > (trashRect.left - 50) && x < (trashRect.right + 50) &&
+        y > (trashRect.top  - 50) && y < (trashRect.bottom + 50);
+      return near ? enlargeTrash() : resetTrashSize();
     }
-}
 
-// Enlarge the trash icon when dragging near
-function enlargeTrash() {
-    trashIcon.style.transform = 'scale(1.5)';
-    trashIcon.style.transition = 'transform 0.2s ease';
-    trash.classList.add('trash-enlarged'); // Add the 'trash-enlarged' class
-    console.log("Trash icon enlarged and 'trash-enlarged' class added.");
-}
-
-// Reset the trash icon size when dragging away or dropping
-function resetTrashSize() {
-    trashIcon.style.transform = 'scale(1)';
-    trashIcon.style.transition = 'transform 0.2s ease'; // Smooth transition for reset too
-    trash.classList.remove('trash-enlarged'); // Remove the 'trash-enlarged' class
-    console.log("Trash icon reset to normal size and 'trash-enlarged' class removed.");
-}
-
-// Handle the folder drop near the trash during mouseup
-document.addEventListener('mouseup', function (event) {
-    console.log("Mouseup event detected.");
-    
-    if (isDraggingFolder && draggedFolder) {
-        console.log("Mouseup event detected while dragging folder.");
-
-        const trashRect = trash.getBoundingClientRect();
-        const folderRect = draggedFolder.getBoundingClientRect();
-
-        console.log(`Checking if folder is inside trash...`);
-
-        // Check if folder is dropped within the trash area
-        if (trash.classList.contains('trash-enlarged')) {
-            console.log("Folder is inside trash area. Hiding folder...");
-            trashIcon.src = 'assets/icons/trash-icon-full.png'; // Change trash to full icon
-            draggedFolder.style.display = 'none'; // "Delete" the folder by hiding it
-            draggedFolder.classList.add('in-trash'); // Add a class indicating it's in the trash
-            console.log("Folder moved to trash and hidden.");
-        } else {
-            console.log("Folder is NOT inside the trash area.");
-        }
-
-        resetTrashSize();  // Reset the trash size
-        stopDragFolder();  // Finalize the drag operation
-    } else {
-        console.log("Mouseup event detected, but no folder is being dragged.");
+    // Fallback: element-based (older call sites)
+    if (arg && typeof arg.getBoundingClientRect === 'function') {
+      const r = arg.getBoundingClientRect();
+      const near =
+        r.right  > trashRect.left - 50 &&
+        r.left   < trashRect.right + 50 &&
+        r.bottom > trashRect.top  - 50 &&
+        r.top    < trashRect.bottom + 50;
+      return near ? enlargeTrash() : resetTrashSize();
     }
-});
+  }
+
+  /**
+   * Add a folder element to the trash (idempotent).
+   * Hides the real node, marks it in-trash, updates icon, and notifies listeners.
+   */
+  function addToTrash(folderEl) {
+    if (!folderEl) return;
+
+    folderEl.style.display = 'none';
+    folderEl.classList.add('in-trash');
+
+    if (!window.trashedFolders.includes(folderEl)) {
+      window.trashedFolders.push(folderEl);
+    }
+
+    setTrashIconByState();
+    resetTrashSize();
+
+    // 🔔 tell others (e.g., Trash window) to refresh
+    window.dispatchEvent(new CustomEvent('trash:updated'));
+  }
+
+  /* -------------------- Global Event Wiring -------------------- */
+
+  // Mouseup: ensure enlargement resets visually
+  document.addEventListener('mouseup', function () {
+    resetTrashSize();
+  });
+
+  // Initial icon state
+  setTrashIconByState();
+
+  /* -------------------- Expose API -------------------- */
+  window.checkTrashProximity = checkTrashProximity;
+  window.addToTrash = addToTrash;
+  window.setTrashIconByState = setTrashIconByState;
+  window.resetTrashSize = resetTrashSize;
+  window.enlargeTrash = enlargeTrash;
+}
