@@ -19,7 +19,7 @@ body {
 /* Top Bar */
 #top-bar {
     height: 30px;
-    background-color: rgba(255, 255, 255, 0.5); /* White with 50% opacity */
+    background-color: rgba(255, 255, 255, 0.5);
     color: #2e3440;
     display: flex;
     justify-content: flex-end;
@@ -28,21 +28,25 @@ body {
     font-size: 14px;
     gap: 10px;
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
-#battery-icon, #volume-icon, #date-time {
+#battery-icon,
+#volume-icon,
+#date-time {
     margin-left: 10px;
 }
 
 /* Desktop Area */
 #desktop {
+    position: relative; /* positioning context */
     flex-grow: 1;
     padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     gap: 20px;
-    user-select: none; /* Prevent text selection in the desktop area */
+    user-select: none;
 }
 
 #selection-box {
@@ -53,19 +57,24 @@ body {
     z-index: 999;
 }
 
+.no-text-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* Folders */
 .folder {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100px;
+    cursor: pointer;
 }
 
 .folder img {
     width: 100px;
     height: 100px;
     object-fit: contain;
-    cursor: pointer;
 }
 
 .folder-label {
@@ -76,8 +85,17 @@ body {
 }
 
 .folder.selected {
-    background-color: rgba(94, 129, 172, 0);
     border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+/* Folder hover & target feedback */
+.folder:hover .folder-label {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.folder-target {
+    outline: 2px dashed rgba(110, 231, 242, 0.6);
+    border-radius: 10px;
 }
 
 /* Window Design */
@@ -87,37 +105,34 @@ body {
     position: absolute;
     top: 50px;
     left: 50px;
-    background-image: url('assets/images/window-background.png');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    backdrop-filter: blur(10px);
-    border: 1px solid #ccc;
+    background-color: rgba(11, 11, 14, 0.78);
+    backdrop-filter: blur(12px) saturate(120%);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    display: flex;
-    flex-direction: column;
-    z-index: 1000;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    /* IMPORTANT: no flex on the window itself to avoid reflow on abs children */
     overflow: hidden;
+    z-index: 1000;
+    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
 }
 
-/* Slimmer Window Header */
+/* Window Header */
 .window-header {
     height: 30px;
+    cursor: move;
     backdrop-filter: blur(10px);
-    background-image: url('assets/images/window-header-background.png');
-    background-size: cover;
-    background-position: top;
-    background-repeat: no-repeat;
+    -webkit-backdrop-filter: blur(10px);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
     display: flex;
     justify-content: center;
     align-items: center;
     padding: 0 10px;
     border-radius: 15px 15px 0 0;
-    z-index: 1010;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-/* Window Title - centered */
+/* Window Title */
 .window-title {
     position: absolute;
     left: 50%;
@@ -128,7 +143,7 @@ body {
     text-align: center;
 }
 
-/* Window Controls (Close, Minimize, Fullscreen) */
+/* Window Controls */
 .window-controls {
     position: absolute;
     left: 10px;
@@ -152,50 +167,41 @@ body {
     padding: 0;
 }
 
-.close-button {
-    background-image: url('assets/images/close-button-image.png');
-}
+.close-button { background-image: url('assets/images/close-button-image.png'); }
+.minimize-button { background-image: url('assets/images/minimize-button-image.png'); }
+.fullscreen-button { background-image: url('assets/images/fullscreen-button-image.png'); }
 
-.minimize-button {
-    background-image: url('assets/images/minimize-button-image.png');
-}
-
-.fullscreen-button {
-    background-image: url('assets/images/fullscreen-button-image.png');
-}
-
-/* Initial state for minimized window */
+/* Window transitions */
 .window.minimizing {
     transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
     transform-origin: top left;
     opacity: 0.7;
 }
-
-/* Final state of minimized window (shrinking to dock with vertical stretch) */
-.window.minimized {
-    transform: scale(0.2, 1.5);
-    opacity: 0;
-}
-
-/* Initial state for genie restore animation */
+.window.minimized { transform: scale(0.2, 1.5); opacity: 0; }
 .window.restoring {
     transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
     transform-origin: bottom left;
     opacity: 0;
 }
 
-/* Final state for restored window (grows back from dock to normal) */
-.window {
-    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+/* Stable content area: fills everything below 30px header */
+.window .window-content {
+    position: relative;
+    width: 100%;
+    height: calc(100% - 30px); /* <-- critical: pins content to window height */
+    overflow: auto;
+    padding: 12px;
+    user-select: text;
 }
 
-/* Folder icons inside the window */
+/* Folders inside window */
 .window-content .folder {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 80px;
     margin: 10px;
+    position: absolute; /* your JS uses absolute for dragged items */
 }
 
 .window-content .folder img {
@@ -211,38 +217,13 @@ body {
     font-size: 11px;
 }
 
-/* Trash window styling */
-#trash-window {
-    width: 400px;
-    height: 300px;
-    background-color: #4c566a;
-    border: 1px solid #eceff4;
-    position: absolute;
-    top: 150px;
-    left: 150px;
-    padding: 20px;
-    color: white;
-    z-index: 1000;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+/* Window focus ring when active */
+.window:focus-within {
+    outline: 1.5px solid rgba(110, 231, 242, 0.6);
+    outline-offset: -1px;
 }
 
-#trash-window h3 {
-    margin-bottom: 10px;
-}
-
-#close-trash {
-    background-color: #5e81ac;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-}
-
-#close-trash:hover {
-    background-color: #81a1c1;
-}
-
-/* Dock Wrapper (hidden by default, below the screen) */
+/* Dock Wrapper */
 #dock-wrapper {
     background-image: url('assets/icons/dock-background.png');
     background-size: contain;
@@ -252,17 +233,13 @@ body {
     display: flex;
     justify-content: center;
     position: fixed;
-    bottom: -80px; /* Initially hide it */
+    bottom: -80px;
     left: 50%;
     transform: translateX(-50%);
     transition: bottom 0.3s ease, width 0.3s ease;
-    z-index: 999; /* Make sure the dock stays on top */
+    z-index: 3000; /* Above windows */
 }
-
-/* When the dock is visible */
-#dock-wrapper.show {
-    bottom: 0; /* Move the dock into view */
-}
+#dock-wrapper.show { bottom: 0; }
 
 /* Dock */
 #dock {
@@ -270,7 +247,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 20px;
-    transition: width 0.3s ease; /* Smooth expansion of the dock */
+    transition: width 0.3s ease;
 }
 
 /* Dock Items */
@@ -283,29 +260,19 @@ body {
     cursor: pointer;
     transition: transform 0.3s ease;
 }
-
 .minimized-window img {
     width: 50px;
     height: 50px;
     object-fit: contain;
 }
 
-/* Only the hovered item grows fully */
-.dock-item.hovered {
-    transform: scale(1.7);
-}
-
-/* Adjacent items grow slightly */
-.dock-item.adjacent {
-    transform: scale(1.2);
-}
-
-/* Images inside dock items */
+/* Hover scaling */
+.dock-item.hovered { transform: scale(1.7); }
+.dock-item.adjacent { transform: scale(1.2); }
 .dock-item img {
     width: 50px;
     height: 50px;
     object-fit: contain;
-    cursor: pointer;
 }
 
 /* Resizer for the bottom-right corner of the window */
@@ -319,3 +286,9 @@ body {
     cursor: nwse-resize;
     z-index: 1001;
 }
+
+/* ---------- DEBUG: visualize draggable space ---------- */
+/*.window .window-content {
+    outline: 2px solid red !important;
+    background-color: rgba(255, 0, 0, 0.1) !important;
+}*/

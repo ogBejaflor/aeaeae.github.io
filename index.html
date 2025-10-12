@@ -120,6 +120,21 @@
         </div>
     </div>
 
+        <!-- Trash window -->
+    <div id="trash-window" class="window" style="display: none;">
+        <div class="window-header">
+            <div class="window-controls">
+                <button class="close-button" aria-label="Close Trash window"></button>
+                <button class="minimize-button" aria-label="Minimize Trash window"></button>
+                <button class="fullscreen-button" aria-label="Maximize Trash window"></button>
+            </div>
+            <span class="window-title">Trash</span>
+        </div>
+        <div class="window-content">
+            <p>This is the trash window. You can manage your deleted items here.</p>
+        </div>
+    </div>
+
     <!-- Bottom dock -->
     <div id="dock-wrapper">
         <div id="dock">
@@ -138,28 +153,14 @@
         </div>
     </div>    
 
-    <!-- Trash window -->
-    <div id="trash-window" class="window" style="display: none;">
-        <div class="window-header">
-            <div class="window-controls">
-                <button class="close-button" aria-label="Close Trash window"></button>
-                <button class="minimize-button" aria-label="Minimize Trash window"></button>
-                <button class="fullscreen-button" aria-label="Maximize Trash window"></button>
-            </div>
-            <span class="window-title">Trash</span>
-        </div>
-        <div class="window-content">
-            <p>This is the trash window. You can manage your deleted items here.</p>
-        </div>
-    </div>
-
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
     <script src="assets/js/clockBattery.js"></script>
     <script src="assets/js/windowDragResize.js"></script>
-    <script src="assets/js/folderSelection.js"></script>
     <script src="assets/js/windowControls.js"></script>
-    <script src="assets/js/dockBehavior.js"></script>
     <script src="assets/js/trashBehavior.js"></script>
+    <script src="assets/js/folderSelection.js"></script>
+    <script src="assets/js/dockBehavior.js"></script>
+
 </body>
 </html>
