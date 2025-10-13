@@ -1,294 +1,347 @@
-/* General styling */
+/* =======================
+   Global / Base
+======================= */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --win-header-h: 30px;
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background-image: url('assets/images/desktop-background.jpg');
-    background-size: cover;
-    background-position: center;
-    color: white;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
+  font-family: Arial, sans-serif;
+  background-image: url('assets/images/desktop-background.jpg');
+  background-size: cover;
+  background-position: center;
+  color: white;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Top Bar */
-#top-bar {
-    height: 30px;
-    background-color: rgba(255, 255, 255, 0.5);
-    color: #2e3440;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    padding: 0 10px;
-    font-size: 14px;
-    gap: 10px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-#battery-icon,
-#volume-icon,
-#date-time {
-    margin-left: 10px;
-}
-
-/* Desktop Area */
-#desktop {
-    position: relative; /* positioning context */
-    flex-grow: 1;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 20px;
-    user-select: none;
-}
-
-#selection-box {
-    position: absolute;
-    border: 2px solid #ffffff;
-    background-color: rgba(255, 255, 255, 0.514);
-    pointer-events: none;
-    z-index: 999;
-}
-
+/* Utility: disable text selection in a scoped container */
 .no-text-select {
   user-select: none;
   -webkit-user-select: none;
 }
 
-/* Folders */
+/* =======================
+   Top Bar
+======================= */
+#top-bar {
+  height: var(--win-header-h);
+  background-color: rgba(255, 255, 255, 0.5);
+  color: #2e3440;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 14px;
+  gap: 10px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+#battery-icon,
+#volume-icon,
+#date-time {
+  margin-left: 10px;
+}
+
+/* =======================
+   Desktop
+======================= */
+#desktop {
+  position: relative; /* positioning context for absolutely placed icons */
+  flex-grow: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 20px;
+  user-select: none;
+}
+
+/* Marquee selection box (reparented per-scope by JS) */
+#selection-box {
+  position: absolute;
+  border: 2px solid #ffffff;
+  background-color: rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* =======================
+   Folders (shared)
+======================= */
 .folder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100px;
-    cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100px;
+  cursor: pointer;
 }
 
 .folder img {
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
 }
 
 .folder-label {
-    margin-top: 1px;
-    color: white;
-    text-align: center;
-    font-size: 12px;
+  margin-top: 1px;
+  color: #fff;
+  text-align: center;
+  font-size: 12px;
+  /* subtle readability on busy bgs */
+  text-shadow: 0 0px 2px rgba(0,0,0,0.9);
 }
 
 .folder.selected {
-    border: 1px solid rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
-/* Folder hover & target feedback */
+/* Hover & drop feedback */
 .folder:hover .folder-label {
-    color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .folder-target {
-    outline: 2px dashed rgba(110, 231, 242, 0.6);
-    border-radius: 10px;
+  outline: 2px dashed rgba(110, 231, 242, 0.6);
+  border-radius: 10px;
 }
 
-/* Window Design */
+/* =======================
+   Window Shell
+======================= */
 .window {
-    width: 400px;
-    height: 300px;
-    position: absolute;
-    top: 50px;
-    left: 50px;
-    background-color: rgba(11, 11, 14, 0.78);
-    backdrop-filter: blur(12px) saturate(120%);
-    -webkit-backdrop-filter: blur(12px) saturate(120%);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 15px;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-    /* IMPORTANT: no flex on the window itself to avoid reflow on abs children */
-    overflow: hidden;
-    z-index: 1000;
-    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+  width: 720px;                 /* larger default */
+  height: 520px;                /* larger default */
+  position: absolute;
+  top: 50px;
+  left: 50px;
+  background-color: rgba(11, 11, 14, 0.78);
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 15px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  overflow: hidden;             /* clip header & content nicely */
+  z-index: 1000;
+  transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
 }
 
-/* Window Header */
+/* Header */
 .window-header {
-    height: 30px;
-    cursor: move;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0 10px;
-    border-radius: 15px 15px 0 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  height: var(--win-header-h);
+  cursor: move;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 15px 15px 0 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  position: relative;
 }
 
-/* Window Title */
 .window-title {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    color: white;
-    font-size: 13px;
-    font-weight: bold;
-    text-align: center;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 13px;
+  font-weight: bold;
+  text-align: center;
 }
 
-/* Window Controls */
 .window-controls {
-    position: absolute;
-    left: 10px;
-    display: flex;
-    gap: 8px;
+  position: absolute;
+  left: 10px;
+  display: flex;
+  gap: 8px;
 }
 
 .close-button,
 .minimize-button,
 .fullscreen-button {
-    width: 10px;
-    height: 10px;
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
-    border: none;
-    cursor: pointer;
-    border-radius: 50%;
-    background-color: transparent;
-    overflow: hidden;
-    padding: 0;
+  width: 10px;
+  height: 10px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  background-color: transparent;
+  overflow: hidden;
+  padding: 0;
 }
 
 .close-button { background-image: url('assets/images/close-button-image.png'); }
 .minimize-button { background-image: url('assets/images/minimize-button-image.png'); }
 .fullscreen-button { background-image: url('assets/images/fullscreen-button-image.png'); }
 
-/* Window transitions */
+/* Transitions (minimize/restore) */
 .window.minimizing {
-    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
-    transform-origin: top left;
-    opacity: 0.7;
+  transform-origin: top left;
+  opacity: 0.7;
 }
 .window.minimized { transform: scale(0.2, 1.5); opacity: 0; }
-.window.restoring {
-    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
-    transform-origin: bottom left;
-    opacity: 0;
-}
+.window.restoring { transform-origin: bottom left; opacity: 0; }
 
-/* Stable content area: fills everything below 30px header */
+/* =======================
+   Window Content Area
+   (applies to ALL windows)
+======================= */
 .window .window-content {
-    position: relative;
-    width: 100%;
-    height: calc(100% - 30px); /* <-- critical: pins content to window height */
-    overflow: auto;
-    padding: 12px;
-    user-select: text;
+  position: relative;
+  width: 100%;
+  height: calc(100% - var(--win-header-h));
+  overflow: auto;
+  padding: 12px;
+
+  /* grid for all windows */
+  display: grid;
+  grid-template-columns: repeat(6, 100px);
+  grid-auto-rows: 120px;
+  gap: 12px;
+  align-content: start;
 }
 
-/* Folders inside window */
-.window-content .folder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 80px;
-    margin: 10px;
-    position: absolute; /* your JS uses absolute for dragged items */
+/* When a window goes freeform, stop using grid so absolute items stay put */
+.window .window-content.freeform {
+  display: block;         /* turn off the grid */
+  position: relative;     /* ensure abs children are positioned against content */
 }
 
-.window-content .folder img {
-    width: 80px;
-    height: 80px;
-    object-fit: contain;
+/* Folders inside windows are grid items (no absolute) */
+.window .window-content .folder {
+  position: static;  /* JS clears inline abs pos on drop; ensure static here */
+  width: 100px;      /* match grid col width */
 }
 
-.window-content .folder-label {
-    margin-top: 5px;
-    color: white;
-    text-align: center;
-    font-size: 11px;
+/* Keep labels readable on dark bg inside windows too */
+.window .window-content .folder-label {
+  text-shadow: 0 0px 2px rgba(0,0,0,0.9);
 }
 
-/* Window focus ring when active */
+/* Focus ring when active */
 .window:focus-within {
-    outline: 1.5px solid rgba(110, 231, 242, 0.6);
-    outline-offset: -1px;
+  outline: 1.5px solid rgba(110, 231, 242, 0.6);
+  outline-offset: -1px;
 }
 
-/* Dock Wrapper */
+/* Trash window layout (override absolute positioning from other windows) */
+#trash-window .window-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 16px;
+  align-content: start;
+  padding: 12px;
+}
+
+#trash-window .window-content .folder {
+  position: static !important;   /* <-- undo absolute */
+  width: 100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#trash-window .window-content .folder img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+#trash-window .window-content .folder-label {
+  margin-top: 6px;
+  text-align: center;
+}
+
+/* wrapper that holds a folder + its button */
+#trash-window .trash-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#trash-window .trash-item .restore-btn {
+  margin-top: 6px;
+  font-size: 11px;
+  padding: 2px 8px;
+}
+
+/* =======================
+   Dock
+======================= */
 #dock-wrapper {
-    background-image: url('assets/icons/dock-background.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    padding: 20px 40px;
-    display: flex;
-    justify-content: center;
-    position: fixed;
-    bottom: -80px;
-    left: 50%;
-    transform: translateX(-50%);
-    transition: bottom 0.3s ease, width 0.3s ease;
-    z-index: 3000; /* Above windows */
+  background-image: url('assets/icons/dock-background.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  padding: 20px 40px;
+  display: flex;
+  justify-content: center;
+  position: fixed;
+  bottom: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: bottom 0.3s ease, width 0.3s ease;
+  z-index: 3000; /* Above windows */
 }
 #dock-wrapper.show { bottom: 0; }
 
-/* Dock */
 #dock {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    transition: width 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  transition: width 0.3s ease;
 }
 
-/* Dock Items */
 .dock-item {
-    width: 80px;
-    height: 50px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-.minimized-window img {
-    width: 50px;
-    height: 50px;
-    object-fit: contain;
+  width: 80px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.3s ease;
 }
 
-/* Hover scaling */
 .dock-item.hovered { transform: scale(1.7); }
 .dock-item.adjacent { transform: scale(1.2); }
+
 .dock-item img {
-    width: 50px;
-    height: 50px;
-    object-fit: contain;
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
 }
 
-/* Resizer for the bottom-right corner of the window */
+.minimized-window img {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+/* =======================
+   Resizer
+======================= */
 .resizer {
-    width: 20px;
-    height: 20px;
-    background: transparent;
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    cursor: nwse-resize;
-    z-index: 1001;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  cursor: nwse-resize;
+  z-index: 1001;
 }
-
-/* ---------- DEBUG: visualize draggable space ---------- */
-/*.window .window-content {
-    outline: 2px solid red !important;
-    background-color: rgba(255, 0, 0, 0.1) !important;
-}*/

@@ -10,6 +10,10 @@ let draggedFolder, parentRect;
 let selectionScopeEl = null;
 let startLocalX = 0, startLocalY = 0;
 
+// Drag threshold
+let dragStarted = false;
+let dragStartX = 0, dragStartY = 0;
+
 // Selection box (reparented into the active scope)
 const selectionBoxDiv = document.createElement('div');
 selectionBoxDiv.id = 'selection-box';
@@ -23,17 +27,15 @@ const desktopEl = document.getElementById('desktop');
 /* ---------------- Marquee Selection (Desktop + Window Content) ---------------- */
 
 function beginSelection(event, scopeEl) {
-  if (event.target.closest('.folder')) return; // let drag handle it
+  if (event.target.closest('.folder')) return;
 
   isSelecting = true;
   selectionScopeEl = scopeEl;
   selectionScopeEl.classList.add('no-text-select');
 
-  // Ensure scope can contain abs children (CSS should already do this for .window-content)
   const cs = getComputedStyle(selectionScopeEl);
   if (cs.position === 'static') selectionScopeEl.style.position = 'relative';
 
-  // Render selection box inside/on top of scope
   if (selectionBoxDiv.parentElement !== selectionScopeEl) {
     selectionScopeEl.appendChild(selectionBoxDiv);
   }
@@ -79,7 +81,6 @@ function updateSelection(event) {
   selectionBoxDiv.style.width  = `${width}px`;
   selectionBoxDiv.style.height = `${height}px`;
 
-  // Hit-test using page-space rects
   const selectionRect = selectionBoxDiv.getBoundingClientRect();
   selectionScopeEl.querySelectorAll('.folder').forEach(folder => {
     const r = folder.getBoundingClientRect();
@@ -136,37 +137,107 @@ document.addEventListener('mouseup', function (e) {
   if (isDraggingFolder) stopDragFolder(e);
 });
 
+/* ---------------- Freeze layout helpers ---------------- */
+
+// Desktop: freeze to absolute so siblings don’t shift
+function freezeDesktopLayout() {
+  const scopeEl = desktopEl;
+  const cs = getComputedStyle(scopeEl);
+  if (cs.position === 'static') scopeEl.style.position = 'relative';
+
+  const sr = scopeEl.getBoundingClientRect();
+  const sLeft = scopeEl.scrollLeft || 0;
+  const sTop  = scopeEl.scrollTop  || 0;
+
+  const nodes = Array.from(scopeEl.querySelectorAll('.folder'))
+    .filter(n => n.parentElement === scopeEl);
+
+  const shots = nodes.map(node => {
+    const r = node.getBoundingClientRect();
+    return {
+      node,
+      left: r.left - sr.left + sLeft,
+      top:  r.top  - sr.top  + sTop,
+      w: node.offsetWidth,
+      abs: getComputedStyle(node).position === 'absolute'
+    };
+  });
+
+  shots.forEach(s => {
+    if (!s.abs) {
+      s.node.style.position = 'absolute';
+      s.node.style.left = `${s.left}px`;
+      s.node.style.top  = `${s.top}px`;
+      s.node.style.width = `${s.w}px`;
+    }
+  });
+}
+
+// NEW: Window content freeze — converts current grid positions to absolute ONCE
+function freezeWindowContentLayout(contentEl) {
+  if (!contentEl || contentEl.dataset.layoutFrozen === '1') return;
+
+  const cs = getComputedStyle(contentEl);
+  if (cs.position === 'static') contentEl.style.position = 'relative';
+
+  const cr = contentEl.getBoundingClientRect();
+  const sLeft = contentEl.scrollLeft || 0;
+  const sTop  = contentEl.scrollTop  || 0;
+
+  const nodes = Array.from(contentEl.querySelectorAll('.folder'))
+    .filter(n => n.parentElement === contentEl);
+
+  const shots = nodes.map(node => {
+    const r = node.getBoundingClientRect();
+    return {
+      node,
+      left: r.left - cr.left + sLeft,
+      top:  r.top  - cr.top  + sTop,
+      w: node.offsetWidth,
+      abs: getComputedStyle(node).position === 'absolute'
+    };
+  });
+
+  shots.forEach(s => {
+    if (!s.abs) {
+      s.node.style.position = 'absolute';
+      s.node.style.left = `${s.left}px`;
+      s.node.style.top  = `${s.top}px`;
+      s.node.style.width = `${s.w}px`;
+    }
+  });
+
+  // mark as frozen so we don’t repeat
+  contentEl.dataset.layoutFrozen = '1';
+}
+
 /* ---------------- Folder Dragging ---------------- */
 
 const folders = document.querySelectorAll('.folder');
 folders.forEach(folder => {
-  folder.addEventListener('dragstart', e => e.preventDefault());
+  folder.addEventListener('dragstart', e => e.preventDefault()); // no native ghost
 
   folder.addEventListener('mousedown', function (event) {
     if (event.button !== 0) return;
 
     isDraggingFolder = true;
+    dragStarted = false;
     draggedFolder = folder;
+    window.draggedFolder = folder; // expose for trash window drop logic
+
+    const win = folder.closest('.window');
+    const scopeEl = win ? win.querySelector('.window-content') : desktopEl;
+
+    parentRect = scopeEl.getBoundingClientRect();
 
     const rect = folder.getBoundingClientRect();
-
-    // Parent bounds: use .window-content when inside a window; else desktop
-    const win = folder.closest('.window');
-    if (win) {
-      const content = win.querySelector('.window-content');
-      parentRect = content.getBoundingClientRect();
-    } else {
-      parentRect = desktopEl.getBoundingClientRect();
-    }
-
     offsetX = event.clientX - rect.left;
     offsetY = event.clientY - rect.top;
 
-    folder.style.position = 'absolute';
-    folder.style.zIndex = '1000';
+    dragStartX = event.clientX;
+    dragStartY = event.clientY;
 
     document.addEventListener('mousemove', onDragFolder);
-    // NOTE: no per-mousedown mouseup listener — we rely on the global one above
   });
 });
 
@@ -180,11 +251,40 @@ function isOwnWindow(winEl, folderEl) {
 function onDragFolder(event) {
   if (!(isDraggingFolder && draggedFolder)) return;
 
+  // Start actual dragging after a tiny threshold
+  if (!dragStarted) {
+    const dx = Math.abs(event.clientX - dragStartX);
+    const dy = Math.abs(event.clientY - dragStartY);
+    if (dx < 5 && dy < 5) return;
+
+    dragStarted = true;
+
+    // Freeze origin container:
+    const originWin = draggedFolder.closest('.window');
+    if (!originWin) {
+      // Desktop freezes like before
+      freezeDesktopLayout();
+      parentRect = desktopEl.getBoundingClientRect();
+    } else {
+      // Freeze THIS window’s grid so items won’t jump
+      const content = originWin.querySelector('.window-content');
+      freezeWindowContentLayout(content);
+      parentRect = content.getBoundingClientRect();
+    }
+
+    // Lock the dragged item’s visual position
+    const rectNow = draggedFolder.getBoundingClientRect();
+    draggedFolder.style.position = 'absolute';
+    draggedFolder.style.left = (rectNow.left - parentRect.left) + 'px';
+    draggedFolder.style.top  = (rectNow.top  - parentRect.top)  + 'px';
+    draggedFolder.style.zIndex = '1000';
+    draggedFolder.style.pointerEvents = 'none';
+  }
+
   // Position relative to current parentRect
   let x = event.clientX - parentRect.left - offsetX;
   let y = event.clientY - parentRect.top  - offsetY;
 
-  // Clamp within parent bounds
   const maxX = Math.max(0, parentRect.width  - draggedFolder.offsetWidth);
   const maxY = Math.max(0, parentRect.height - draggedFolder.offsetHeight);
   x = Math.min(Math.max(0, x), maxX);
@@ -205,10 +305,12 @@ function onDragFolder(event) {
     if (event.clientX > cr.left && event.clientX < cr.right &&
         event.clientY > cr.top  && event.clientY < cr.bottom) {
       if (isOwnWindow(win, draggedFolder)) {
-        hoveringOwnWindow = true; // block own window
+        hoveringOwnWindow = true;
         return;
       }
       if (draggedFolder.parentElement !== content) {
+        // Freeze destination grid BEFORE appending so it won’t reflow
+        freezeWindowContentLayout(content);
         content.appendChild(draggedFolder);
       }
       parentRect = cr;
@@ -228,6 +330,7 @@ function onDragFolder(event) {
       event.clientY > dr.top  && event.clientY < dr.bottom;
 
     if (overDesktop && !overWindow) {
+      freezeDesktopLayout();
       if (draggedFolder.parentElement !== desktopEl) {
         desktopEl.appendChild(draggedFolder);
       }
@@ -247,18 +350,19 @@ function onDragFolder(event) {
 
   // Trash proximity (pointer-aware)
   if (typeof checkTrashProximity === 'function') {
-    checkTrashProximity(event); // use pointer location for nicer UX
+    checkTrashProximity(event);
   }
 }
 
-// Stop dragging and cleanup
 function stopDragFolder(e) {
   if (!isDraggingFolder) return;
 
   isDraggingFolder = false;
-  document.body.style.cursor = ''; // reset any not-allowed cursor
+  document.body.style.cursor = '';
 
   if (draggedFolder) {
+    draggedFolder.style.pointerEvents = ''; // restore
+
     const targetFolder = document.querySelector('.folder-target');
 
     if (targetFolder) {
@@ -268,36 +372,54 @@ function stopDragFolder(e) {
 
       if (targetWindow) {
         const targetContent = targetWindow.querySelector('.window-content');
+
+        // Freeze destination window (if not already) then drop
+        freezeWindowContentLayout(targetContent);
         targetContent.appendChild(draggedFolder);
 
-        draggedFolder.style.left = '10px';
-        draggedFolder.style.top  = '10px';
+        // IMPORTANT: keep absolute positioning inside windows
+        // so nothing reflows after the drop
         draggedFolder.style.zIndex = '';
-
         if (typeof openFolder === 'function') openFolder(targetFolder);
       }
     } else {
-      // Pointer-based hit-test over the trash dock icon (with padding)
+      // Pointer-based trash hit-test
       const t = window.trash;
       if (t && e) {
         const r = t.getBoundingClientRect();
-        const PAD = 60; // tolerance around the icon
+        const PAD = 60;
         const overTrash =
           e.clientX > (r.left - PAD) && e.clientX < (r.right + PAD) &&
           e.clientY > (r.top  - PAD) && e.clientY < (r.bottom + PAD);
 
         if (overTrash) {
           if (typeof addToTrash === 'function') addToTrash(draggedFolder);
+          cleanupDragListeners();
           draggedFolder = null;
-          document.removeEventListener('mousemove', onDragFolder);
+          window.draggedFolder = null;
           return;
         }
       }
-      // not over trash — just clean up
-      draggedFolder.style.zIndex = '';
+
+      // If dropped inside a window-content, keep absolute.
+      const parentIsContent = draggedFolder.parentElement &&
+        draggedFolder.parentElement.classList.contains('window-content');
+
+      if (parentIsContent) {
+        // keep left/top; just clear z-index
+        draggedFolder.style.zIndex = '';
+      } else {
+        // On desktop keep absolute placement; just clear z-index
+        draggedFolder.style.zIndex = '';
+      }
     }
   }
 
+  cleanupDragListeners();
   draggedFolder = null;
+  window.draggedFolder = null;
+}
+
+function cleanupDragListeners() {
   document.removeEventListener('mousemove', onDragFolder);
 }

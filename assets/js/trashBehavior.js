@@ -1,34 +1,58 @@
 // assets/js/trashBehavior.js
 
-// Global store shared across files
+/* ------------------------------------------------------------------ */
+/* Globals                                                             */
+/* ------------------------------------------------------------------ */
 window.trashedFolders = window.trashedFolders || [];
 
-/* -------------------- Safely get dock trash elements -------------------- */
+// Try to locate the dock "trash" item, but keep the file resilient
 const trashDockItem = document.querySelector('.dock-item[data-window="trash-window"]');
 
-// Expose globals even if missing so other files don't crash
+// Expose references on window for other scripts (may be null if not found)
 window.trash = trashDockItem || null;
 window.trashIcon = trashDockItem ? trashDockItem.querySelector('img') : null;
 
-if (!window.trash || !window.trashIcon) {
-  console.warn('Trash dock item not found. trashBehavior.js will no-op.');
-  // Safe no-ops
-  window.checkTrashProximity = () => {};
-  window.addToTrash = () => {};
-  window.setTrashIconByState = () => {};
-  window.resetTrashSize = () => {};
-  window.enlargeTrash = () => {};
-} else {
-  const emptyIconSrc = 'assets/icons/trash-icon.png';
-  const fullIconSrc  = 'assets/icons/trash-icon-full.png';
+// Icon sources (adjust paths if yours differ)
+const EMPTY_ICON_SRC = 'assets/icons/trash-icon.png';
+const FULL_ICON_SRC  = 'assets/icons/trash-icon-full.png';
 
-  /* -------------------- Helpers -------------------- */
+/* ------------------------------------------------------------------ */
+/* Utility: event emitter so other files can react to trash updates    */
+/* ------------------------------------------------------------------ */
+function emitTrashChanged() {
+  window.dispatchEvent(new CustomEvent('trash-changed'));
+}
+window.emitTrashChanged = emitTrashChanged;
+
+/* ------------------------------------------------------------------ */
+/* If trash elements aren’t available yet, export safe no-ops          */
+/* ------------------------------------------------------------------ */
+if (!window.trash || !window.trashIcon) {
+  console.warn('[trashBehavior] Trash dock item not found. Exporting safe no-ops.');
+
+  window.setTrashIconByState = function setTrashIconByState() {};
+  window.enlargeTrash = function enlargeTrash() {};
+  window.resetTrashSize = function resetTrashSize() {};
+  window.checkTrashProximity = function checkTrashProximity() {};
+  window.addToTrash = function addToTrash() {
+    // Still manage the data list & notify, even if no UI is present yet
+    // (caller should have pushed the element already)
+    emitTrashChanged();
+  };
+
+  // Nothing else to wire up if the dock item isn't present yet.
+  // Once the DOM has it and this file re-runs (or another file updates references),
+  // the functions above will be replaced by the real ones.
+} else {
+  /* ---------------------------------------------------------------- */
+  /* Helpers (real implementations)                                   */
+  /* ---------------------------------------------------------------- */
 
   function setTrashIconByState() {
     const hasItems = (window.trashedFolders || []).some(
       el => el && el.classList && el.classList.contains('in-trash')
     );
-    window.trashIcon.src = hasItems ? fullIconSrc : emptyIconSrc;
+    window.trashIcon.src = hasItems ? FULL_ICON_SRC : EMPTY_ICON_SRC;
   }
 
   function enlargeTrash() {
@@ -50,11 +74,11 @@ if (!window.trash || !window.trashIcon) {
    * Accepts either a MouseEvent (preferred) or a folder element (fallback).
    */
   function checkTrashProximity(arg) {
-    if (!window.trash || !window.trashIcon) return;
+    if (!window.trash) return;
 
     const trashRect = window.trash.getBoundingClientRect();
 
-    // If we got a mouse event, use pointer location
+    // MouseEvent: use pointer location for nicer UX
     if (arg && typeof arg.clientX === 'number' && typeof arg.clientY === 'number') {
       const { clientX: x, clientY: y } = arg;
       const near =
@@ -63,7 +87,7 @@ if (!window.trash || !window.trashIcon) {
       return near ? enlargeTrash() : resetTrashSize();
     }
 
-    // Fallback: element-based (older call sites)
+    // Fallback: use the dragged element's rect
     if (arg && typeof arg.getBoundingClientRect === 'function') {
       const r = arg.getBoundingClientRect();
       const near =
@@ -77,39 +101,86 @@ if (!window.trash || !window.trashIcon) {
 
   /**
    * Add a folder element to the trash (idempotent).
-   * Hides the real node, marks it in-trash, updates icon, and notifies listeners.
+   * - Hides the actual node
+   * - Marks it as 'in-trash'
+   * - Updates dock icon
+   * - Emits "trash-changed" for live UIs (Trash window) to rebuild
    */
-  function addToTrash(folderEl) {
-    if (!folderEl) return;
+function addToTrash(folderEl) {
+  if (!folderEl) return;
 
-    folderEl.style.display = 'none';
-    folderEl.classList.add('in-trash');
+  folderEl.style.display = 'none';
+  folderEl.classList.add('in-trash');
 
-    if (!window.trashedFolders.includes(folderEl)) {
-      window.trashedFolders.push(folderEl);
-    }
-
-    setTrashIconByState();
-    resetTrashSize();
-
-    // 🔔 tell others (e.g., Trash window) to refresh
-    window.dispatchEvent(new CustomEvent('trash:updated'));
+  if (!window.trashedFolders.includes(folderEl)) {
+    window.trashedFolders.push(folderEl);
   }
 
-  /* -------------------- Global Event Wiring -------------------- */
+  if (typeof window.setTrashIconByState === 'function') {
+    window.setTrashIconByState();
+  }
 
-  // Mouseup: ensure enlargement resets visually
-  document.addEventListener('mouseup', function () {
+  // ensure visual reset
+  if (typeof window.resetTrashSize === 'function') {
+    window.resetTrashSize();
+  }
+
+  // 🔔 notify others (Trash window will listen)
+  window.dispatchEvent(new CustomEvent('trash-changed'));
+}
+
+  /* ---------------------------------------------------------------- */
+  /* Global listeners                                                  */
+  /* ---------------------------------------------------------------- */
+
+  // Mouseup anywhere: reset visual enlargement state
+  document.addEventListener('mouseup', () => {
     resetTrashSize();
   });
 
-  // Initial icon state
+  // Initialize dock icon correctly on load
   setTrashIconByState();
 
-  /* -------------------- Expose API -------------------- */
+  /* ---------------------------------------------------------------- */
+  /* Export API on window                                              */
+  /* ---------------------------------------------------------------- */
+  window.setTrashIconByState = setTrashIconByState;
+  window.enlargeTrash = enlargeTrash;
+  window.resetTrashSize = resetTrashSize;
   window.checkTrashProximity = checkTrashProximity;
   window.addToTrash = addToTrash;
-  window.setTrashIconByState = setTrashIconByState;
-  window.resetTrashSize = resetTrashSize;
-  window.enlargeTrash = enlargeTrash;
+
+  // --- Allow dropping folders directly into the Trash window ---
+const trashWindow = document.getElementById('trash-window');
+
+if (trashWindow) {
+  const trashContent = trashWindow.querySelector('.window-content');
+
+  // Allow drag-over events
+  trashContent.addEventListener('dragover', (e) => {
+    e.preventDefault(); // enable drop
+  });
+
+  // Handle folder drop inside trash window
+  trashContent.addEventListener('mouseup', (e) => {
+    // Find the folder currently being dragged
+    if (typeof window.draggedFolder !== 'undefined' && window.draggedFolder) {
+      const folder = window.draggedFolder;
+
+      // Prevent double-adding
+      if (!folder.classList.contains('in-trash')) {
+        if (typeof window.addToTrash === 'function') {
+          window.addToTrash(folder);
+        }
+
+        // Live-refresh if window is open
+        if (trashWindow.style.display !== 'none' && typeof window.buildTrashWindowContents === 'function') {
+          window.buildTrashWindowContents();
+        }
+      }
+    }
+  });
 }
+}
+
+
