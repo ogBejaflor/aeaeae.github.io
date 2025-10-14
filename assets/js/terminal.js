@@ -7,11 +7,13 @@
 
   if (!screen || !input || !prompt) return; // window might not be in DOM yet
 
-  // Simple “filesystem” view helpers (read from DOM)
+  /* ----------------------------
+     Helper: “Filesystem” view
+  ----------------------------- */
   function getDesktopFolders() {
     const desktop = document.getElementById('desktop');
-    return Array.from(desktop.querySelectorAll(':scope > .folder')) // direct children
-      .filter(el => el.style.display !== 'none')
+    return Array.from(desktop.querySelectorAll(':scope > .folder'))
+      .filter(el => el.style.display !== 'none' && !el.closest('#trash-window'))
       .map(el => ({
         el,
         name: (el.querySelector('.folder-label')?.textContent || '').trim()
@@ -19,13 +21,21 @@
   }
 
   function getAllFolders() {
-    return Array.from(document.querySelectorAll('.folder')).map(el => ({
-      el,
-      name: (el.querySelector('.folder-label')?.textContent || '').trim()
-    }));
+    return Array.from(document.querySelectorAll('.folder'))
+      .filter(el =>
+        el.style.display !== 'none' &&
+        !el.classList.contains('in-trash') &&
+        !el.closest('#trash-window')
+      )
+      .map(el => ({
+        el,
+        name: (el.querySelector('.folder-label')?.textContent || '').trim()
+      }));
   }
 
-  // Utilities
+  /* ----------------------------
+     Utilities
+  ----------------------------- */
   function writeLine(html, cls = '') {
     const line = document.createElement('div');
     line.className = 'terminal-line' + (cls ? (' ' + cls) : '');
@@ -39,17 +49,17 @@
   }
 
   function escapeHTML(s) {
-    return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    return s.replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
   }
 
   function openByName(name) {
     if (!name) return false;
-    // exact match (case-insensitive) among ANY folder
     const all = getAllFolders();
     const target = all.find(f => f.name.toLowerCase() === name.toLowerCase());
     if (!target) return false;
 
-    // If an “openFolder” function exists (your window system), use it
     if (typeof window.openFolder === 'function') {
       window.openFolder(target.el);
       return true;
@@ -57,7 +67,9 @@
     return false;
   }
 
-  // Commands
+  /* ----------------------------
+     Commands
+  ----------------------------- */
   const history = [];
   let historyIndex = -1;
 
@@ -66,15 +78,16 @@
       writeLine([
         'Available commands:',
         '  help                Show this help',
-        '  clear               Clear the terminal',
+        '  clear / cls         Clear the terminal',
         '  ls                  List desktop folders',
-        '  open <name>         Open a folder window by name',
+        '  open <name>               Open a folder window by name',
         '  trash               Open the Trash window',
-        '  echo <text>         Print text',
+        '  echo <text>               Print text',
         '  date                Current date/time',
         '  whoami              Prints current user',
         '  pwd                 Prints pseudo path (~/Desktop)',
-        '  history             Show command history'
+        '  history             Show command history',
+        '  exit                Close the terminal window'
       ].join('\n'));
     },
 
@@ -102,7 +115,6 @@
     },
 
     trash() {
-      // open the trash window the same way the dock does
       const btn = document.querySelector('.dock-item[data-window="trash-window"]');
       if (btn) btn.click();
       else writeLine('Trash not found.', 'err');
@@ -130,9 +142,20 @@
         return;
       }
       history.forEach((h, i) => writeLine(`${i+1}  ${escapeHTML(h)}`));
+    },
+
+    exit() {
+      const win = document.getElementById('terminal-window');
+      if (win) win.style.display = 'none';
     }
   };
 
+  // Aliases
+  commands.cls = commands.clear;
+
+  /* ----------------------------
+     Command runner
+  ----------------------------- */
   function runCommand(raw) {
     const line = raw.trim();
     if (!line) return;
@@ -168,7 +191,9 @@
     return out;
   }
 
-  // Input handling
+  /* ----------------------------
+     Input handling
+  ----------------------------- */
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -200,27 +225,32 @@
       e.preventDefault();
     }
 
-    // Ctrl+L to clear (like many terminals)
+    // Ctrl+L to clear (like most terminals)
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'l') {
       e.preventDefault();
       commands.clear();
     }
   });
 
-  // Focus input when terminal window is clicked / shown
+  /* ----------------------------
+     Focus behavior
+  ----------------------------- */
   const termWin = document.getElementById('terminal-window');
   if (termWin) {
     termWin.addEventListener('mousedown', () => {
       setTimeout(() => input.focus(), 0);
     });
-    // If your window system toggles display, refocus on show:
+
+    // Refocus when the window is shown
     const observer = new MutationObserver(() => {
       if (termWin.style.display !== 'none') setTimeout(() => input.focus(), 0);
     });
     observer.observe(termWin, { attributes: true, attributeFilter: ['style'] });
   }
 
-  // Friendly greeting
+  /* ----------------------------
+     Greeting
+  ----------------------------- */
   writeLine('æ Terminal — type "help" to get started.');
   input.placeholder = 'Type a command…';
   setTimeout(() => input.focus(), 0);

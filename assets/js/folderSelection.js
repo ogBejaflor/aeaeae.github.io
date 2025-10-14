@@ -24,6 +24,36 @@ selectionBoxDiv.style.pointerEvents = 'none';
 selectionBoxDiv.style.zIndex = '9999';
 
 /* =========================
+   Topmost-scope helpers
+========================= */
+
+// Return the TOPMOST interactive scope under (x,y):
+//  - if a .window is topmost, return its .window-content
+//  - else return the desktop
+function getTopScopeAt(x, y) {
+  const stack = document.elementsFromPoint(x, y);
+  const topWin = stack.find(el => el.classList && el.classList.contains('window'));
+  if (topWin) {
+    const content = topWin.querySelector('.window-content');
+    if (content) return { scopeEl: content, winEl: topWin, type: 'window' };
+  }
+  // If no window is on top, treat as desktop if visible in the stack
+  if (stack.includes(desktopEl)) {
+    return { scopeEl: desktopEl, winEl: null, type: 'desktop' };
+  }
+  // Fallback
+  return { scopeEl: desktopEl, winEl: null, type: 'desktop' };
+}
+
+// Folders within a scope (direct children for desktop, all for window-content)
+function foldersInScope(scopeEl) {
+  if (scopeEl === desktopEl) {
+    return Array.from(scopeEl.querySelectorAll(':scope > .folder'));
+  }
+  return Array.from(scopeEl.querySelectorAll('.folder'));
+}
+
+/* =========================
    Marquee Selection
 ========================= */
 function beginSelection(event, scopeEl) {
@@ -57,7 +87,7 @@ function beginSelection(event, scopeEl) {
     display: 'block'
   });
 
-  scopeEl.querySelectorAll('.folder').forEach(f => f.classList.remove('selected'));
+  foldersInScope(scopeEl).forEach(f => f.classList.remove('selected'));
   event.preventDefault();
 }
 
@@ -82,7 +112,7 @@ function updateSelection(event) {
   selectionBoxDiv.style.height = `${height}px`;
 
   const selectionRect = selectionBoxDiv.getBoundingClientRect();
-  selectionScopeEl.querySelectorAll('.folder').forEach(folder => {
+  foldersInScope(selectionScopeEl).forEach(folder => {
     const r = folder.getBoundingClientRect();
     const overlap =
       selectionRect.left < r.right &&
@@ -102,10 +132,11 @@ function endSelection() {
   }
 }
 
-/* Desktop marquee (ignore if over a window) */
+/* Desktop marquee (only if desktop is topmost at pointer) */
 desktopEl.addEventListener('mousedown', function (event) {
   if (isDraggingFolder || event.button !== 0) return;
-  if (event.target.closest('.window')) return;
+  const { scopeEl, type } = getTopScopeAt(event.clientX, event.clientY);
+  if (type !== 'desktop' || scopeEl !== desktopEl) return;
   beginSelection(event, desktopEl);
 });
 desktopEl.addEventListener('mousemove', function (event) {
@@ -114,11 +145,13 @@ desktopEl.addEventListener('mousemove', function (event) {
   }
 });
 
-/* Windows marquee (inside .window-content) */
+/* Windows marquee (inside .window-content, only if that window is topmost) */
 function attachWindowContentSelectionHandlers() {
   document.querySelectorAll('.window .window-content').forEach(content => {
     content.addEventListener('mousedown', function (event) {
       if (isDraggingFolder || event.button !== 0) return;
+      const top = getTopScopeAt(event.clientX, event.clientY);
+      if (top.scopeEl !== content) return; // only topmost
       beginSelection(event, content);
     }, true);
 
@@ -151,7 +184,7 @@ function freezeDesktopLayout() {
   const sLeft = scopeEl.scrollLeft || 0;
   const sTop  = scopeEl.scrollTop  || 0;
 
-  const nodes = Array.from(scopeEl.querySelectorAll('.folder'))
+  const nodes = Array.from(scopeEl.querySelectorAll(':scope > .folder'))
     .filter(n => n.parentElement === scopeEl);
 
   const shots = nodes.map(node => {
@@ -186,8 +219,7 @@ function freezeWindowContentLayout(contentEl) {
   const sLeft = contentEl.scrollLeft || 0;
   const sTop  = contentEl.scrollTop  || 0;
 
-  const nodes = Array.from(contentEl.querySelectorAll('.folder'))
-    .filter(n => n.parentElement === contentEl);
+  const nodes = Array.from(contentEl.querySelectorAll(':scope > .folder'));
 
   const shots = nodes.map(node => {
     const r = node.getBoundingClientRect();
@@ -292,17 +324,14 @@ function onDragFolder(event) {
     draggedFolder.style.pointerEvents = 'none'; // pass-through while dragging
   }
 
-  // ------------------------------------------------------------
-  // Position relative to the CURRENT container, respecting scroll
-  // ------------------------------------------------------------
+  // Determine the *topmost* scope at the pointer
+  const { scopeEl: topScope, winEl: topWin, type: scopeType } = getTopScopeAt(event.clientX, event.clientY);
+
+  // Position relative to the CURRENT top scope, respecting its scroll
   let x, y;
 
-  const parentIsContent =
-    draggedFolder.parentElement &&
-    draggedFolder.parentElement.classList.contains('window-content');
-
-  if (parentIsContent) {
-    const content = draggedFolder.parentElement;
+  if (scopeType === 'window') {
+    const content = topScope;
     const cr = content.getBoundingClientRect();
     const sL = content.scrollLeft;
     const sT = content.scrollTop;
@@ -321,8 +350,21 @@ function onDragFolder(event) {
     x = Math.max(minX, Math.min(localX, maxX));
     y = Math.max(minY, Math.min(localY, maxY));
 
+    // Prevent dropping into a window that's the folder's own target
+    const targetWinId = topWin?.id || '';
+    const folderWinId = draggedFolder.getAttribute('data-window') || '';
+    const hoveringOwnWindow = targetWinId && folderWinId && targetWinId === folderWinId;
+
+    document.body.style.cursor = hoveringOwnWindow ? 'not-allowed' : '';
+
+    if (!hoveringOwnWindow && draggedFolder.parentElement !== content) {
+      freezeWindowContentLayout(content); // freeze destination so no reflow
+      content.appendChild(draggedFolder);
+    }
+
     parentRect = cr;
   } else {
+    // Desktop
     const dr = desktopEl.getBoundingClientRect();
     const fw = draggedFolder.offsetWidth;
     const fh = draggedFolder.offsetHeight;
@@ -338,75 +380,29 @@ function onDragFolder(event) {
     x = Math.max(minX, Math.min(localX, maxX));
     y = Math.max(minY, Math.min(localY, maxY));
 
+    if (draggedFolder.parentElement !== desktopEl) {
+      freezeDesktopLayout();
+      desktopEl.appendChild(draggedFolder);
+    }
+
     parentRect = dr;
   }
 
   draggedFolder.style.left = `${x}px`;
   draggedFolder.style.top  = `${y}px`;
 
-  // -------------------------------
-  // Reparent into the TOPMOST window
-  // -------------------------------
-  let movedToWindow = false;
-  let hoveringOwnWindow = false;
+  // Hover highlight ONLY within the topmost scope
+  const inScope = foldersInScope(topScope)
+    .filter(icon => icon !== draggedFolder && !icon.classList.contains('in-trash'));
 
-  // Only consider the top window under the pointer
-  const elUnder = document.elementFromPoint(event.clientX, event.clientY);
-  const topWin = elUnder ? elUnder.closest('.window') : null;
+  const stack = document.elementsFromPoint(event.clientX, event.clientY);
+  const topFolderUnderPointer = stack.find(el =>
+    el.classList && el.classList.contains('folder') && inScope.includes(el)
+  );
 
-  if (topWin) {
-    const content = topWin.querySelector('.window-content');
-    const cr = content.getBoundingClientRect();
-
-    const insideContent =
-      event.clientX > cr.left && event.clientX < cr.right &&
-      event.clientY > cr.top  && event.clientY < cr.bottom;
-
-    if (insideContent) {
-      // prevent reparenting into the folder's own window (optional safety)
-      const targetWinId = topWin.id || '';
-      const folderWinId = draggedFolder.getAttribute('data-window') || '';
-      if (targetWinId && folderWinId && targetWinId === folderWinId) {
-        hoveringOwnWindow = true;
-      } else {
-        if (draggedFolder.parentElement !== content) {
-          freezeWindowContentLayout(content); // freeze destination so no reflow
-          content.appendChild(draggedFolder);
-        }
-        parentRect = cr;
-        movedToWindow = true;
-      }
-    }
-  }
-
-  document.body.style.cursor = hoveringOwnWindow ? 'not-allowed' : '';
-
-  // Reparent to desktop only if truly over desktop and not over a window
-  if (!movedToWindow && !hoveringOwnWindow) {
-    const dr = desktopEl.getBoundingClientRect();
-    const overWindow = !!(elUnder && elUnder.closest('.window'));
-    const overDesktop =
-      event.clientX > dr.left && event.clientX < dr.right &&
-      event.clientY > dr.top  && event.clientY < dr.bottom;
-
-    if (overDesktop && !overWindow) {
-      freezeDesktopLayout();
-      if (draggedFolder.parentElement !== desktopEl) {
-        desktopEl.appendChild(draggedFolder);
-      }
-      parentRect = dr;
-    }
-  }
-
-  // Hover target highlight over other folder icons (not trashed)
-  document.querySelectorAll('.folder:not(.in-trash)').forEach(icon => {
-    const r = icon.getBoundingClientRect();
-    const hit =
-      event.clientX > r.left && event.clientX < r.right &&
-      event.clientY > r.top  && event.clientY < r.bottom &&
-      icon !== draggedFolder;
-    icon.classList.toggle('folder-target', hit);
-  });
+  // Clear all current highlights first
+  document.querySelectorAll('.folder.folder-target').forEach(el => el.classList.remove('folder-target'));
+  if (topFolderUnderPointer) topFolderUnderPointer.classList.add('folder-target');
 
   // Trash proximity (pointer-aware)
   if (typeof checkTrashProximity === 'function') {
@@ -420,13 +416,21 @@ function stopDragFolder(e) {
   isDraggingFolder = false;
   document.body.style.cursor = '';
 
+  // Determine topmost scope at drop time
+  const { scopeEl: topScope } = getTopScopeAt(e.clientX, e.clientY);
+
   if (draggedFolder) {
     draggedFolder.style.pointerEvents = ''; // restore
 
-    const targetFolder = document.querySelector('.folder-target');
+    // Topmost folder under pointer within this scope
+    const stack = document.elementsFromPoint(e.clientX, e.clientY);
+    const inScope = foldersInScope(topScope).filter(icon => icon !== draggedFolder);
+    const targetFolder = stack.find(el => el.classList && el.classList.contains('folder') && inScope.includes(el));
+
+    // Clear any leftover highlights
+    document.querySelectorAll('.folder.folder-target').forEach(f => f.classList.remove('folder-target'));
 
     if (targetFolder) {
-      targetFolder.classList.remove('folder-target');
       const windowId = targetFolder.getAttribute('data-window');
       const targetWindow = document.getElementById(windowId);
 
