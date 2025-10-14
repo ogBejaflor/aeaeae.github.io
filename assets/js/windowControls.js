@@ -116,19 +116,46 @@ function minimizeWindow(windowElement, windowId) {
 
 function addMinimizedWindowToDock(windowId) {
   const dock = document.getElementById('dock');
+  if (!dock) return;
 
-  if (!document.querySelector(`.minimized-window[data-window="${windowId}"]`)) {
-    const minimizedWindow = document.createElement('div');
-    minimizedWindow.classList.add('dock-item', 'minimized-window');
-    minimizedWindow.setAttribute('data-window', windowId);
-    minimizedWindow.innerHTML = `<img src="assets/icons/minimized-window-icon.png" alt="Minimized Window" />`;
+  // Avoid duplicates
+  if (document.querySelector(`.minimized-window[data-window="${windowId}"]`)) return;
 
-    dock.insertBefore(minimizedWindow, dock.firstChild);
+  const windowEl = document.getElementById(windowId);
+  const titleText = windowEl?.querySelector('.window-title')?.textContent || 'Window';
+  const iconEl = windowEl?.querySelector('.window-header img');
+  const iconSrc = iconEl ? iconEl.src : 'assets/icons/folder-icon.png';
 
-    minimizedWindow.addEventListener('click', function () {
-      restoreMinimizedWindow(this, document.getElementById(windowId));
-    });
-  }
+  // Create minimized folder-style icon
+  const minimizedWindow = document.createElement('div');
+  minimizedWindow.classList.add('dock-item', 'minimized-window');
+  minimizedWindow.setAttribute('data-window', windowId);
+  minimizedWindow.innerHTML = `
+    <div class="minimized-folder">
+      <img src="${iconSrc}" alt="${titleText}" />
+      <div class="minimized-label">${titleText}</div>
+    </div>
+  `;
+
+  // Insert to the RIGHT of Trash and other minimized windows
+  const trashDockItem = dock.querySelector('.dock-item[data-window="trash-window"]');
+  const minimizedItems = Array.from(dock.querySelectorAll('.minimized-window'));
+  const lastMinimized = minimizedItems[minimizedItems.length - 1] || null;
+
+  const insertAfter = (refEl, newEl) => {
+    if (!refEl) dock.appendChild(newEl);
+    else if (refEl.nextSibling) dock.insertBefore(newEl, refEl.nextSibling);
+    else dock.appendChild(newEl);
+  };
+
+  if (lastMinimized) insertAfter(lastMinimized, minimizedWindow);
+  else if (trashDockItem) insertAfter(trashDockItem, minimizedWindow);
+  else dock.appendChild(minimizedWindow);
+
+  // Click to restore
+  minimizedWindow.addEventListener('click', function () {
+    restoreMinimizedWindow(this, document.getElementById(windowId));
+  });
 }
 
 function restoreMinimizedWindow(minimizedWindow, windowElement) {

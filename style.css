@@ -231,6 +231,11 @@ body {
   text-shadow: 0 0px 2px rgba(0,0,0,0.9);
 }
 
+/* Helps scrolling performance while dragging lots of icons */
+.window .window-content {
+  contain: layout paint;
+}
+
 /* Focus ring when active */
 .window:focus-within {
   outline: 1.5px solid rgba(110, 231, 242, 0.6);
@@ -273,10 +278,13 @@ body {
   align-items: center;
 }
 
+/* Make restore button look a touch nicer in Trash */
 #trash-window .trash-item .restore-btn {
-  margin-top: 6px;
-  font-size: 11px;
-  padding: 2px 8px;
+  border: 3px solid rgba(255,255,255,0.2);
+  background: rgba(163, 163, 163, 0.849);
+  color: #fff;
+  border-radius: 6px;
+  cursor: pointer;
 }
 
 /* =======================
@@ -326,10 +334,44 @@ body {
   object-fit: contain;
 }
 
-.minimized-window img {
-  width: 50px;
-  height: 50px;
+/* --- Folder-style minimized windows --- */
+.dock-item.minimized-window {
+  width: 90px;
+  height: 80px;
+  flex-direction: column;
+  justify-content: flex-start;
+  margin-left: 5px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  text-align: center;
+}
+
+.dock-item.minimized-window:hover {
+  transform: scale(1.15);
+}
+
+.minimized-folder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.minimized-folder img {
+  width: 48px;
+  height: 48px;
   object-fit: contain;
+  margin-bottom: 4px;
+}
+
+.minimized-label {
+  font-size: 10px;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
 }
 
 /* =======================
