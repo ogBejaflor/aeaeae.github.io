@@ -440,6 +440,28 @@
     <div class="window-content"></div>
   </div>
 
+  <!-- Terminal window -->
+<div id="terminal-window" class="window" style="display:none;">
+  <div class="window-header">
+    <div class="window-controls">
+      <button class="close-button" aria-label="Close Terminal window"></button>
+      <button class="minimize-button" aria-label="Minimize Terminal window"></button>
+      <button class="fullscreen-button" aria-label="Maximize Terminal window"></button>
+    </div>
+    <span class="window-title">Terminal</span>
+  </div>
+
+  <div class="window-content">
+    <div class="terminal">
+      <div class="terminal-screen" id="terminal-screen" aria-live="polite"></div>
+      <div class="terminal-input-row">
+        <span class="terminal-prompt" id="terminal-prompt">guest@ae:~$</span>
+        <input id="terminal-input" class="terminal-input" type="text" autocomplete="off" spellcheck="false" aria-label="Terminal input" />
+      </div>
+    </div>
+  </div>
+</div>
+
   <!-- Bottom dock -->
   <div id="dock-wrapper">
     <div id="dock">
@@ -458,19 +480,7 @@
     </div>
   </div>
 
-  <!-- Optional: placeholder windows for dock apps (so openers work) -->
-  <div id="terminal-window" class="window" style="display:none;">
-    <div class="window-header">
-      <div class="window-controls">
-        <button class="close-button" aria-label="Close Terminal window"></button>
-        <button class="minimize-button" aria-label="Minimize Terminal window"></button>
-        <button class="fullscreen-button" aria-label="Maximize Terminal window"></button>
-      </div>
-      <span class="window-title">Terminal</span>
-    </div>
-    <div class="window-content"><p>Coming soon…</p></div>
-  </div>
-
+  <!-- Audio Player window (placeholder) -->
   <div id="audio-player-window" class="window" style="display:none;">
     <div class="window-header">
       <div class="window-controls">
@@ -483,6 +493,7 @@
     <div class="window-content"><p>Coming soon…</p></div>
   </div>
 
+  <!-- Files window (placeholder) -->
   <div id="files-window" class="window" style="display:none;">
     <div class="window-header">
       <div class="window-controls">
@@ -503,5 +514,6 @@
   <script src="assets/js/trashBehavior.js"></script>
   <script src="assets/js/folderSelection.js"></script>
   <script src="assets/js/dockBehavior.js"></script>
+  <script src="assets/js/terminal.js"></script>
 </body>
 </html>
