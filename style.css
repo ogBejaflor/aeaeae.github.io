@@ -55,7 +55,7 @@ body {
    Desktop
 ======================= */
 #desktop {
-  position: relative; /* positioning context for absolutely placed icons */
+  position: relative;
   flex-grow: 1;
   padding: 20px;
   display: flex;
@@ -65,7 +65,6 @@ body {
   user-select: none;
 }
 
-/* Marquee selection box (reparented per-scope by JS) */
 #selection-box {
   position: absolute;
   border: 2px solid #ffffff;
@@ -96,7 +95,6 @@ body {
   color: #fff;
   text-align: center;
   font-size: 12px;
-  /* subtle readability on busy bgs */
   text-shadow: 0 0px 2px rgba(0,0,0,0.9);
 }
 
@@ -104,7 +102,6 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
-/* Hover & drop feedback */
 .folder:hover .folder-label {
   color: rgba(255, 255, 255, 0.95);
 }
@@ -118,8 +115,8 @@ body {
    Window Shell
 ======================= */
 .window {
-  width: 720px;                 /* larger default */
-  height: 520px;                /* larger default */
+  width: 720px;
+  height: 520px;
   position: absolute;
   top: 50px;
   left: 50px;
@@ -129,7 +126,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 15px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-  overflow: hidden;             /* clip header & content nicely */
+  overflow: hidden;
   z-index: 1000;
   transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
 }
@@ -187,7 +184,6 @@ body {
 .minimize-button { background-image: url('assets/images/minimize-button-image.png'); }
 .fullscreen-button { background-image: url('assets/images/fullscreen-button-image.png'); }
 
-/* Transitions (minimize/restore) */
 .window.minimizing {
   transform-origin: top left;
   opacity: 0.7;
@@ -196,8 +192,7 @@ body {
 .window.restoring { transform-origin: bottom left; opacity: 0; }
 
 /* =======================
-   Window Content Area
-   (applies to ALL windows)
+   Window Content
 ======================= */
 .window .window-content {
   position: relative;
@@ -206,7 +201,6 @@ body {
   overflow: auto;
   padding: 12px;
 
-  /* grid for all windows */
   display: grid;
   grid-template-columns: repeat(6, 100px);
   grid-auto-rows: 120px;
@@ -214,35 +208,30 @@ body {
   align-content: start;
 }
 
-/* When a window goes freeform, stop using grid so absolute items stay put */
 .window .window-content.freeform {
-  display: block;         /* turn off the grid */
-  position: relative;     /* ensure abs children are positioned against content */
+  display: block;
+  position: relative;
 }
 
-/* Folders inside windows are grid items (no absolute) */
 .window .window-content .folder {
-  position: static;  /* JS clears inline abs pos on drop; ensure static here */
-  width: 100px;      /* match grid col width */
+  position: static;
+  width: 100px;
 }
 
-/* Keep labels readable on dark bg inside windows too */
 .window .window-content .folder-label {
   text-shadow: 0 0px 2px rgba(0,0,0,0.9);
 }
 
-/* Helps scrolling performance while dragging lots of icons */
 .window .window-content {
   contain: layout paint;
 }
 
-/* Focus ring when active */
 .window:focus-within {
   outline: 1.5px solid rgba(110, 231, 242, 0.6);
   outline-offset: -1px;
 }
 
-/* Trash window layout (override absolute positioning from other windows) */
+/* Trash Window Layout */
 #trash-window .window-content {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -252,7 +241,7 @@ body {
 }
 
 #trash-window .window-content .folder {
-  position: static !important;   /* <-- undo absolute */
+  position: static !important;
   width: 100px;
   margin: 0 auto;
   display: flex;
@@ -271,14 +260,12 @@ body {
   text-align: center;
 }
 
-/* wrapper that holds a folder + its button */
 #trash-window .trash-item {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-/* Make restore button look a touch nicer in Trash */
 #trash-window .trash-item .restore-btn {
   border: 3px solid rgba(255,255,255,0.2);
   background: rgba(163, 163, 163, 0.849);
@@ -287,14 +274,21 @@ body {
   cursor: pointer;
 }
 
+/* =======================
+   Terminal Styles
+======================= */
+#terminal-window .window-content {
+  display: block !important;   /* disable grid */
+  padding: 0;                  /* terminal fills space fully */
+}
 
-/* ====== Terminal styles ====== */
 .terminal {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   background: #0b0b0e;
   color: #d6ffd6;
   border-radius: 10px;
   height: 100%;
+  width: 100%;
   display: flex;
   flex-direction: column;
   padding: 10px;
@@ -303,7 +297,7 @@ body {
 .terminal-screen {
   flex: 1;
   overflow: auto;
-  padding-right: 8px; /* breathing room for scrollbar */
+  padding: 12px;
   line-height: 1.4;
   white-space: pre-wrap;
   word-break: break-word;
@@ -325,7 +319,7 @@ body {
   display: flex;
   gap: 8px;
   align-items: center;
-  padding-top: 8px;
+  padding: 10px;
   border-top: 1px solid rgba(255,255,255,0.08);
 }
 
@@ -364,7 +358,7 @@ body {
   left: 50%;
   transform: translateX(-50%);
   transition: bottom 0.3s ease, width 0.3s ease;
-  z-index: 3000; /* Above windows */
+  z-index: 3000;
 }
 #dock-wrapper.show { bottom: 0; }
 

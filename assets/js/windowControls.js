@@ -23,7 +23,7 @@ function nextStaggerPosition(winEl) {
 
   // best-effort window size (use current size or defaults)
   const rect = winEl.getBoundingClientRect();
-  const w = rect.width  || 560;   // default width (match your CSS open size)
+  const w = rect.width  || 560;   // default width (match CSS open size)
   const h = rect.height || 420;   // default height
 
   // Keep on-screen with some margins (account for top bar ~30px and dock ~80px)
@@ -92,6 +92,23 @@ function openFolder(folder) {
   }
 }
 
+// Generic open-by-id (for dock icons and any non-folder launcher)
+function openWindowById(windowId) {
+  const win = document.getElementById(windowId);
+  if (!win) return;
+
+  win.style.display = 'block';
+
+  if (!win.dataset.positioned) {
+    const { left, top } = nextStaggerPosition(win);
+    win.style.left = `${left}px`;
+    win.style.top  = `${top}px`;
+    win.dataset.positioned = '1';
+  }
+
+  bringToFront(win);
+}
+
 function minimizeWindow(windowElement, windowId) {
   windowElement.classList.add('minimizing');
 
@@ -123,8 +140,9 @@ function addMinimizedWindowToDock(windowId) {
 
   const windowEl = document.getElementById(windowId);
   const titleText = windowEl?.querySelector('.window-title')?.textContent || 'Window';
-  const iconEl = windowEl?.querySelector('.window-header img');
-  const iconSrc = iconEl ? iconEl.src : 'assets/icons/folder-icon.png';
+  // Try to infer an icon; fall back to folder icon
+  const iconInHeader = windowEl?.querySelector('.window-header img');
+  const iconSrc = iconInHeader ? iconInHeader.src : 'assets/icons/folder-icon.png';
 
   // Create minimized folder-style icon
   const minimizedWindow = document.createElement('div');
@@ -137,7 +155,7 @@ function addMinimizedWindowToDock(windowId) {
     </div>
   `;
 
-  // Insert to the RIGHT of Trash and other minimized windows
+  // Insert to the RIGHT of Trash and after other minimized windows
   const trashDockItem = dock.querySelector('.dock-item[data-window="trash-window"]');
   const minimizedItems = Array.from(dock.querySelectorAll('.minimized-window'));
   const lastMinimized = minimizedItems[minimizedItems.length - 1] || null;
@@ -226,17 +244,26 @@ document.querySelectorAll('.window').forEach(win => {
   win.addEventListener('mousedown', () => bringToFront(win));
 });
 
-/* ---------------- Trash window open (uses trashedFolders from trashBehavior.js) ---------------- */
+/* ---------------- Dock / Generic openers ---------------- */
+// Works for dock icons and any non-folder element with data-window="..."
+document.querySelectorAll('.window-opener').forEach(opener => {
+  opener.addEventListener('click', () => {
+    if (opener.classList.contains('folder')) return; // folders use dblclick elsewhere
+    const id = opener.getAttribute('data-window');
+    if (id) openWindowById(id);
+  });
+});
+
+/* ---------------- Trash window helpers ---------------- */
 // Find the first free "cell" from the top-right of the desktop and place the item there
 function placeFolderTopRight(desktop, folder) {
   const dRect = desktop.getBoundingClientRect();
 
-  // Cell sizing that feels like macOS icons (tweak if you want tighter/looser packing)
   const CELL_W = 120;   // icon + label width
   const CELL_H = 120;   // icon + label height
   const PAD_X  = 20;    // desktop padding from edges
   const PAD_Y  = 20;
-  const BOTTOM_MARGIN = 140; // leave space for the dock if it pops up
+  const BOTTOM_MARGIN = 140; // leave space for the dock
 
   // Build a list of occupied cells by existing desktop folders (direct children)
   const occupied = [];
@@ -244,14 +271,13 @@ function placeFolderTopRight(desktop, folder) {
     .filter(el => el.parentElement === desktop && el.style.display !== 'none')
     .forEach(el => {
       const r = el.getBoundingClientRect();
-      // convert to desktop-local coordinates
       const x = r.left - dRect.left;
       const y = r.top  - dRect.top;
       occupied.push({ x, y, w: el.offsetWidth || CELL_W, h: el.offsetHeight || CELL_H });
     });
 
   // Starting cell at the top-right
-  let x = dRect.width - PAD_X - CELL_W; // local-left coordinate
+  let x = dRect.width - PAD_X - CELL_W;
   let y = PAD_Y;
 
   function collides(ax, ay) {
@@ -261,7 +287,7 @@ function placeFolderTopRight(desktop, folder) {
     );
   }
 
-  // Scan down, then one column left, repeat (like Finder)
+  // Scan down, then one column left, repeat
   while (true) {
     if (!collides(x, y)) break;
 
@@ -283,7 +309,7 @@ function placeFolderTopRight(desktop, folder) {
   folder.style.top  = `${y}px`;
 }
 
-// --- add in assets/js/windowControls.js (above openTrashWindow) ---
+// Build/refresh Trash window contents
 function buildTrashWindowContents() {
   const trashWindow = document.getElementById('trash-window');
   const trashContent = trashWindow.querySelector('.window-content');
@@ -319,9 +345,7 @@ function buildTrashWindowContents() {
       folder.classList.remove('in-trash');
 
       // Place top-right without overlap
-      if (typeof placeFolderTopRight === 'function') {
-        placeFolderTopRight(desktop, folder);
-      }
+      placeFolderTopRight(desktop, folder);
 
       // Remove from trashed list
       window.trashedFolders = (window.trashedFolders || []).filter(el => el !== folder);
@@ -338,25 +362,16 @@ function buildTrashWindowContents() {
         trashContent.innerHTML = '<p>The trash is empty.</p>';
       }
 
-      // Notify others (optional)
+      // Notify others
       window.dispatchEvent(new CustomEvent('trash-changed'));
     });
 
     wrapper.appendChild(restoreBtn);
     trashContent.appendChild(wrapper);
-
-    // Live-refresh Trash window when items are added/removed
-    window.addEventListener('trash-changed', () => {
-    const trashWindow = document.getElementById('trash-window');
-    if (trashWindow && trashWindow.style.display !== 'none') {
-        buildTrashWindowContents();   // rebuild the list
-        bringToFront(trashWindow);    // keep it on top if you’re interacting with it
-    }
-    });
-
   });
 }
 
+// Open Trash window (from dock or elsewhere)
 function openTrashWindow() {
   const trashWindow = document.getElementById('trash-window');
 
@@ -376,7 +391,7 @@ function openTrashWindow() {
   }
 }
 
-// Click on the trash dock item (robust even if trashBehavior hasn't run yet)
+// Keep this listener — but the generic opener above already handles clicks too
 document.addEventListener('click', (e) => {
   const btn = e.target.closest('.dock-item[data-window="trash-window"]');
   if (btn) {
@@ -385,6 +400,20 @@ document.addEventListener('click', (e) => {
   }
 });
 
-// Make these accessible to other scripts
+// Live-refresh Trash window when items are added/removed (register once)
+if (!window.__trashChangedListenerAdded) {
+  window.addEventListener('trash-changed', () => {
+    const trashWindow = document.getElementById('trash-window');
+    if (trashWindow && trashWindow.style.display !== 'none') {
+      buildTrashWindowContents();
+      bringToFront(trashWindow);
+    }
+  });
+  window.__trashChangedListenerAdded = true;
+}
+
+/* ---------------- Exports for other scripts ---------------- */
 window.openFolder = openFolder;
 window.placeFolderTopRight = placeFolderTopRight;
+window.openWindowById = openWindowById;
+window.buildTrashWindowContents = buildTrashWindowContents;
