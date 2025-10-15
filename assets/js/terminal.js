@@ -3,11 +3,10 @@
   const screen = document.getElementById('terminal-screen');
   const input  = document.getElementById('terminal-input');
   const prompt = document.getElementById('terminal-prompt');
-
-  if (!screen || !input || !prompt) return; // terminal window not mounted yet
+  if (!screen || !input || !prompt) return;
 
   /* ===============================
-     Small DOM "filesystem" helpers
+     Helpers: Folders & Output
   ================================= */
   function getDesktopFolders() {
     const desktop = document.getElementById('desktop');
@@ -27,9 +26,6 @@
     }));
   }
 
-  /* ===============================
-     Terminal UI helpers
-  ================================= */
   function writeLine(html, cls = '') {
     const line = document.createElement('div');
     line.className = 'terminal-line' + (cls ? (' ' + cls) : '');
@@ -43,7 +39,9 @@
   }
 
   function escapeHTML(s) {
-    return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    return s.replace(/[&<>"']/g, m => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[m]));
   }
 
   function openByName(name) {
@@ -59,361 +57,192 @@
   }
 
   /* ===============================
-     Physics mode (gravity/collisions) — inline engine (fallback)
-     NOTE: We PREFER window.physics from physics.js if available.
-  ================================== */
-
-  // Public toggle flag read by your drag code
+     Inline Physics Fallback
+  ================================= */
   window.PHYSICS_ON = window.PHYSICS_ON || false;
-
-  // Simple per-container physics worlds
-  const physics = {
-    rafId: null,
-    worlds: [],   // [{el, bodies: Map<el, body>, isWindowContent, padding}]
-    lastTime: 0,
-    G: 2400,           // px/s^2
-    DAMP_WALL: 0.35,   // energy loss on walls/floor
-    DAMP_COLL: 0.5,    // energy loss on icon-icon collisions
-    MAX_DT: 1/30,      // clamp dt to avoid tunneling on long tabs
-  };
+  const physics = { rafId: null, worlds: [], lastTime: 0, G: 2400 };
 
   function enablePhysics() {
     if (window.PHYSICS_ON) return;
     window.PHYSICS_ON = true;
-
-    // Build worlds: desktop + every visible window content
     physics.worlds = [];
-
     const desktop = document.getElementById('desktop');
-    if (desktop) {
-      // Desktop is already absolute via your freeze logic; but ensure
-      if (typeof window.freezeDesktopLayout === 'function') {
-        window.freezeDesktopLayout();
-      }
-      physics.worlds.push(makeWorldForContainer(desktop, false));
-    }
-
-    document.querySelectorAll('.window .window-content').forEach(content => {
-      // Freeze grid to absolute so items won't jump during sim
-      if (typeof window.freezeWindowContentLayout === 'function') {
-        window.freezeWindowContentLayout(content);
-      } else {
-        // Fallback: ensure positioned
-        const cs = getComputedStyle(content);
-        if (cs.position === 'static') content.style.position = 'relative';
-        // Convert statics to absolute where needed (basic fallback)
-        Array.from(content.querySelectorAll(':scope > .folder')).forEach(f => {
-          const r = f.getBoundingClientRect();
-          const cr = content.getBoundingClientRect();
-          f.style.position = 'absolute';
-          f.style.left = (r.left - cr.left + content.scrollLeft) + 'px';
-          f.style.top  = (r.top  - cr.top  + content.scrollTop ) + 'px';
-        });
-      }
-      physics.worlds.push(makeWorldForContainer(content, true));
-    });
-
-    // Hook pointer drag while in physics mode (so you can move icons around)
-    addPhysicsPointerHandlers();
-
+    if (desktop) physics.worlds.push(makeWorld(desktop));
+    document.querySelectorAll('.window .window-content').forEach(c => physics.worlds.push(makeWorld(c)));
     physics.lastTime = performance.now();
     tickPhysics();
   }
 
   function disablePhysics() {
-    if (!window.PHYSICS_ON) return;
     window.PHYSICS_ON = false;
-
-    removePhysicsPointerHandlers();
-
-    if (physics.rafId) {
-      cancelAnimationFrame(physics.rafId);
-      physics.rafId = null;
-    }
+    if (physics.rafId) cancelAnimationFrame(physics.rafId);
     physics.worlds = [];
   }
 
-  function makeWorldForContainer(containerEl, isWindowContent) {
+  function makeWorld(containerEl) {
     const bodies = new Map();
-    const padding = 6; // tiny gap from walls
-    const cr = containerEl.getBoundingClientRect();
-
-    const folders = Array.from(containerEl.querySelectorAll(':scope > .folder'))
-      .filter(el => el.style.display !== 'none' && !el.classList.contains('in-trash'));
-
+    const folders = Array.from(containerEl.querySelectorAll(':scope > .folder'));
     folders.forEach(el => {
-      const pos = getLocalXY(containerEl, el);
-      const w = el.offsetWidth || 100;
-      const h = el.offsetHeight || 120;
-      el.style.position = 'absolute'; // ensure absolute
-      // If no left/top set (string), set from computed
-      if (!/px$/.test(el.style.left)) el.style.left = pos.x + 'px';
-      if (!/px$/.test(el.style.top))  el.style.top  = pos.y + 'px';
-      bodies.set(el, {
-        el,
-        x: parseFloat(el.style.left) || pos.x,
-        y: parseFloat(el.style.top)  || pos.y,
-        w, h,
-        vx: 0, vy: 0,
-        grabbed: false,
-        grabDX: 0, grabDY: 0,
-      });
+      const r = el.getBoundingClientRect(), cr = containerEl.getBoundingClientRect();
+      el.style.position = 'absolute';
+      el.style.left = r.left - cr.left + 'px';
+      el.style.top  = r.top - cr.top + 'px';
+      bodies.set(el, { el, x: r.left - cr.left, y: r.top - cr.top, vx: 0, vy: 0 });
     });
-
-    return { el: containerEl, bodies, isWindowContent, padding, width: cr.width, height: cr.height };
-  }
-
-  function getLocalXY(container, el) {
-    const cr = container.getBoundingClientRect();
-    const er = el.getBoundingClientRect();
-    const sL = container.scrollLeft || 0;
-    const sT = container.scrollTop  || 0;
-    return { x: er.left - cr.left + sL, y: er.top - cr.top + sT };
+    return { el: containerEl, bodies };
   }
 
   function tickPhysics(now) {
     physics.rafId = requestAnimationFrame(tickPhysics);
-    if (!now) now = performance.now();
-    let dt = (now - physics.lastTime) / 1000;
+    const dt = Math.min((now - physics.lastTime) / 1000, 1/30);
     physics.lastTime = now;
-    dt = Math.min(dt, physics.MAX_DT);
-
-    physics.worlds.forEach(world => stepWorld(world, dt));
+    physics.worlds.forEach(w => stepWorld(w, dt));
   }
 
   function stepWorld(world, dt) {
-    const { el, bodies, padding } = world;
-
-    // Effective container bounds (use client size)
-    const W = el.clientWidth;
-    const H = el.clientHeight;
-
-    // 1) Integrate
-    bodies.forEach(b => {
-      if (b.grabbed) { // held by the mouse
-        b.vx = 0; b.vy = 0;
-        return;
-      }
-      b.vy += physics.G * dt;         // gravity
-      b.x  += b.vx * dt;
-      b.y  += b.vy * dt;
+    const W = world.el.clientWidth, H = world.el.clientHeight;
+    world.bodies.forEach(b => {
+      b.vy += physics.G * dt;
+      b.x += b.vx * dt; b.y += b.vy * dt;
+      if (b.y + 100 > H) { b.y = H - 100; b.vy *= -0.4; }
+      if (b.x < 0) { b.x = 0; b.vx *= -0.4; }
+      if (b.x + 100 > W) { b.x = W - 100; b.vx *= -0.4; }
+      b.el.style.left = `${b.x}px`; b.el.style.top = `${b.y}px`;
     });
-
-    // 2) Collide with walls/floor/ceiling
-    bodies.forEach(b => {
-      // left/right
-      if (b.x < padding) {
-        b.x = padding;
-        b.vx = -b.vx * physics.DAMP_WALL;
-      }
-      if (b.x + b.w > W - padding) {
-        b.x = Math.max(padding, W - padding - b.w);
-        b.vx = -b.vx * physics.DAMP_WALL;
-      }
-      // top
-      if (b.y < padding) {
-        b.y = padding;
-        b.vy = -b.vy * physics.DAMP_WALL;
-      }
-      // bottom (the “floor”)
-      if (b.y + b.h > H - padding) {
-        b.y = Math.max(padding, H - padding - b.h);
-        b.vy = -b.vy * physics.DAMP_WALL;
-        // small horizontal damping when on ground to settle easier
-        b.vx *= 0.98;
-      }
-    });
-
-    // 3) Pairwise icon collisions (AABB + simple separation)
-    const arr = Array.from(bodies.values());
-    for (let i = 0; i < arr.length; i++) {
-      const A = arr[i];
-      for (let j = i + 1; j < arr.length; j++) {
-        const B = arr[j];
-        if (A.grabbed && B.grabbed) continue;
-
-        if (rectsOverlap(A, B)) {
-          // minimal translation vector
-          const dx1 = (A.x + A.w) - B.x;      // A to the left of B
-          const dx2 = (B.x + B.w) - A.x;      // B to the left of A
-          const dy1 = (A.y + A.h) - B.y;
-          const dy2 = (B.y + B.h) - A.y;
-
-          // Choose axis with smaller overlap
-          const overlapX = Math.min(dx1, dx2);
-          const overlapY = Math.min(dy1, dy2);
-
-          if (overlapX < overlapY) {
-            // Separate along X
-            if (dx1 < dx2) {
-              // move A left
-              const shift = overlapX / 2;
-              A.x -= shift;
-              B.x += shift;
-            } else {
-              A.x += overlapX / 2;
-              B.x -= overlapX / 2;
-            }
-            const tmp = A.vx;
-            A.vx = -B.vx * physics.DAMP_COLL;
-            B.vx = -tmp * physics.DAMP_COLL;
-          } else {
-            // Separate along Y
-            if (dy1 < dy2) {
-              const shift = overlapY / 2;
-              A.y -= shift;
-              B.y += shift;
-            } else {
-              A.y += overlapY / 2;
-              B.y -= overlapY / 2;
-            }
-            const tmp = A.vy;
-            A.vy = -B.vy * physics.DAMP_COLL;
-            B.vy = -tmp * physics.DAMP_COLL;
-          }
-        }
-      }
-    }
-
-    // 4) Apply to DOM
-    bodies.forEach(b => {
-      b.el.style.left = `${b.x}px`;
-      b.el.style.top  = `${b.y}px`;
-      // ensure absolute & pointer events enabled
-      b.el.style.position = 'absolute';
-    });
-  }
-
-  function rectsOverlap(a, b) {
-    return a.x < b.x + b.w &&
-           a.x + a.w > b.x &&
-           a.y < b.y + b.h &&
-           a.y + a.h > b.y;
-  }
-
-  /* Pointer drag while physics is ON */
-  const physicsPointer = {
-    onMouseDown: null,
-    onMouseMove: null,
-    onMouseUp:   null
-  };
-
-  function addPhysicsPointerHandlers() {
-    // mousedown: if target is a folder inside any physics world, grab it
-    physicsPointer.onMouseDown = (e) => {
-      if (!window.PHYSICS_ON) return;
-      const el = e.target.closest('.folder');
-      if (!el) return;
-
-      // Find the world that owns this element
-      const world = physics.worlds.find(w => w.bodies.has(el));
-      if (!world) return;
-
-      const body = world.bodies.get(el);
-      if (!body) return;
-
-      // bring its container to front (optional nicer UX)
-      const win = el.closest('.window');
-      if (win && typeof window.bringToFront === 'function') {
-        window.bringToFront(win);
-      }
-
-      body.grabbed = true;
-      const r = el.getBoundingClientRect();
-      body.grabDX = e.clientX - r.left;
-      body.grabDY = e.clientY - r.top;
-
-      e.preventDefault();
-    };
-
-    physicsPointer.onMouseMove = (e) => {
-      if (!window.PHYSICS_ON) return;
-
-      physics.worlds.forEach(world => {
-        world.bodies.forEach(b => {
-          if (!b.grabbed) return;
-
-          const cr = world.el.getBoundingClientRect();
-          const sL = world.el.scrollLeft || 0;
-          const sT = world.el.scrollTop  || 0;
-
-          // target position under mouse, clamped to container
-          const tx = (e.clientX - cr.left + sL) - b.grabDX;
-          const ty = (e.clientY - cr.top  + sT) - b.grabDY;
-
-          const minX = 0 + world.padding;
-          const maxX = world.el.clientWidth  - b.w - world.padding;
-          const minY = 0 + world.padding;
-          const maxY = world.el.clientHeight - b.h - world.padding;
-
-          b.x = Math.max(minX, Math.min(tx, maxX));
-          b.y = Math.max(minY, Math.min(ty, maxY));
-          b.vx = 0; b.vy = 0; // reset momentum while dragging
-        });
-      });
-    };
-
-    physicsPointer.onMouseUp = () => {
-      if (!window.PHYSICS_ON) return;
-      physics.worlds.forEach(world => {
-        world.bodies.forEach(b => { b.grabbed = false; });
-      });
-    };
-
-    document.addEventListener('mousedown', physicsPointer.onMouseDown, true);
-    document.addEventListener('mousemove', physicsPointer.onMouseMove, true);
-    document.addEventListener('mouseup',   physicsPointer.onMouseUp,   true);
-  }
-
-  function removePhysicsPointerHandlers() {
-    document.removeEventListener('mousedown', physicsPointer.onMouseDown, true);
-    document.removeEventListener('mousemove', physicsPointer.onMouseMove, true);
-    document.removeEventListener('mouseup',   physicsPointer.onMouseUp,   true);
   }
 
   /* ===============================
-     Text-to-Speech helpers
+     Text-to-Speech
   ================================= */
   const synth = window.speechSynthesis;
-  let speechVoices = [];
-
+  let voices = [];
   function loadVoicesOnce() {
     if (!synth) return;
-    const load = () => { speechVoices = synth.getVoices() || []; };
+    const load = () => { voices = synth.getVoices() || []; };
     load();
-    if (!speechVoices.length) {
-      synth.addEventListener('voiceschanged', () => {
-        load();
-      }, { once: true });
-    }
+    synth.addEventListener('voiceschanged', load, { once: true });
   }
-
   function findVoiceByName(name) {
-    if (!name) return null;
     const lower = name.toLowerCase();
-    return speechVoices.find(v => (v.name || '').toLowerCase().includes(lower)) || null;
+    return voices.find(v => (v.name || '').toLowerCase().includes(lower));
   }
-
   function parseSpeakArgs(args) {
     const opts = { text: '', voice: '', lang: '', rate: 1, pitch: 1, volume: 1, list: false, stop: false };
-    const parts = [...args]; // shallow copy
+    const parts = [...args];
     for (let i = 0; i < parts.length; i++) {
-      const a = parts[i];
-      const next = parts[i + 1];
-      if (a === '--list') { opts.list = true; parts.splice(i,1); i--; continue; }
-      if (a === '--stop') { opts.stop = true; parts.splice(i,1); i--; continue; }
-      if (a === '--voice' && next) { opts.voice = next; parts.splice(i,2); i-=1; continue; }
-      if (a === '--lang'  && next) { opts.lang  = next; parts.splice(i,2); i-=1; continue; }
-      if (a === '--rate'  && next) { opts.rate  = Math.max(0.1, Math.min(3, parseFloat(next))); parts.splice(i,2); i-=1; continue; }
-      if (a === '--pitch' && next) { opts.pitch = Math.max(0, Math.min(2, parseFloat(next))); parts.splice(i,2); i-=1; continue; }
-      if (a === '--vol'   && next) { opts.volume= Math.max(0, Math.min(1, parseFloat(next))); parts.splice(i,2); i-=1; continue; }
+      const a = parts[i], n = parts[i+1];
+      if (a === '--list') { opts.list = true; parts.splice(i,1); i--; }
+      else if (a === '--stop') { opts.stop = true; parts.splice(i,1); i--; }
+      else if (a === '--voice' && n) { opts.voice = n; parts.splice(i,2); i--; }
+      else if (a === '--lang' && n) { opts.lang = n; parts.splice(i,2); i--; }
+      else if (a === '--rate' && n) { opts.rate = parseFloat(n); parts.splice(i,2); i--; }
+      else if (a === '--pitch' && n) { opts.pitch = parseFloat(n); parts.splice(i,2); i--; }
+      else if (a === '--vol' && n) { opts.volume = parseFloat(n); parts.splice(i,2); i--; }
     }
     opts.text = parts.join(' ').trim();
     return opts;
   }
 
   /* ===============================
-     Commands & input handling
+     Fun Extras
+  ================================= */
+  const FORTUNES = [
+    "Trust the glitch — it knows the route.",
+    "The crowd is a synthesizer; tune it, don’t fight it.",
+    "Latency is just suspense with better branding.",
+    "Rehearse chaos until it sounds intentional.",
+    "Your next release already exists—go find it."
+  ];
+  const LINKS = { Website: location.origin, Instagram: "#", Bandcamp: "#", Spotify: "#", YouTube: "#" };
+
+  function copyToClipboard(text) {
+    if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(text);
+    const ta = document.createElement('textarea'); ta.value = text;
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  }
+
+  let matrixTimer = null;
+
+function startMatrix(seconds = 5) {
+  stopMatrix();
+
+  // Ensure the terminal "screen" is a positioning context
+  const cs = getComputedStyle(screen);
+  if (cs.position === 'static') {
+    screen.style.position = 'relative';
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'matrix-overlay';
+  Object.assign(overlay.style, {
+    position: 'absolute',
+    left: '0',
+    top: '0',
+    right: '0',
+    bottom: '0',           // <-- was inset: 0 (as number) which is ignored
+    pointerEvents: 'none',
+    overflow: 'hidden',
+    zIndex: '9999',        // make sure it’s above .terminal-line
+    mixBlendMode: 'normal' // tweak if you want fancy compositing
+  });
+
+  const cols = Math.max(12, Math.floor(screen.clientWidth / 18));
+  const charset = "01△◇□◆░▒▓#*$@";
+  for (let i = 0; i < cols; i++) {
+    const col = document.createElement('div');
+    Object.assign(col.style, {
+      position: 'absolute',
+      left: `${(i / cols) * 100}%`,
+      top: '-100%',
+      whiteSpace: 'pre',
+      fontFamily: 'monospace',
+      fontSize: '12px',
+      lineHeight: '12px',
+      color: '#00ff66',
+      textShadow: '0 0 6px rgba(0,255,102,.6)',
+      opacity: '0.85',
+      transform: 'translateY(-100%)'
+    });
+
+    col.textContent = Array.from({ length: 100 }, () =>
+      charset.charAt((Math.random() * charset.length) | 0)
+    ).join('\n');
+
+    overlay.appendChild(col);
+
+    const duration = 3000 + Math.random() * 2500;
+    col.animate(
+      [{ transform: 'translateY(-100%)' }, { transform: 'translateY(220%)' }],
+      { duration, iterations: Infinity, easing: 'linear', delay: Math.random() * 1500 }
+    );
+  }
+
+  screen.appendChild(overlay);
+  matrixTimer = setTimeout(stopMatrix, seconds * 1000);
+}
+
+function stopMatrix() {
+  if (matrixTimer) {
+    clearTimeout(matrixTimer);
+    matrixTimer = null;
+  }
+  const overlay = screen.querySelector('.matrix-overlay');
+  if (overlay) overlay.remove();
+}
+
+  function ensureRainbowCSS() {
+    if (document.getElementById('term-rainbow-style')) return;
+    const style = document.createElement('style');
+    style.id = 'term-rainbow-style';
+    style.textContent = `
+      @keyframes aeHue { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }
+      .terminal-rainbow { animation: aeHue 6s linear infinite; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  /* ===============================
+     Commands
   ================================= */
   const history = [];
   let historyIndex = -1;
@@ -422,216 +251,215 @@
     help() {
       writeLine([
         'Available commands:',
-        '  help                Show this help',
-        '  clear               Clear the terminal',
-        '  ls                  List desktop folders',
-        '  open [name]         Open a folder window by name',
-        '  trash               Open the Trash window',
-        '  echo [text]         Print text',
-        '  date                Current date/time',
-        '  whoami              Prints current user',
-        '  pwd                 Prints pseudo path (~/Desktop)',
-        '  history             Show command history',
-        '  physics on|off      Enable/disable physics mode',
-        '  speak [text]        Text-to-speech: --list --voice "Name" --lang --rate 1 --pitch 1'
+        '  help',
+        '  clear',
+        '  ls',
+        '  artist [name]',
+        '  trash',
+        '  fetch',
+        '  echo [text]              - prints text',
+        '  speak [...opts] "text"   — Text-to-speech (use --list)',
+        '  fetch                    — Show label/system info',
+        '  share                    — Copy a shareable link',
+        '  linktree                 — Show clickable links',
+        '  fortune                  — Random fortune',
+        '  matrix [seconds]         — Matrix rain overlay',
+        '  rainbow on|off           — Color cycle',
+        '  physics g [number].      — Change gravity',
+        '  physics boom [number]    — Physics xplosion',
+        '  physics hop              — Jump'
       ].join('\n'));
     },
 
-    clear() {
-      screen.innerHTML = '';
-    },
+    clear() { screen.innerHTML = ''; },
 
     ls() {
-      const items = getDesktopFolders().map(f => f.name).sort((a,b)=>a.localeCompare(b));
-      if (!items.length) writeLine('(no folders on desktop)');
-      else writeLine(items.join('\n'));
+      const items = getDesktopFolders().map(f => f.name).sort();
+      writeLine(items.length ? items.join('\n') : '(no folders)');
     },
 
     open(args) {
       const name = args.join(' ').trim();
       if (!name) return writeLine('Usage: open <folder name>', 'err');
       const ok = openByName(name);
-      writeLine(ok ? `Opening “${escapeHTML(name)}”...` : `Folder not found: ${escapeHTML(name)}`, ok ? '' : 'err');
+      writeLine(ok ? `Opening “${escapeHTML(name)}”…` : `Folder not found: ${escapeHTML(name)}`, ok ? '' : 'err');
     },
+    artist(args){ return this.open(args); },
 
     trash() {
       const btn = document.querySelector('.dock-item[data-window="trash-window"]');
-      if (btn) btn.click();
-      else writeLine('Trash not found.', 'err');
+      if (btn) btn.click(); else writeLine('Trash not found.', 'err');
     },
 
-    echo(args) { writeLine(args.join(' ')); },
-    date()     { writeLine(new Date().toString()); },
-    whoami()   { writeLine('guest'); },
-    pwd()      { writeLine('~/Desktop'); },
+    echo(args){ writeLine(args.join(' ')); },
+    date(){ writeLine(new Date().toString()); },
+    whoami(){ writeLine('guest'); },
+    pwd(){ writeLine('~/Desktop'); },
 
-    history() {
-      if (!history.length) return writeLine('(history empty)');
-      history.forEach((h, i) => writeLine(`${i+1}  ${escapeHTML(h)}`));
+    history(){
+      if (!history.length) return writeLine('(empty)');
+      history.forEach((h,i)=>writeLine(`${i+1} ${escapeHTML(h)}`));
     },
 
-    physics(args) {
-      const arg = (args[0] || '').toLowerCase();
-      if (arg === 'on') {
-        // Prefer standalone physics.js if present
-        if (window.physics?.enable) {
-          window.physics.enable();
-          writeLine('Physics: ON (engine: physics.js). Throw folders & windows.');
-        } else {
-          enablePhysics();
-          writeLine('Physics: ON (engine: terminal inline).');
-        }
-      } else if (arg === 'off') {
-        if (window.physics?.disable) {
-          window.physics.disable();
-          writeLine('Physics: OFF.');
-        } else {
-          disablePhysics();
-          writeLine('Physics: OFF.');
-        }
-      } else {
-        writeLine('Usage: physics on | physics off', 'err');
-      }
+    fetch(){
+      const artistCount = document.querySelectorAll('#artists-window .window-content .folder').length;
+      const openWindows = Array.from(document.querySelectorAll('.window')).filter(w=>w.style.display!=='none').length;
+      writeLine([
+        'æ System Fetch:',
+        `  Artists: ${artistCount}`,
+        `  Open windows: ${openWindows}`,
+        `  Physics: ${window.PHYSICS_ON ? 'ON' : 'OFF'}`,
+        `  Viewport: ${window.innerWidth}x${window.innerHeight}`,
+        `  Time: ${new Date().toLocaleString()}`
+      ].join('\n'));
     },
 
-    speak(args) {
-      if (!('speechSynthesis' in window) || typeof window.SpeechSynthesisUtterance === 'undefined') {
-        return writeLine('Text-to-speech is not supported in this browser.', 'err');
+    linktree(){
+      const lines = Object.entries(LINKS).map(([k,v])=>`• <a href="${v}" target="_blank">${escapeHTML(k)}</a>`);
+      writeLine(lines.join('\n'));
+    },
+
+    async share(){
+      const snippet = `æ — come click around the desktop. ${location.href}`;
+      try { await copyToClipboard(snippet); writeLine('🔗 Copied to clipboard.'); }
+      catch { writeLine('Clipboard unavailable. ' + snippet); }
+    },
+
+    fortune(){
+      const f = FORTUNES[Math.floor(Math.random()*FORTUNES.length)];
+      writeLine('✨ ' + f);
+    },
+
+    matrix(args){
+      const sec = Math.max(1, Math.min(20, parseFloat(args[0]) || 5));
+      startMatrix(sec);
+      writeLine(`🟩 Matrix for ${sec}s…`);
+    },
+
+    rainbow(args){
+      ensureRainbowCSS();
+      const sub = (args[0] || '').toLowerCase();
+      if (sub === 'on' || !sub){ screen.classList.add('terminal-rainbow'); writeLine('🌈 Rainbow ON'); }
+      else if (sub === 'off'){ screen.classList.remove('terminal-rainbow'); writeLine('🌈 Rainbow OFF'); }
+      else writeLine('Usage: rainbow on|off', 'err');
+    },
+
+    physics(args){
+      const sub = (args[0] || '').toLowerCase();
+      const hasExt = !!(window.physics && window.physics.enable);
+      if (sub === 'on'){ (hasExt ? window.physics.enable() : enablePhysics()); writeLine('Physics: ON.'); return; }
+      if (sub === 'off'){ (hasExt ? window.physics.disable() : disablePhysics()); writeLine('Physics: OFF.'); return; }
+      if (sub === 'g' && window.physics?.setGravity){
+        const val = Number(args[1]);
+        if (!isFinite(val)) return writeLine('Usage: physics g <number>', 'err');
+        window.physics.setGravity(val); writeLine(`Gravity set to ${val}.`); return;
       }
-
-      loadVoicesOnce();
-      const opts = parseSpeakArgs(args);
-
-      // --stop just cancels current speech
-      if (opts.stop) {
-        window.speechSynthesis.cancel();
-        return writeLine('🔇 Speech stopped.');
+      if (sub === 'boom' && window.physics?.impulseAll){
+        const power = Number(args[1]) || 1200;
+        window.physics.impulseAll({ power }); writeLine(`💥 Impulse fired (${power}).`); return;
       }
-
-      // --list shows available voices
-      if (opts.list) {
-        if (!speechVoices.length) return writeLine('(No voices available yet — try again in a moment.)');
-        writeLine('Available voices:\n' + speechVoices.map(v => `• ${v.name} (${v.lang})${v.default ? ' [default]' : ''}`).join('\n'));
-        return;
+      if (sub === 'hop' && window.physics?.hopAll){
+        const vy = Number(args[1]) || -1200;
+        window.physics.hopAll({ vy }); writeLine(`🟢 Hop (${vy}).`); return;
       }
+      writeLine('Usage: physics on|off | g <val> | boom [pwr] | hop [vy]', 'err');
+    },
 
-      if (!opts.text) {
-        return writeLine('Usage: speak [--list] [--stop] [--voice "Name"] [--lang en-US] [--rate 1] [--pitch 1] [--vol 1] "text to say"', 'err');
-      }
+    speak(args){
+    if (!window.speechSynthesis) return writeLine('Speech synthesis not supported.', 'err');
+    loadVoicesOnce();
+    const opts = parseSpeakArgs(args);
 
-      // Cancel anything currently speaking
-      window.speechSynthesis.cancel();
+    // Stop / list
+    if (opts.stop){ speechSynthesis.cancel(); return writeLine('🔇 Stopped.'); }
+    if (opts.list){ 
+        if (!voices.length) return writeLine('(No voices yet — try again.)');
+        writeLine('Voices:\n' + voices.map(v=>`• ${v.name} (${v.lang})${v.default?' [default]':''}`).join('\n')); 
+        return; 
+    }
 
-      const utter = new SpeechSynthesisUtterance(opts.text);
-      if (opts.lang)  utter.lang   = opts.lang;
-      if (opts.rate)  utter.rate   = opts.rate;
-      if (opts.pitch) utter.pitch  = opts.pitch;
-      if (opts.volume!==undefined) utter.volume = opts.volume;
+    // Default: if no text, show usage
+    if (!opts.text) return writeLine('Usage: speak [--list] [--voice "Name"] "text"', 'err');
 
-      const v = findVoiceByName(opts.voice);
-      if (v) utter.voice = v;
+    // ---- 🌸 DEFAULT FEMALE VOICE ----
+    // Find a female-like voice if none was specified
+    if (!opts.voice && voices.length) {
+        const female = voices.find(v => /female|woman|susan|salli|emma|linda|olivia|fiona|UK English/i.test(v.name));
+        if (female) opts.voice = female.name;
+        else opts.voice = voices.find(v => /en/i.test(v.lang))?.name || '';
+    }
 
-      utter.onstart = () => writeLine(`🗣️ Speaking${opts.voice ? ` (voice: ${escapeHTML(opts.voice)})` : ''}…`);
-      utter.onend   = () => writeLine('✅ Done.');
-      utter.onerror = (e) => writeLine('Speech error: ' + escapeHTML(String(e.error || 'unknown')), 'err');
+    // Create utterance
+    const utter = new SpeechSynthesisUtterance(opts.text);
+    if (opts.lang) utter.lang = opts.lang;
+    utter.rate = opts.rate || 1;
+    utter.volume = opts.volume || 1;
 
-      window.speechSynthesis.speak(utter);
+    // Pitch up 4 semitones ≈ pitch 1.26
+    utter.pitch = opts.pitch || 12;
+
+    // Set the chosen (female) voice
+    const v = findVoiceByName(opts.voice);
+    if (v) utter.voice = v;
+
+    utter.onstart = ()=>writeLine(`🗣️ Speaking with ${v?.name || 'default'}…`);
+    utter.onend = ()=>writeLine('✅ Done.');
+    speechSynthesis.speak(utter);
     }
   };
 
+  /* ===============================
+     Command Runner & Input
+  ================================= */
   function runCommand(raw) {
     const line = raw.trim();
     if (!line) return;
-
     writePrompted(line);
-
     const [cmd, ...rest] = tokenize(line);
     const fn = commands[cmd];
-    if (fn) {
-      try { fn(rest); } catch (e) { writeLine(String(e), 'err'); }
-    } else {
-      writeLine(`Command not found: ${escapeHTML(cmd)}`, 'err');
-    }
+    if (fn) try { fn(rest); } catch (e) { writeLine(String(e), 'err'); }
+    else writeLine(`Command not found: ${escapeHTML(cmd)}`, 'err');
   }
 
-  // Tokenizer: split by spaces but keep quoted strings
   function tokenize(s) {
-    const out = [];
-    let buf = '';
-    let quote = null;
-    for (let i=0; i<s.length; i++) {
-      const c = s[i];
-      if (quote) {
-        if (c === quote) { quote = null; }
-        else { buf += c; }
-      } else {
-        if (c === '"' || c === "'") { quote = c; }
-        else if (/\s/.test(c)) { if (buf) { out.push(buf); buf=''; } }
-        else { buf += c; }
-      }
+    const out = []; let buf = '', q = null;
+    for (const c of s) {
+      if (q) { if (c === q) q = null; else buf += c; }
+      else if (c === '"' || c === "'") q = c;
+      else if (/\s/.test(c)) { if (buf) { out.push(buf); buf=''; } }
+      else buf += c;
     }
     if (buf) out.push(buf);
     return out;
   }
 
-  // Input behavior
-  input.addEventListener('keydown', (e) => {
+  input.addEventListener('keydown', e => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      const value = input.value;
-      if (value.trim()) {
-        history.push(value);
-        historyIndex = history.length;
-      }
-      runCommand(value);
+      const v = input.value;
+      if (v.trim()) { history.push(v); historyIndex = history.length; }
+      runCommand(v);
       input.value = '';
-      return;
-    }
-
-    if (e.key === 'ArrowUp') {
-      if (history.length) {
-        historyIndex = Math.max(0, historyIndex - 1);
-        input.value = history[historyIndex] ?? '';
-        setCaretToEndSoon();
-      }
+    } else if (e.key === 'ArrowUp') {
+      if (history.length) { historyIndex = Math.max(0, historyIndex - 1); input.value = history[historyIndex] || ''; }
       e.preventDefault();
-    }
-
-    if (e.key === 'ArrowDown') {
-      if (history.length) {
-        historyIndex = Math.min(history.length, historyIndex + 1);
-        input.value = historyIndex === history.length ? '' : (history[historyIndex] ?? '');
-        setCaretToEndSoon();
-      }
+    } else if (e.key === 'ArrowDown') {
+      if (history.length) { historyIndex = Math.min(history.length, historyIndex + 1); input.value = historyIndex === history.length ? '' : (history[historyIndex] || ''); }
       e.preventDefault();
-    }
-
-    // Ctrl/Cmd+L to clear
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'l') {
-      e.preventDefault();
-      commands.clear();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'l') {
+      e.preventDefault(); commands.clear();
     }
   });
 
-  function setCaretToEndSoon() {
-    setTimeout(() => input.setSelectionRange(input.value.length, input.value.length), 0);
-  }
-
-  // Focus input when terminal is interacted with or shown
   const termWin = document.getElementById('terminal-window');
   if (termWin) {
     termWin.addEventListener('mousedown', () => setTimeout(() => input.focus(), 0));
-    const observer = new MutationObserver(() => {
+    new MutationObserver(() => {
       if (termWin.style.display !== 'none') setTimeout(() => input.focus(), 0);
-    });
-    observer.observe(termWin, { attributes: true, attributeFilter: ['style'] });
+    }).observe(termWin, { attributes: true, attributeFilter: ['style'] });
   }
 
-  // Greeting
   writeLine('æ Terminal — type "help" to get started.');
   input.placeholder = 'Type a command…';
-  setTimeout(() => {
-    input.focus();
-    loadVoicesOnce(); // pre-warm voices list for speak command
-  }, 0);
+  setTimeout(() => { input.focus(); loadVoicesOnce(); }, 0);
 })();

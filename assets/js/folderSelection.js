@@ -7,6 +7,14 @@ let isDraggingFolder = false;
 let startX, startY, offsetX, offsetY;
 let draggedFolder, parentRect;
 
+// Group drag state
+let draggedGroup = [];                  // array of folder HTMLElements in the drag
+let groupOffsets = new Map();           // el -> { dxFromLeader, dyFromLeader, w, h }
+let leaderFolder = null;                // the folder that received mousedown
+let leaderGrabDX = 0, leaderGrabDY = 0; // pointer offset inside the leader
+let groupScopeEl = null;                // current active scope for the group (desktop or a .window-content)
+let groupScopeType = 'desktop';         // 'desktop' | 'window'
+
 let selectionScopeEl = null;
 let startLocalX = 0, startLocalY = 0;
 
@@ -57,7 +65,11 @@ function foldersInScope(scopeEl) {
    Marquee Selection
 ========================= */
 function beginSelection(event, scopeEl) {
-  if (event.target.closest('.folder')) return; // drag handles folder mousedown
+  // 🚫 Don’t start marquee on the 2nd click of a double-click
+  if (event.detail > 1) return;
+
+  // If user clicked on a folder, folder mousedown handles behavior
+  if (event.target.closest('.folder')) return;
 
   isSelecting = true;
   selectionScopeEl = scopeEl;
@@ -270,22 +282,76 @@ document.addEventListener('dblclick', (e) => {
 });
 
 /* =========================
-   Dragging
+   Dragging (multi-select aware)
 ========================= */
 function startFolderDrag(folder, event) {
   isDraggingFolder = true;
   dragStarted = false;
-  draggedFolder = folder;
+  leaderFolder = folder;
+  draggedFolder = folder; // retained for compatibility with other code
   window.draggedFolder = folder; // used by trash window drop logic
 
-  const win = folder.closest('.window');
-  const scopeEl = win ? win.querySelector('.window-content') : desktopEl;
+  // Build the drag group:
+  // - If the clicked folder is selected and there are other selected siblings in the same initial scope,
+  //   drag them all together. Otherwise only drag the clicked folder.
+  const initialWin = folder.closest('.window');
+  const initialScope = initialWin ? initialWin.querySelector('.window-content') : desktopEl;
+  const initialScopeType = initialWin ? 'window' : 'desktop';
 
-  parentRect = scopeEl.getBoundingClientRect();
+  groupScopeEl = initialScope;
+  groupScopeType = initialScopeType;
 
-  const rect = folder.getBoundingClientRect();
-  offsetX = event.clientX - rect.left;
-  offsetY = event.clientY - rect.top;
+  // Freeze the origin container so positions are absolute & stable
+  if (initialScopeType === 'desktop') {
+    freezeDesktopLayout();
+  } else {
+    freezeWindowContentLayout(initialScope);
+  }
+
+  // Collect selected folders in the SAME scope; fallback to single folder
+  const candidates = foldersInScope(initialScope).filter(el => el.style.display !== 'none');
+  const selectedInScope = candidates.filter(el => el.classList.contains('selected'));
+  draggedGroup = (selectedInScope.length && selectedInScope.includes(folder))
+    ? selectedInScope
+    : [folder];
+
+  // Ensure all dragged items are direct children of the scope, absolutely positioned
+  const sr = initialScope.getBoundingClientRect();
+  const sLeft = initialScope.scrollLeft || 0;
+  const sTop  = initialScope.scrollTop  || 0;
+
+  // Leader pointer offset (inside the leader’s rect)
+  const leaderRect = folder.getBoundingClientRect();
+  leaderGrabDX = event.clientX - leaderRect.left;
+  leaderGrabDY = event.clientY - leaderRect.top;
+
+  // Snapshot offsets for each item relative to the leader (preserve spacing)
+  groupOffsets.clear();
+  const leaderLeft = leaderRect.left - sr.left + sLeft;
+  const leaderTop  = leaderRect.top  - sr.top  + sTop;
+
+  draggedGroup.forEach(el => {
+    const r = el.getBoundingClientRect();
+    // Ensure absolute positioning and correct parent
+    if (el.parentElement !== initialScope) {
+      initialScope.appendChild(el);
+    }
+    el.style.position = 'absolute';
+    el.style.left = (r.left - sr.left + sLeft) + 'px';
+    el.style.top  = (r.top  - sr.top  + sTop ) + 'px';
+    el.style.zIndex = '1000';
+    el.style.pointerEvents = 'none';
+
+    const dxFromLeader = (r.left - sr.left + sLeft) - leaderLeft;
+    const dyFromLeader = (r.top  - sr.top  + sTop ) - leaderTop;
+
+    groupOffsets.set(el, {
+      dxFromLeader,
+      dyFromLeader,
+      w: el.offsetWidth || 100,
+      h: el.offsetHeight || 120
+    });
+  });
 
   dragStartX = event.clientX;
   dragStartY = event.clientY;
@@ -294,113 +360,85 @@ function startFolderDrag(folder, event) {
 }
 
 function onDragFolder(event) {
-  if (!(isDraggingFolder && draggedFolder)) return;
+  if (!(isDraggingFolder && leaderFolder)) return;
 
-  // threshold so simple clicks don't reposition
+  // Debounce simple clicks
   if (!dragStarted) {
-    const dx = Math.abs(event.clientX - dragStartX);
-    const dy = Math.abs(event.clientY - dragStartY);
-    if (dx < 5 && dy < 5) return;
+    const dx0 = Math.abs(event.clientX - dragStartX);
+    const dy0 = Math.abs(event.clientY - dragStartY);
+    if (dx0 < 5 && dy0 < 5) return;
 
     dragStarted = true;
-
-    // Freeze origin container now
-    const originWin = draggedFolder.closest('.window');
-    if (!originWin) {
-      freezeDesktopLayout();
-      parentRect = desktopEl.getBoundingClientRect();
-    } else {
-      const content = originWin.querySelector('.window-content');
-      freezeWindowContentLayout(content);
-      parentRect = content.getBoundingClientRect();
-    }
-
-    // Lock the dragged item’s current visual position
-    const rectNow = draggedFolder.getBoundingClientRect();
-    draggedFolder.style.position = 'absolute';
-    draggedFolder.style.left = (rectNow.left - parentRect.left) + 'px';
-    draggedFolder.style.top  = (rectNow.top  - parentRect.top)  + 'px';
-    draggedFolder.style.zIndex = '1000';
-    draggedFolder.style.pointerEvents = 'none'; // pass-through while dragging
   }
 
-  // Determine the *topmost* scope at the pointer
+  // Determine the topmost scope under the pointer (desktop or a window-content)
   const { scopeEl: topScope, winEl: topWin, type: scopeType } = getTopScopeAt(event.clientX, event.clientY);
 
-  // Position relative to the CURRENT top scope, respecting its scroll
-  let x, y;
-
-  if (scopeType === 'window') {
-    const content = topScope;
-    const cr = content.getBoundingClientRect();
-    const sL = content.scrollLeft;
-    const sT = content.scrollTop;
-
-    const localX = event.clientX - cr.left - offsetX + sL;
-    const localY = event.clientY - cr.top  - offsetY + sT;
-
-    const fw = draggedFolder.offsetWidth;
-    const fh = draggedFolder.offsetHeight;
-
-    const minX = sL;
-    const maxX = sL + content.clientWidth  - fw;
-    const minY = sT;
-    const maxY = sT + content.clientHeight - fh;
-
-    x = Math.max(minX, Math.min(localX, maxX));
-    y = Math.max(minY, Math.min(localY, maxY));
-
-    // Prevent dropping into a window that's the folder's own target
-    const targetWinId = topWin?.id || '';
-    const folderWinId = draggedFolder.getAttribute('data-window') || '';
-    const hoveringOwnWindow = targetWinId && folderWinId && targetWinId === folderWinId;
-
-    document.body.style.cursor = hoveringOwnWindow ? 'not-allowed' : '';
-
-    if (!hoveringOwnWindow && draggedFolder.parentElement !== content) {
-      freezeWindowContentLayout(content); // freeze destination so no reflow
-      content.appendChild(draggedFolder);
-    }
-
-    parentRect = cr;
-  } else {
-    // Desktop
-    const dr = desktopEl.getBoundingClientRect();
-    const fw = draggedFolder.offsetWidth;
-    const fh = draggedFolder.offsetHeight;
-
-    const localX = event.clientX - dr.left - offsetX;
-    const localY = event.clientY - dr.top  - offsetY;
-
-    const minX = 0;
-    const maxX = dr.width  - fw;
-    const minY = 0;
-    const maxY = dr.height - fh;
-
-    x = Math.max(minX, Math.min(localX, maxX));
-    y = Math.max(minY, Math.min(localY, maxY));
-
-    if (draggedFolder.parentElement !== desktopEl) {
+  // If scope changes during drag, re-parent whole group into new scope and freeze it
+  if (topScope && topScope !== groupScopeEl) {
+    if (scopeType === 'desktop') {
       freezeDesktopLayout();
-      desktopEl.appendChild(draggedFolder);
+    } else {
+      freezeWindowContentLayout(topScope);
     }
-
-    parentRect = dr;
+    draggedGroup.forEach(el => {
+      if (el.parentElement !== topScope) topScope.appendChild(el);
+    });
+    groupScopeEl = topScope;
+    groupScopeType = scopeType;
   }
 
-  draggedFolder.style.left = `${x}px`;
-  draggedFolder.style.top  = `${y}px`;
+  const scope = groupScopeEl || desktopEl;
+  const sr = scope.getBoundingClientRect();
+  const sLeft = scope.scrollLeft || 0;
+  const sTop  = scope.scrollTop  || 0;
 
-  // Hover highlight ONLY within the topmost scope
-  const inScope = foldersInScope(topScope)
-    .filter(icon => icon !== draggedFolder && !icon.classList.contains('in-trash'));
+  // Desired leader position in scope-local coordinates (account for pointer offset inside leader)
+  let leaderX = (event.clientX - sr.left + sLeft) - leaderGrabDX;
+  let leaderY = (event.clientY - sr.top  + sTop ) - leaderGrabDY;
+
+  // Clamp leader so that ALL group members remain in-bounds
+  const padding = 0;
+  const W = scope.clientWidth;
+  const H = scope.clientHeight;
+
+  // Compute group’s extents relative to leader
+  let minDX = Infinity, minDY = Infinity, maxDXR = -Infinity, maxDYB = -Infinity;
+  draggedGroup.forEach(el => {
+    const off = groupOffsets.get(el);
+    if (!off) return;
+    minDX = Math.min(minDX, off.dxFromLeader);
+    minDY = Math.min(minDY, off.dyFromLeader);
+    maxDXR = Math.max(maxDXR, off.dxFromLeader + off.w);
+    maxDYB = Math.max(maxDYB, off.dyFromLeader + off.h);
+  });
+
+  const leaderMinX = padding - minDX;
+  const leaderMaxX = (W - padding) - maxDXR;
+  const leaderMinY = padding - minDY;
+  const leaderMaxY = (H - padding) - maxDYB;
+
+  leaderX = Math.max(leaderMinX, Math.min(leaderX, leaderMaxX));
+  leaderY = Math.max(leaderMinY, Math.min(leaderY, leaderMaxY));
+
+  // Position each item by its stored offset from the leader
+  draggedGroup.forEach(el => {
+    const off = groupOffsets.get(el);
+    if (!off) return;
+    el.style.left = `${leaderX + off.dxFromLeader}px`;
+    el.style.top  = `${leaderY + off.dyFromLeader}px`;
+  });
+
+  // Hover highlight ONLY within the current scope
+  const inScope = foldersInScope(scope)
+    .filter(icon => !draggedGroup.includes(icon) && !icon.classList.contains('in-trash'));
 
   const stack = document.elementsFromPoint(event.clientX, event.clientY);
   const topFolderUnderPointer = stack.find(el =>
     el.classList && el.classList.contains('folder') && inScope.includes(el)
   );
 
-  // Clear all current highlights first
+  // Clear & set highlight
   document.querySelectorAll('.folder.folder-target').forEach(el => el.classList.remove('folder-target'));
   if (topFolderUnderPointer) topFolderUnderPointer.classList.add('folder-target');
 
@@ -416,87 +454,112 @@ function stopDragFolder(e) {
   isDraggingFolder = false;
   document.body.style.cursor = '';
 
-  // Determine topmost scope at drop time
-  const { scopeEl: topScope } = getTopScopeAt(e.clientX, e.clientY);
+  const scope = groupScopeEl || desktopEl;
 
-  if (draggedFolder) {
-    draggedFolder.style.pointerEvents = ''; // restore
+  // Restore pointer events & z-index
+  draggedGroup.forEach(el => {
+    el.style.pointerEvents = '';
+    el.style.zIndex = '';
+  });
 
-    // Topmost folder under pointer within this scope
-    const stack = document.elementsFromPoint(e.clientX, e.clientY);
-    const inScope = foldersInScope(topScope).filter(icon => icon !== draggedFolder);
-    const targetFolder = stack.find(el => el.classList && el.classList.contains('folder') && inScope.includes(el));
+  // Resolve drop target (folder under pointer within current scope)
+  const stack = document.elementsFromPoint(e.clientX, e.clientY);
+  const inScope = foldersInScope(scope).filter(icon => !draggedGroup.includes(icon));
+  const targetFolder = stack.find(el => el.classList && el.classList.contains('folder') && inScope.includes(el));
 
-    // Clear any leftover highlights
-    document.querySelectorAll('.folder.folder-target').forEach(f => f.classList.remove('folder-target'));
+  // Clear highlight
+  document.querySelectorAll('.folder.folder-target').forEach(f => f.classList.remove('folder-target'));
 
-    if (targetFolder) {
-      const windowId = targetFolder.getAttribute('data-window');
-      const targetWindow = document.getElementById(windowId);
+  // 1) Trash drop — if pointer is near the dock Trash, move all
+  const t = window.trash;
+  if (t && e) {
+    const r = t.getBoundingClientRect();
+    const PAD = 60;
+    const overTrash =
+      e.clientX > (r.left - PAD) && e.clientX < (r.right + PAD) &&
+      e.clientY > (r.top  - PAD) && e.clientY < (r.bottom + PAD);
 
-      if (targetWindow) {
-        // Ensure window shown (so sizes/rects are valid)
-        if (targetWindow.style.display === 'none' && typeof openFolder === 'function') {
-          openFolder(targetFolder);
-        }
-
-        const targetContent = targetWindow.querySelector('.window-content');
-        freezeWindowContentLayout(targetContent);
-
-        if (draggedFolder.parentElement !== targetContent) {
-          targetContent.appendChild(draggedFolder);
-        }
-
-        // Place inside the visible viewport near pointer
-        (function placeInVisibleViewport(content, folder, mouseEvt) {
-          const cr = content.getBoundingClientRect();
-          const sL = content.scrollLeft, sT = content.scrollTop;
-          const fw = folder.offsetWidth,  fh = folder.offsetHeight;
-
-          const desiredX = (mouseEvt.clientX - cr.left - offsetX) + sL;
-          const desiredY = (mouseEvt.clientY - cr.top  - offsetY) + sT;
-
-          const minX = sL + 8, maxX = sL + content.clientWidth  - fw - 8;
-          const minY = sT + 8, maxY = sT + content.clientHeight - fh - 8;
-
-          const x = Math.max(minX, Math.min(desiredX, maxX));
-          const y = Math.max(minY, Math.min(desiredY, maxY));
-
-          folder.style.position = 'absolute';
-          folder.style.left = `${x}px`;
-          folder.style.top  = `${y}px`;
-          folder.style.zIndex = '';
-        })(targetContent, draggedFolder, e);
-
-        draggedFolder.style.pointerEvents = '';
+    if (overTrash) {
+      if (typeof addToTrash === 'function') {
+        draggedGroup.forEach(el => addToTrash(el));
       }
-    } else {
-      // Pointer-based trash hit-test (icon)
-      const t = window.trash;
-      if (t && e) {
-        const r = t.getBoundingClientRect();
-        const PAD = 60;
-        const overTrash =
-          e.clientX > (r.left - PAD) && e.clientX < (r.right + PAD) &&
-          e.clientY > (r.top  - PAD) && e.clientY < (r.bottom + PAD);
-
-        if (overTrash) {
-          if (typeof addToTrash === 'function') addToTrash(draggedFolder);
-          cleanupDragListeners();
-          draggedFolder = null;
-          window.draggedFolder = null;
-          return;
-        }
-      }
-
-      // If dropped inside a window-content keep absolute; desktop also keeps abs
-      draggedFolder.style.zIndex = '';
+      cleanupDragListeners();
+      draggedGroup = [];
+      leaderFolder = null;
+      window.draggedFolder = null;
+      dragStarted = false; // ✅ ensure next double-click works
+      return;
     }
   }
 
+  // 2) Drop onto a folder (open its window and move entire group inside)
+  if (targetFolder) {
+    const windowId = targetFolder.getAttribute('data-window');
+    const targetWindow = document.getElementById(windowId);
+
+    if (targetWindow) {
+      // Ensure window is shown so we can measure
+      if (targetWindow.style.display === 'none' && typeof openFolder === 'function') {
+        openFolder(targetFolder);
+      }
+
+      const content = targetWindow.querySelector('.window-content');
+      freezeWindowContentLayout(content);
+
+      // Place group near pointer inside target window’s viewport, keeping their relative offsets
+      const cr = content.getBoundingClientRect();
+      const sL = content.scrollLeft, sT = content.scrollTop;
+
+      // Leader desired in content-local coords
+      let leaderX = (e.clientX - cr.left + sL) - leaderGrabDX;
+      let leaderY = (e.clientY - cr.top  + sT) - leaderGrabDY;
+
+      // Clamp so the whole group fits inside the content
+      const W = content.clientWidth;
+      const H = content.clientHeight;
+
+      let minDX = Infinity, minDY = Infinity, maxDXR = -Infinity, maxDYB = -Infinity;
+      draggedGroup.forEach(el => {
+        const off = groupOffsets.get(el);
+        if (!off) return;
+        minDX = Math.min(minDX, off.dxFromLeader);
+        minDY = Math.min(minDY, off.dyFromLeader);
+        maxDXR = Math.max(maxDXR, off.dxFromLeader + off.w);
+        maxDYB = Math.max(maxDYB, off.dyFromLeader + off.h);
+      });
+
+      const leaderMinX = sL + 8 - minDX;
+      const leaderMaxX = sL + W - 8 - maxDXR;
+      const leaderMinY = sT + 8 - minDY;
+      const leaderMaxY = sT + H - 8 - maxDYB;
+
+      leaderX = Math.max(leaderMinX, Math.min(leaderX, leaderMaxX));
+      leaderY = Math.max(leaderMinY, Math.min(leaderY, leaderMaxY));
+
+      // Re-parent and position each item
+      draggedGroup.forEach(el => {
+        if (el.parentElement !== content) content.appendChild(el);
+        const off = groupOffsets.get(el);
+        el.style.position = 'absolute';
+        el.style.left = `${leaderX + off.dxFromLeader}px`;
+        el.style.top  = `${leaderY + off.dyFromLeader}px`;
+      });
+
+      cleanupDragListeners();
+      draggedGroup = [];
+      leaderFolder = null;
+      window.draggedFolder = null;
+      dragStarted = false; // ✅ ensure next double-click works
+      return;
+    }
+  }
+
+  // 3) Otherwise, leave them where they are (already positioned absolutely in current scope)
   cleanupDragListeners();
-  draggedFolder = null;
+  draggedGroup = [];
+  leaderFolder = null;
   window.draggedFolder = null;
+  dragStarted = false; // ✅ ensure next double-click works
 }
 
 function cleanupDragListeners() {
@@ -512,6 +575,7 @@ function bindFolderHandlers(root = document) {
     // Our drag
     folder.addEventListener('mousedown', function (event) {
       if (event.button !== 0) return;
+      if (event.detail > 1) return; // ✅ ignore second click of a double-click
       if (window.PHYSICS_ON) return; // physics mode takes over dragging
       startFolderDrag(folder, event);
     });

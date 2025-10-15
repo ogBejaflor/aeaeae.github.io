@@ -1,12 +1,12 @@
 // assets/js/physics.js
 (function () {
   // -------- config --------
-  const GRAVITY = 2600;          // px/s^2
-  const DRAG = 0.96;             // velocity damping each frame
-  const RESTITUTION = 0.28;      // bounciness
-  const FRICTION = 0.86;         // along-floor friction
-  const MAX_DT = 1 / 50;         // clamp dt to keep sim stable
-  const THROW_VEL_CAP = 2500;    // max injected velocity from a throw
+  let GRAVITY = 2600;        // px/s^2  (mutable via setGravity)
+  const DRAG = 0.96;         // velocity damping each frame
+  const RESTITUTION = 0.28;  // bounciness
+  const FRICTION = 0.86;     // along-floor friction
+  const MAX_DT = 1 / 50;     // clamp dt to keep sim stable
+  const THROW_VEL_CAP = 2500;// max injected velocity from a throw
   const SELECTOR_ICON = '.folder';
   const SELECTOR_WINDOW = '.window';
 
@@ -26,7 +26,7 @@
 
   // Track pointer for "throw"
   let dragBody = null;
-  let dragInfo = null; // {startX,startY,history:[{x,y,t}], lastX,lastY}
+  let dragInfo = null; // {offsetX,offsetY,history:[{x,y,t}]}
 
   // Utility: time now (s)
   const nowS = () => performance.now() / 1000;
@@ -78,7 +78,6 @@
       ax: 0, ay: 0,
       dynamic: true,
       type: opts.type || 'icon', // 'icon' | 'window'
-      fixedBottom: false,        // not used now; could pin to bottom
     };
     bodies.set(el, b);
     return b;
@@ -138,7 +137,7 @@
   }
 
   // Constrain to container bounds
-  function constrainToBounds(b, dt) {
+  function constrainToBounds(b) {
     const bounds = getBoundsForContainer(b.container);
 
     // Bottom
@@ -188,13 +187,13 @@
       b.vy *= DRAG;
 
       // bounds
-      constrainToBounds(b, clamped);
+      constrainToBounds(b);
     });
 
     // collisions (folders collide with everything, windows don't hit each other)
     const arr = Array.from(bodies.values());
     for (let i = 0; i < arr.length; i++) {
-    for (let j = i + 1; j < arr.length; j++) {
+      for (let j = i + 1; j < arr.length; j++) {
         const A = arr[i];
         const B = arr[j];
 
@@ -203,7 +202,7 @@
 
         // Otherwise resolve (folder↔window, folder↔folder)
         resolveAABB(A, B);
-    }
+      }
     }
 
     // write positions to DOM
@@ -265,7 +264,7 @@
     dragBody.y = y;
 
     // keep within bounds while dragging
-    constrainToBounds(dragBody, 0);
+    constrainToBounds(dragBody);
 
     // track recent positions for velocity injection
     const t = nowS();
@@ -304,6 +303,40 @@
     document.removeEventListener('mouseup', onPointerUp);
     dragBody = null;
     dragInfo = null;
+  }
+
+  // ---------- Public helpers for terminal ----------
+  function setGravity(val) {
+    const g = Number(val);
+    if (!isFinite(g)) return;
+    GRAVITY = g;
+  }
+
+  // Radial impulse from desktop center (or custom point)
+  function impulseAll({ power = 1200, x, y } = {}) {
+    const rect = desktop.getBoundingClientRect();
+    const cx = (typeof x === 'number') ? x : rect.width / 2;
+    const cy = (typeof y === 'number') ? y : rect.height / 2;
+
+    bodies.forEach(b => {
+      // direction from center to body center
+      const bx = b.x + b.w / 2;
+      const by = b.y + b.h / 2;
+      let dx = bx - cx;
+      let dy = by - cy;
+      const d = Math.hypot(dx, dy) || 1;
+      dx /= d; dy /= d;
+      const k = power; // simple linear impulse
+      b.vx += dx * k;
+      b.vy += dy * k;
+    });
+  }
+
+  // Give everything an upward kick
+  function hopAll({ vy = -1200 } = {}) {
+    bodies.forEach(b => {
+      b.vy = vy;
+    });
   }
 
   // ---------- Public API ----------
@@ -434,7 +467,14 @@
   });
 
   // Expose API
-  window.physics = { enable, disable, toggle };
+  window.physics = {
+    enable,
+    disable,
+    toggle,
+    setGravity,   // NEW
+    impulseAll,   // NEW
+    hopAll        // NEW
+  };
 
   // Optional: respond to terminal commands if you added them
   window.addEventListener('terminal-physics', (e) => {
