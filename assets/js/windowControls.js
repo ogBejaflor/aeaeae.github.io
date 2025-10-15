@@ -70,17 +70,22 @@ function openFolder(folder) {
   const windowId = folder.getAttribute('data-window');
   const windowElement = document.getElementById(windowId);
   const minimizedWindow = document.querySelector(`.minimized-window[data-window="${windowId}"]`);
-
   if (!windowElement) return;
 
   if (minimizedWindow) {
     minimizedWindow.remove();
     restoreMinimizedWindow(minimizedWindow, windowElement);
   } else {
-    // First-time open (or re-opened after being closed)
+    // show it
     windowElement.style.display = 'block';
 
-    // Stagger position ONLY if this window hasn't been positioned before
+    // 🔽 ensure physics bodies
+    window.dispatchEvent(new CustomEvent('physics-ensure-window', { detail: { el: windowElement } }));
+    const contentEl = windowElement.querySelector('.window-content');
+    window.dispatchEvent(new CustomEvent('physics-ensure-scope', { detail: { el: contentEl } }));
+    // 🔼
+
+    // first-time position
     if (!windowElement.dataset.positioned) {
       const { left, top } = nextStaggerPosition(windowElement);
       windowElement.style.left = `${left}px`;
@@ -99,13 +104,19 @@ function openWindowById(windowId) {
 
   win.style.display = 'block';
 
+  // ✅ ensure physics for the window and its content
+  window.dispatchEvent(new CustomEvent('physics-ensure-window', { detail: { el: win } }));
+  const contentEl = win.querySelector('.window-content');
+  if (contentEl) {
+    window.dispatchEvent(new CustomEvent('physics-ensure-scope', { detail: { el: contentEl } }));
+  }
+
   if (!win.dataset.positioned) {
     const { left, top } = nextStaggerPosition(win);
     win.style.left = `${left}px`;
     win.style.top  = `${top}px`;
     win.dataset.positioned = '1';
   }
-
   bringToFront(win);
 }
 
@@ -185,6 +196,14 @@ function restoreMinimizedWindow(minimizedWindow, windowElement) {
   const winRect = windowElement.getBoundingClientRect();
 
   windowElement.style.display = 'block';
+
+  // ✅ ensure physics again when restoring
+  window.dispatchEvent(new CustomEvent('physics-ensure-window', { detail: { el: windowElement } }));
+  const contentEl = windowElement.querySelector('.window-content');
+  if (contentEl) {
+    window.dispatchEvent(new CustomEvent('physics-ensure-scope', { detail: { el: contentEl } }));
+  }
+
   const translateX = dockRect.left - winRect.left;
   const translateY = dockRect.top  - winRect.top;
 
@@ -193,7 +212,6 @@ function restoreMinimizedWindow(minimizedWindow, windowElement) {
   windowElement.style.opacity = '0';
 
   // force reflow
-  // eslint-disable-next-line no-unused-expressions
   windowElement.offsetHeight;
 
   windowElement.classList.add('restoring');
@@ -207,6 +225,7 @@ function restoreMinimizedWindow(minimizedWindow, windowElement) {
     windowElement.classList.remove('restoring');
   }, 500);
 }
+
 
 /* ---------------- Close / Fullscreen ---------------- */
 

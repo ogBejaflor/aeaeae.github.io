@@ -506,14 +506,18 @@ function cleanupDragListeners() {
 /* Bind per-folder drag start (static nodes at load; add similarly when injecting new ones) */
 function bindFolderHandlers(root = document) {
   root.querySelectorAll('.folder').forEach(folder => {
-    folder.addEventListener('dragstart', e => e.preventDefault()); // disable native ghost
+    // Disable native drag ghost
+    folder.addEventListener('dragstart', e => e.preventDefault());
 
+    // Our drag
     folder.addEventListener('mousedown', function (event) {
       if (event.button !== 0) return;
+      if (window.PHYSICS_ON) return; // physics mode takes over dragging
       startFolderDrag(folder, event);
     });
   });
 }
+
 bindFolderHandlers();
 
 /* If you dynamically add folders later, call:
