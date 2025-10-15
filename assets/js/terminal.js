@@ -59,7 +59,8 @@
   }
 
   /* ===============================
-     Physics mode (gravity/collisions)
+     Physics mode (gravity/collisions) — inline engine (fallback)
+     NOTE: We PREFER window.physics from physics.js if available.
   ================================== */
 
   // Public toggle flag read by your drag code
@@ -371,6 +372,47 @@
   }
 
   /* ===============================
+     Text-to-Speech helpers
+  ================================= */
+  const synth = window.speechSynthesis;
+  let speechVoices = [];
+
+  function loadVoicesOnce() {
+    if (!synth) return;
+    const load = () => { speechVoices = synth.getVoices() || []; };
+    load();
+    if (!speechVoices.length) {
+      synth.addEventListener('voiceschanged', () => {
+        load();
+      }, { once: true });
+    }
+  }
+
+  function findVoiceByName(name) {
+    if (!name) return null;
+    const lower = name.toLowerCase();
+    return speechVoices.find(v => (v.name || '').toLowerCase().includes(lower)) || null;
+  }
+
+  function parseSpeakArgs(args) {
+    const opts = { text: '', voice: '', lang: '', rate: 1, pitch: 1, volume: 1, list: false, stop: false };
+    const parts = [...args]; // shallow copy
+    for (let i = 0; i < parts.length; i++) {
+      const a = parts[i];
+      const next = parts[i + 1];
+      if (a === '--list') { opts.list = true; parts.splice(i,1); i--; continue; }
+      if (a === '--stop') { opts.stop = true; parts.splice(i,1); i--; continue; }
+      if (a === '--voice' && next) { opts.voice = next; parts.splice(i,2); i-=1; continue; }
+      if (a === '--lang'  && next) { opts.lang  = next; parts.splice(i,2); i-=1; continue; }
+      if (a === '--rate'  && next) { opts.rate  = Math.max(0.1, Math.min(3, parseFloat(next))); parts.splice(i,2); i-=1; continue; }
+      if (a === '--pitch' && next) { opts.pitch = Math.max(0, Math.min(2, parseFloat(next))); parts.splice(i,2); i-=1; continue; }
+      if (a === '--vol'   && next) { opts.volume= Math.max(0, Math.min(1, parseFloat(next))); parts.splice(i,2); i-=1; continue; }
+    }
+    opts.text = parts.join(' ').trim();
+    return opts;
+  }
+
+  /* ===============================
      Commands & input handling
   ================================= */
   const history = [];
@@ -383,15 +425,15 @@
         '  help                Show this help',
         '  clear               Clear the terminal',
         '  ls                  List desktop folders',
-        '  open <name>         Open a folder window by name',
+        '  open [name]         Open a folder window by name',
         '  trash               Open the Trash window',
-        '  echo <text>         Print text',
+        '  echo [text]         Print text',
         '  date                Current date/time',
         '  whoami              Prints current user',
         '  pwd                 Prints pseudo path (~/Desktop)',
         '  history             Show command history',
-        '  physics on          Enable gravity/collisions for icons',
-        '  physics off         Disable physics mode'
+        '  physics on|off      Enable/disable physics mode',
+        '  speak [text]        Text-to-speech: --list --voice "Name" --lang --rate 1 --pitch 1'
       ].join('\n'));
     },
 
@@ -431,14 +473,69 @@
     physics(args) {
       const arg = (args[0] || '').toLowerCase();
       if (arg === 'on') {
-        enablePhysics();
-        writeLine('Physics: ON (gravity enabled; drag icons and release to let them fall).');
+        // Prefer standalone physics.js if present
+        if (window.physics?.enable) {
+          window.physics.enable();
+          writeLine('Physics: ON (engine: physics.js). Throw folders & windows.');
+        } else {
+          enablePhysics();
+          writeLine('Physics: ON (engine: terminal inline).');
+        }
       } else if (arg === 'off') {
-        disablePhysics();
-        writeLine('Physics: OFF (icons stay where you left them).');
+        if (window.physics?.disable) {
+          window.physics.disable();
+          writeLine('Physics: OFF.');
+        } else {
+          disablePhysics();
+          writeLine('Physics: OFF.');
+        }
       } else {
         writeLine('Usage: physics on | physics off', 'err');
       }
+    },
+
+    speak(args) {
+      if (!('speechSynthesis' in window) || typeof window.SpeechSynthesisUtterance === 'undefined') {
+        return writeLine('Text-to-speech is not supported in this browser.', 'err');
+      }
+
+      loadVoicesOnce();
+      const opts = parseSpeakArgs(args);
+
+      // --stop just cancels current speech
+      if (opts.stop) {
+        window.speechSynthesis.cancel();
+        return writeLine('🔇 Speech stopped.');
+      }
+
+      // --list shows available voices
+      if (opts.list) {
+        if (!speechVoices.length) return writeLine('(No voices available yet — try again in a moment.)');
+        writeLine('Available voices:\n' + speechVoices.map(v => `• ${v.name} (${v.lang})${v.default ? ' [default]' : ''}`).join('\n'));
+        return;
+      }
+
+      if (!opts.text) {
+        return writeLine('Usage: speak [--list] [--stop] [--voice "Name"] [--lang en-US] [--rate 1] [--pitch 1] [--vol 1] "text to say"', 'err');
+      }
+
+      // Cancel anything currently speaking
+      window.speechSynthesis.cancel();
+
+      const utter = new SpeechSynthesisUtterance(opts.text);
+      if (opts.lang)  utter.lang   = opts.lang;
+      if (opts.rate)  utter.rate   = opts.rate;
+      if (opts.pitch) utter.pitch  = opts.pitch;
+      if (opts.volume!==undefined) utter.volume = opts.volume;
+
+      const v = findVoiceByName(opts.voice);
+      if (v) utter.voice = v;
+
+      utter.onstart = () => writeLine(`🗣️ Speaking${opts.voice ? ` (voice: ${escapeHTML(opts.voice)})` : ''}…`);
+      utter.onend   = () => writeLine('✅ Done.');
+      utter.onerror = (e) => writeLine('Speech error: ' + escapeHTML(String(e.error || 'unknown')), 'err');
+
+      window.speechSynthesis.speak(utter);
     }
   };
 
@@ -533,5 +630,8 @@
   // Greeting
   writeLine('æ Terminal — type "help" to get started.');
   input.placeholder = 'Type a command…';
-  setTimeout(() => input.focus(), 0);
+  setTimeout(() => {
+    input.focus();
+    loadVoicesOnce(); // pre-warm voices list for speak command
+  }, 0);
 })();

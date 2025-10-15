@@ -1,7 +1,7 @@
 // assets/js/physics.js
 (function () {
   // -------- config --------
-  const GRAVITY = 2200;          // px/s^2
+  const GRAVITY = 2600;          // px/s^2
   const DRAG = 0.96;             // velocity damping each frame
   const RESTITUTION = 0.28;      // bounciness
   const FRICTION = 0.86;         // along-floor friction
@@ -191,12 +191,19 @@
       constrainToBounds(b, clamped);
     });
 
-    // collisions (n^2 but fine for small counts)
+    // collisions (folders collide with everything, windows don't hit each other)
     const arr = Array.from(bodies.values());
     for (let i = 0; i < arr.length; i++) {
-      for (let j = i + 1; j < arr.length; j++) {
-        resolveAABB(arr[i], arr[j]);
-      }
+    for (let j = i + 1; j < arr.length; j++) {
+        const A = arr[i];
+        const B = arr[j];
+
+        // Skip window–window collisions
+        if (A.type === 'window' && B.type === 'window') continue;
+
+        // Otherwise resolve (folder↔window, folder↔folder)
+        resolveAABB(A, B);
+    }
     }
 
     // write positions to DOM
