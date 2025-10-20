@@ -16,6 +16,9 @@
     <span id="date-time" aria-label="Current date and time">Date & Time</span>
   </div>
 
+  <!-- Notifications root (fixed by CSS; sits above dock/windows) -->
+  <div id="ae-notify-root" aria-live="polite" aria-atomic="false" aria-relevant="additions removals"></div>
+
   <!-- Desktop area -->
   <div id="desktop" role="main">
     <!-- (selection box is created/managed by JS; no static div here) -->
@@ -441,26 +444,26 @@
   </div>
 
   <!-- Terminal window -->
-<div id="terminal-window" class="window" style="display:none;">
-  <div class="window-header">
-    <div class="window-controls">
-      <button class="close-button" aria-label="Close Terminal window"></button>
-      <button class="minimize-button" aria-label="Minimize Terminal window"></button>
-      <button class="fullscreen-button" aria-label="Maximize Terminal window"></button>
+  <div id="terminal-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Terminal window"></button>
+        <button class="minimize-button" aria-label="Minimize Terminal window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Terminal window"></button>
+      </div>
+      <span class="window-title">Terminal</span>
     </div>
-    <span class="window-title">Terminal</span>
-  </div>
 
-  <div class="window-content">
-    <div class="terminal">
-      <div class="terminal-screen" id="terminal-screen" aria-live="polite"></div>
-      <div class="terminal-input-row">
-        <span class="terminal-prompt" id="terminal-prompt">guest@ae:~$</span>
-        <input id="terminal-input" class="terminal-input" type="text" autocomplete="off" spellcheck="false" aria-label="Terminal input" placeholder="Type a command…" />
+    <div class="window-content">
+      <div class="terminal">
+        <div class="terminal-screen" id="terminal-screen" aria-live="polite"></div>
+        <div class="terminal-input-row">
+          <span class="terminal-prompt" id="terminal-prompt">guest@ae:~$</span>
+          <input id="terminal-input" class="terminal-input" type="text" autocomplete="off" spellcheck="false" aria-label="Terminal input" placeholder="Type a command…" />
+        </div>
       </div>
     </div>
   </div>
-</div>
 
   <!-- Bottom dock -->
   <div id="dock-wrapper">
@@ -517,5 +520,8 @@
   <script src="assets/js/physics.js"></script>
   <script src="assets/js/dockBehavior.js"></script>
   <script src="assets/js/terminal.js"></script>
+
+  <!-- Notifications (new) -->
+  <script src="assets/js/notifications.js"></script>
 </body>
 </html>

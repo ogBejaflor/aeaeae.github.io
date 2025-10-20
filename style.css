@@ -442,3 +442,102 @@ body {
   cursor: nwse-resize;
   z-index: 1001;
 }
+
+/* =======================
+   Notifications (top-left)
+======================= */
+#ae-notify-root {
+  position: fixed;   /* ensure top-left anchoring */
+  left: 0;
+  top: 0;
+  z-index: 4000;     /* above windows (1000) and dock (3000) */
+  pointer-events: none; /* cards themselves are clickable, root is not */
+}
+
+.ae-notify-card {
+  box-sizing: border-box;
+  position: absolute;           /* JS animates via transform */
+  left: 0;
+  top: 0;
+  width: 320px;                 /* keep in sync with JS WIDTH */
+  background: rgba(83, 83, 83, 0.829);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 12px 12px 12px 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  will-change: transform, opacity;
+  user-select: none;
+  pointer-events: auto;         /* clickable */
+}
+
+.ae-notify-card .ae-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: start;
+}
+
+.ae-notify-card .ae-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
+  display: block;
+  margin-top: 2px;
+}
+
+.ae-notify-card .ae-title {
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.2px;
+  margin-bottom: 4px;
+}
+
+.ae-notify-card .ae-body {
+  font-size: 13px;
+  opacity: 0.9;
+  line-height: 1.35;
+}
+
+.ae-notify-card .ae-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ae-notify-card .ae-act {
+  font: inherit;
+  font-size: 12px;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.16);
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .15s ease, transform .06s ease;
+}
+.ae-notify-card .ae-act:hover { background: rgba(255,255,255,0.16); }
+.ae-notify-card .ae-act:active { transform: translateY(1px); }
+
+.ae-notify-card .ae-close {
+  align-self: start;
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.7);
+  font-size: 18px;
+  line-height: 1;
+  padding: 2px 6px;
+  margin: -4px -4px 0 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .15s ease, color .15s ease;
+}
+.ae-notify-card .ae-close:hover {
+  background: rgba(255,255,255,0.08);
+  color: #fff;
+}

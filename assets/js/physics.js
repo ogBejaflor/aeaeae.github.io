@@ -7,8 +7,10 @@
   const FRICTION = 0.86;     // along-floor friction
   const MAX_DT = 1 / 50;     // clamp dt to keep sim stable
   const THROW_VEL_CAP = 2500;// max injected velocity from a throw
+
   const SELECTOR_ICON = '.folder';
   const SELECTOR_WINDOW = '.window';
+  const SELECTOR_NOTIFY = '.ae-notify-card'; // NEW: notifications
 
   // Globals
   let running = false;
@@ -31,8 +33,12 @@
   // Utility: time now (s)
   const nowS = () => performance.now() / 1000;
 
-  // Rect helpers
+  // Bounds helpers
   function getBoundsForContainer(containerEl) {
+    // Special case: notifications use viewport bounds
+    if (containerEl === window) {
+      return { x: 0, y: 0, w: window.innerWidth, h: window.innerHeight };
+    }
     const r = containerEl.getBoundingClientRect();
     return { x: 0, y: 0, w: r.width, h: r.height };
   }
@@ -41,17 +47,26 @@
     return { w: el.offsetWidth || 0, h: el.offsetHeight || 0 };
   }
 
-  // Make sure element is absolutely positioned in its container.
-  function absolutize(el) {
-    const cs = getComputedStyle(el);
+  // Make sure element is positioned in its container.
+  // For notifications we want fixed (viewport-relative).
+  function absolutize(el, { fixed = false } = {}) {
     const parent = el.parentElement;
     if (!parent) return;
 
-    // Ensure container is positioned
+    if (fixed) {
+      // Snapshot current screen position then switch to fixed/left/top
+      const r = el.getBoundingClientRect();
+      el.style.position = 'fixed';
+      el.style.left = r.left + 'px';
+      el.style.top  = r.top  + 'px';
+      el.style.transform = 'none'; // disable layout translate so physics owns it
+      return;
+    }
+
+    const cs = getComputedStyle(el);
     const pcs = getComputedStyle(parent);
     if (pcs.position === 'static') parent.style.position = 'relative';
 
-    // If not already absolute, snapshot current visual pos
     if (cs.position !== 'absolute') {
       const pr = parent.getBoundingClientRect();
       const r = el.getBoundingClientRect();
@@ -62,8 +77,14 @@
   }
 
   // Body creation
+  // opts: { type: 'icon' | 'window' | 'notify' }
   function createBody(el, containerEl, opts = {}) {
-    absolutize(el);
+    if (opts.type === 'notify') {
+      // For notifications we position fixed and use viewport bounds (container = window)
+      absolutize(el, { fixed: true });
+    } else {
+      absolutize(el);
+    }
 
     const { w, h } = elSize(el);
     const px = parseFloat(el.style.left || '0');
@@ -71,13 +92,13 @@
 
     const b = {
       el,
-      container: containerEl,
+      container: opts.type === 'notify' ? window : containerEl,
       x: px, y: py,
       w, h,
       vx: 0, vy: 0,
       ax: 0, ay: 0,
       dynamic: true,
-      type: opts.type || 'icon', // 'icon' | 'window'
+      type: opts.type || 'icon', // 'icon' | 'window' | 'notify'
     };
     bodies.set(el, b);
     return b;
@@ -89,7 +110,7 @@
 
   // Collision: simple AABB resolve (separation + naive impulse)
   function resolveAABB(a, b) {
-    // Only collide if same container
+    // Only collide if same "container" identity (viewport vs desktop vs window-content)
     if (a.container !== b.container) return;
 
     const ax1 = a.x, ay1 = a.y, ax2 = a.x + a.w, ay2 = a.y + a.h;
@@ -97,40 +118,33 @@
 
     if (ax2 <= bx1 || ax1 >= bx2 || ay2 <= by1 || ay1 >= by2) return; // no overlap
 
-    // overlap distances
-    const oX1 = ax2 - bx1; // push a left
-    const oX2 = bx2 - ax1; // push a right
-    const oY1 = ay2 - by1; // push a up
-    const oY2 = by2 - ay1; // push a down
+    const oX1 = ax2 - bx1;
+    const oX2 = bx2 - ax1;
+    const oY1 = ay2 - by1;
+    const oY2 = by2 - ay1;
 
-    // find smallest translation
     const minX = Math.min(oX1, oX2);
     const minY = Math.min(oY1, oY2);
 
     if (minX < minY) {
-      // separate on X
-      const sign = (oX1 < oX2) ? -1 : 1; // -1 => move a left, 1 => move a right
+      const sign = (oX1 < oX2) ? -1 : 1;
       const sep = minX * sign * 0.5;
       a.x += sep;
       b.x -= sep;
 
-      // swap/reflect velocities on X
       const vax = a.vx, vbx = b.vx;
       a.vx = vbx * RESTITUTION;
       b.vx = vax * RESTITUTION;
     } else {
-      // separate on Y
-      const sign = (oY1 < oY2) ? -1 : 1; // -1 => move a up, 1 => move a down
+      const sign = (oY1 < oY2) ? -1 : 1;
       const sep = minY * sign * 0.5;
       a.y += sep;
       b.y -= sep;
 
-      // reflect velocities on Y
       const vay = a.vy, vby = b.vy;
       a.vy = vby * RESTITUTION;
       b.vy = vay * RESTITUTION;
 
-      // friction when colliding vertically
       a.vx *= FRICTION;
       b.vx *= FRICTION;
     }
@@ -171,6 +185,7 @@
 
     bodies.forEach(b => {
       if (!b.dynamic) return;
+
       // gravity (only vertical)
       b.ay = GRAVITY;
 
@@ -200,13 +215,13 @@
         // Skip window–window collisions
         if (A.type === 'window' && B.type === 'window') continue;
 
-        // Otherwise resolve (folder↔window, folder↔folder)
         resolveAABB(A, B);
       }
     }
 
     // write positions to DOM
     bodies.forEach(b => {
+      // For notifications we keep position:fixed; others are absolute within their containers
       b.el.style.left = `${b.x}px`;
       b.el.style.top  = `${b.y}px`;
     });
@@ -225,7 +240,7 @@
   function onPointerDown(e) {
     if (!running) return;
 
-    const target = e.target.closest(SELECTOR_WINDOW + ',' + SELECTOR_ICON);
+    const target = e.target.closest(`${SELECTOR_WINDOW},${SELECTOR_ICON},${SELECTOR_NOTIFY}`);
     if (!target) return;
 
     const b = bodies.get(target);
@@ -235,7 +250,11 @@
     dragBody.vx = 0;
     dragBody.vy = 0;
 
-    const rect = b.container.getBoundingClientRect();
+    // Container space: viewport for notify, else element's parent
+    const rect = (b.container === window)
+      ? { left: 0, top: 0 }
+      : b.container.getBoundingClientRect();
+
     const ox = (e.clientX - rect.left);
     const oy = (e.clientY - rect.top);
 
@@ -256,7 +275,12 @@
 
   function onPointerMove(e) {
     if (!running || !dragBody || !dragInfo) return;
-    const rect = dragBody.container.getBoundingClientRect();
+
+    // Container space: viewport for notify, else element's parent
+    const rect = (dragBody.container === window)
+      ? { left: 0, top: 0 }
+      : dragBody.container.getBoundingClientRect();
+
     const x = (e.clientX - rect.left) - dragInfo.offsetX;
     const y = (e.clientY - rect.top)  - dragInfo.offsetY;
 
@@ -314,6 +338,7 @@
 
   // Radial impulse from desktop center (or custom point)
   function impulseAll({ power = 1200, x, y } = {}) {
+    // Use viewport center for notify bodies if container === window
     const rect = desktop.getBoundingClientRect();
     const cx = (typeof x === 'number') ? x : rect.width / 2;
     const cy = (typeof y === 'number') ? y : rect.height / 2;
@@ -326,7 +351,7 @@
       let dy = by - cy;
       const d = Math.hypot(dx, dy) || 1;
       dx /= d; dy /= d;
-      const k = power; // simple linear impulse
+      const k = power;
       b.vx += dx * k;
       b.vy += dy * k;
     });
@@ -338,6 +363,30 @@
       b.vy = vy;
     });
   }
+
+  // ---------- helpers: notifications ----------
+  function ensureNotifyBodies() {
+    document.querySelectorAll(SELECTOR_NOTIFY).forEach(el => {
+      if (!bodies.has(el)) createBody(el, window, { type: 'notify' });
+    });
+  }
+
+  // MutationObserver to catch NEW notifications being added while physics is on
+  const notifyObs = new MutationObserver(muts => {
+    if (!running) return;
+    muts.forEach(m => {
+      m.addedNodes && m.addedNodes.forEach(node => {
+        if (!(node instanceof HTMLElement)) return;
+        if (node.matches && node.matches(SELECTOR_NOTIFY)) {
+          createBody(node, window, { type: 'notify' });
+        }
+        // Also catch wrapped adds
+        node.querySelectorAll?.(SELECTOR_NOTIFY).forEach(el => {
+          if (!bodies.has(el)) createBody(el, window, { type: 'notify' });
+        });
+      });
+    });
+  });
 
   // ---------- Public API ----------
   function enable() {
@@ -365,6 +414,9 @@
       });
     });
 
+    // Register existing notifications (viewport bodies)
+    ensureNotifyBodies();
+
     // Pointer hooks
     document.addEventListener('mousedown', onPointerDown, true);
 
@@ -376,6 +428,9 @@
 
     // Also watch display toggles to auto-add/remove windows
     obs.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['style'] });
+
+    // Watch for notifications being added dynamically
+    notifyObs.observe(document.body, { childList: true, subtree: true });
 
     // Kick the loop
     running = true;
@@ -400,6 +455,7 @@
     window.removeEventListener('physics-ensure-scope', onEnsureScope);
     window.removeEventListener('physics-remove-icon', onRemoveIcon);
     obs.disconnect();
+    notifyObs.disconnect();
 
     bodies.clear();
 
@@ -417,7 +473,6 @@
     if (win.style.display === 'none') return;
     if (!bodies.has(win)) createBody(win, desktop, { type: 'window' });
 
-    // also bring in any icons currently inside
     const content = win.querySelector('.window-content');
     if (content) {
       content.querySelectorAll(SELECTOR_ICON).forEach(icon => {
@@ -471,9 +526,9 @@
     enable,
     disable,
     toggle,
-    setGravity,   // NEW
-    impulseAll,   // NEW
-    hopAll        // NEW
+    setGravity,
+    impulseAll,
+    hopAll
   };
 
   // Optional: respond to terminal commands if you added them
