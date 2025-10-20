@@ -509,6 +509,12 @@ body {
   flex-wrap: wrap;
 }
 
+.ae-notify-card {
+  user-select: none;
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none;     /* old Edge */
+}
+
 .ae-notify-card .ae-act {
   font: inherit;
   font-size: 12px;
