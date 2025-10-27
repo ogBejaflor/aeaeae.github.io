@@ -9,8 +9,63 @@
   const VISIBLE_X = PADDING;
   const DRAG_DISMISS_PX = 80;
 
-  // Keep your current cadence (you had 5–25s in the snippet)
+  // Cadence (5–25s)
   const nextDelay = () => 5000 + Math.random() * 20000;
+
+  // --- Mascot (Clippy) support ---
+  const MASCOT_ICON = 'assets/images/Clippy.png';
+  let __aeMascotShown = false;
+
+  function ensureMascotCSS() {
+    if (document.getElementById('ae-mascot-css')) return;
+    const style = document.createElement('style');
+    style.id = 'ae-mascot-css';
+    style.textContent = `
+      .ae-notify-card{ user-select:none; -webkit-user-select:none; -ms-user-select:none; }
+      .ae-notify-card.ae-notify--mascot{
+        background: rgba(199, 199, 199, 0.57) !important;
+        color:#111 !important;
+        border-color: rgba(0,0,0,0.08) !important;
+      }
+      .ae-notify-card.ae-notify--mascot .ae-title{ color:#111 !important; }
+      .ae-notify-card.ae-notify--mascot .ae-body{ color:#111 !important; opacity:0.95; }
+      .ae-notify-card.ae-notify--mascot .ae-close{ color: rgba(0,0,0,0.6) !important; }
+      .ae-notify-card.ae-notify--mascot .ae-close:hover{
+        background: rgba(0,0,0,0.06) !important; color:#000 !important;
+      }
+      .ae-notify-card.ae-notify--mascot .ae-act{
+        background: rgba(0,0,0,0.06) !important;
+        color:#111 !important;
+        border-color: rgba(0,0,0,0.14) !important;
+      }
+      .ae-notify-card.ae-notify--mascot .ae-act:hover{
+        background: rgba(0,0,0,0.10) !important;
+      }
+      .ae-notify-card.ae-notify--mascot .ae-icon{
+        width: 80px !important; 
+        height: 80px !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function pushMascotWelcome() {
+    if (__aeMascotShown) return;
+    __aeMascotShown = true;
+    const payload = {
+      title: "Hi, I'm Clippy 👋",
+      body: "Welcome to æ. Double-click folders to explore — or open the Terminal and type “help”.",
+      icon: MASCOT_ICON,
+      mascot: true
+    };
+    // Be resilient to ordering: prefer global API if present, else local push()
+    try {
+      (window.aeNotify?.push?.(payload)) ?? push(payload);
+    } catch {
+      // As a last resort, call local push
+      push(payload);
+    }
+  }
 
   // Demo pool (once per session unless we reseed)
   const DEMO = [
@@ -20,7 +75,7 @@
     { title: 'Archive', body: 'Photos from last show were added.' },
     { title: 'Tip', body: 'Double-click folders to open; drag to group-move.' },
   ];
-  let queue = shuffle(DEMO.slice()); // <-- make this mutable so we can reseed
+  let queue = shuffle(DEMO.slice()); // mutable so we can reseed
 
   // Root element
   let root = document.getElementById(ROOT_ID);
@@ -45,17 +100,14 @@
   function isFrozen(el) { return el?.dataset?.locked === '1'; }
 
   function freezeCardForPhysics(el) {
-    // Stop our transitions/translate so physics fully owns motion
     el.style.transition = 'none';
     el.style.transform = 'none';
 
-    // Fix current screen position (no jump)
     const r = el.getBoundingClientRect();
     el.style.position = 'fixed';
     el.style.left = (r.left || VISIBLE_X) + 'px';
     el.style.top  = (r.top  || (TOP_OFFSET + PADDING)) + 'px';
 
-    // Interact but not select text
     el.style.pointerEvents = 'auto';
     el.style.userSelect = 'none';
     el.style.webkitUserSelect = 'none';
@@ -76,43 +128,26 @@
   }
 
   /* ---------------- Physics toggle behavior ---------------- */
-  // ON  → freeze all current toasts, keep scheduler running.
-  // OFF → dismiss ALL that either fell (frozen) OR were born while physics was ON,
-  //       then normalize & restack any leftovers, reseed queue if needed, and restart scheduler.
   window.addEventListener('physics-mode-changed', (e) => {
     const on = !!e.detail?.on;
 
     if (on) {
-      // Freeze everything currently alive so physics can take over.
-      cards.forEach(({ el }) => {
-        // If card wasn't marked, it's a pre-existing one → freeze it.
-        if (!isFrozen(el)) freezeCardForPhysics(el);
-      });
-      // Ensure scheduler keeps ticking even in physics mode
-      if (!timer && queue.length) schedule();
+      cards.forEach(({ el }) => { if (!isFrozen(el)) freezeCardForPhysics(el); });
+      if (!timer && queue.length) schedule(); // scheduler keeps running
       return;
     }
 
     // Physics OFF:
-    // 1) Dismiss all cards that were affected by physics:
-    //    - frozen ones, OR
-    //    - those created while physics was ON (bornInPhysics)
     const toRemove = cards
       .filter(({ el }) => isFrozen(el) || el.dataset.bornInPhysics === '1')
       .map(c => c.el);
-
     toRemove.forEach(el => dismissCard(el)); // frozen path uses fade-only
 
-    // 2) Normalize any remaining (stack-managed) cards back into the column
     cards.forEach(({ el }) => {
-      if (!isFrozen(el) && el.dataset.bornInPhysics !== '1') {
-        normalizeForStack(el);
-      }
-      // Clear the marker if it exists
+      if (!isFrozen(el) && el.dataset.bornInPhysics !== '1') normalizeForStack(el);
       if (el.dataset.bornInPhysics) el.dataset.bornInPhysics = '';
     });
 
-    // 3) Restack & animate in
     layout();
     requestAnimationFrame(() => {
       cards.forEach(({ el }) => {
@@ -123,15 +158,15 @@
       });
     });
 
-    // 4) Reseed + restart scheduler so it behaves like on page load
     reseedQueueIfEmpty();
     if (!timer && queue.length) schedule();
   });
 
   /* ---------------- Build / Layout / Dismiss ---------------- */
-  function createCard({ title, body, icon, actions }) {
+  function createCard({ title, body, icon, actions, mascot }) {
     const el = document.createElement('div');
     el.className = 'ae-notify-card';
+    if (mascot) el.classList.add('ae-notify--mascot');
     el.setAttribute('role', 'status');
     el.setAttribute('aria-live', 'polite');
 
@@ -167,15 +202,13 @@
       </div>
     `;
 
-    // Remove stray whitespace-only text nodes (prevents odd text artifacts)
+    // Remove stray whitespace-only text nodes
     [...el.childNodes].forEach(n => {
       if (n.nodeType === Node.TEXT_NODE && !n.textContent.trim()) n.remove();
     });
 
-    // Close works in both normal & frozen states
     el.querySelector('.ae-close')?.addEventListener('click', () => dismissCard(el));
 
-    // Action buttons emit an event
     el.querySelectorAll('.ae-act').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -184,7 +217,6 @@
       });
     });
 
-    // Swipe only for unfrozen cards
     enableDragDismiss(el);
 
     return el;
@@ -194,23 +226,17 @@
     const el = createCard(item);
     root.appendChild(el);
 
-    // Measure & register
     requestAnimationFrame(() => {
       const h = el.getBoundingClientRect().height;
       cards.unshift({ el, height: h });
 
-      // If physics is ON at creation:
-      // - mark as born during physics,
-      // - freeze immediately so physics engine owns it,
-      // - make it fully visible (physics controls position).
       if (window.PHYSICS_ON) {
         el.dataset.bornInPhysics = '1';
         freezeCardForPhysics(el);
         el.style.opacity = '1';
-        return; // do NOT stack-animate
+        return;
       }
 
-      // Normal stacked behavior
       layout();
       requestAnimationFrame(() => {
         const y = parseFloat(el.dataset.y || '0');
@@ -225,7 +251,7 @@
   function layout() {
     let y = PADDING;
     cards.forEach(({ el, height }) => {
-      if (isFrozen(el) || el.dataset.bornInPhysics === '1') return; // skip physics-affected
+      if (isFrozen(el) || el.dataset.bornInPhysics === '1') return;
       el.dataset.y = y;
       el.style.transform = `translate(${VISIBLE_X}px, ${y}px)`;
       y += height + V_GAP;
@@ -236,7 +262,6 @@
     const idx = cards.findIndex(c => c.el === el);
     if (idx === -1) return;
 
-    // If frozen or born during physics → fade only
     if (isFrozen(el) || el.dataset.bornInPhysics === '1') {
       el.style.transition = 'opacity 180ms ease';
       el.style.opacity = '0';
@@ -248,7 +273,6 @@
       return;
     }
 
-    // Normal slide-out + fade
     el.style.transition = 'transform 240ms ease, opacity 200ms ease';
     const y = parseFloat(el.dataset.y || '0');
     el.style.transform = `translate(${HIDDEN_X}px, ${y}px)`;
@@ -384,6 +408,7 @@
   function escapeAttr(s = '') { return String(s).replace(/"/g, '&quot;'); }
   function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = (Math.random() * (i + 1)) | 0; [arr[i], arr[j]] = [arr[j]]; } return arr; }
 
+  // Public API (register BEFORE we try to show the mascot)
   window.aeNotify = {
     push,
     dismissCard,
@@ -394,7 +419,18 @@
 
   /* ---------------- Start scheduling ---------------- */
   function startScheduleOnce() {
+    ensureMascotCSS();
+    // Nudge mascot after the API is surely present
+    setTimeout(pushMascotWelcome, 800);
     if (!timer && queue.length) schedule();
+
+    // Watchdog: if truly nothing rendered, show a hello toast (helps diagnose)
+    setTimeout(() => {
+      if (!cards.length) {
+        push({ title: 'Hello', body: 'Notifications are active.' });
+        if (!timer && queue.length) schedule();
+      }
+    }, 2000);
   }
 
   if (document.readyState === 'loading') {
@@ -403,14 +439,6 @@
     startScheduleOnce();
   }
 
-  // If physics was already ON at load, freeze any existing (defensive)
+  // If physics already ON at load, freeze any existing (defensive)
   if (window.PHYSICS_ON) cards.forEach(({ el }) => freezeCardForPhysics(el));
-
-  // Self-check: if nothing showed, show 1 toast and ensure schedule is running
-  setTimeout(() => {
-    if (!cards.length) {
-      try { push({ title: 'Hello', body: 'Notifications are active.' }); } catch {}
-      startScheduleOnce();
-    }
-  }, 3000);
 })();

@@ -269,7 +269,7 @@ body {
 #trash-window .trash-item .restore-btn {
   border: 3px solid rgba(255,255,255,0.2);
   background: rgba(163, 163, 163, 0.849);
-  color: #fff;
+  color: #ffffff00;
   border-radius: 6px;
   cursor: pointer;
 }
