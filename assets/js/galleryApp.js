@@ -2,8 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const galleryData = window.aeGalleryData || [];
   
   const contentEl = document.getElementById('gallery-content');
-  const btnGrid = document.getElementById('view-grid');
-  const btnList = document.getElementById('view-list');
   
   const lightbox = document.getElementById('gallery-lightbox');
   const lightboxMediaContainer = document.getElementById('lightbox-media-container');
@@ -11,12 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnPrev = document.getElementById('lightbox-prev');
   const btnNext = document.getElementById('lightbox-next');
 
-  let currentView = 'grid'; // 'grid' | 'list'
   let currentIndex = -1;
 
   function renderGallery() {
     contentEl.innerHTML = '';
-    contentEl.className = currentView === 'grid' ? 'gallery-grid' : 'gallery-list';
+    contentEl.className = 'gallery-grid';
 
     if (galleryData.length === 0) {
       contentEl.innerHTML = '<p style="padding: 20px; color: #888;">No media found. Upload files to Archive or Catalogo.</p>';
@@ -35,21 +32,13 @@ document.addEventListener('DOMContentLoaded', () => {
         mediaHtml = `<video src="${item.src}" muted loop playsinline></video>`;
       }
 
-      let infoHtml = '';
-      if (currentView === 'list') {
-        infoHtml = `<div class="gallery-item-info">
-                      <span class="gallery-item-name">${item.filename}</span>
-                      <span class="gallery-item-dir">${item.directory}</span>
-                    </div>`;
-      }
-
-      itemEl.innerHTML = mediaHtml + infoHtml;
+      itemEl.innerHTML = mediaHtml;
 
       // Click to open lightbox
       itemEl.addEventListener('click', () => openLightbox(index));
 
       // Handle hover video playback nicely in grid
-      if (item.type === 'video' && currentView === 'grid') {
+      if (item.type === 'video') {
         const vid = itemEl.querySelector('video');
         itemEl.addEventListener('mouseenter', () => vid && vid.play().catch(()=>{}));
         itemEl.addEventListener('mouseleave', () => {
@@ -108,21 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
     btnNext.style.opacity = currentIndex === galleryData.length - 1 ? '0.2' : '1';
     btnNext.style.pointerEvents = currentIndex === galleryData.length - 1 ? 'none' : 'auto';
   }
-
-  // View switchers
-  btnGrid.addEventListener('click', () => {
-    currentView = 'grid';
-    btnGrid.classList.add('active');
-    btnList.classList.remove('active');
-    renderGallery();
-  });
-
-  btnList.addEventListener('click', () => {
-    currentView = 'list';
-    btnList.classList.add('active');
-    btnGrid.classList.remove('active');
-    renderGallery();
-  });
 
   // Lightbox controls
   btnClose.addEventListener('click', closeLightbox);

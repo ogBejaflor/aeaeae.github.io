@@ -68,6 +68,9 @@ function beginSelection(event, scopeEl) {
   // 🚫 Don’t start marquee on the 2nd click of a double-click
   if (event.detail > 1) return;
 
+  // Disable marquee inside the Galery app
+  if (event.target.closest('#gallery-window')) return;
+
   // If user clicked on a folder, folder mousedown handles behavior
   if (event.target.closest('.folder')) return;
 
