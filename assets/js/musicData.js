@@ -1,81 +1,74 @@
 // assets/js/musicData.js
-// Esta é a lista manual da tua música. 
-// Sempre que adicionares música no GitHub dentro da pasta "Catalogo",
-// abre este ficheiro e copia um bloco de álbum para adicionar o novo.
+// GERADO AUTOMATICAMENTE PELO GITHUB ACTION (scripts/build-catalog.js)
+// Não edites manualmente se usas o Automação no GitHub!
 
 window.musicCatalog = [
   {
-    id: "athoms_1",
-    artist: "Athoms",
-    albumTitle: "Synthetic Dreams",
-    // O caminho para a capa do álbum! 
-    coverArt: "Catalogo/Athoms/Synthetic Dreams/cover.jpg",
-    tracks: [
-      { 
-        id: "athoms_t1", 
-        title: "Neon Horizon", 
-        // O caminho para a música
-        file: "Catalogo/Athoms/Synthetic Dreams/01_Neon_Horizon.mp3", 
-        duration: "3:42" 
+    "id": "a_1",
+    "artist": "Bejaflor",
+    "albumTitle": "Bejaflor 3",
+    "coverArt": "Catalogo/Bejaflor/Bejaflor%203/cover.jpg",
+    "tracks": [
+      {
+        "id": "t_1",
+        "title": "Do Inicio Master Final : ins&outs",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/1%20Do%20Inicio%20Master%20Final%20%3A%20ins%26outs.wav",
+        "duration": "--"
       },
-      { 
-        id: "athoms_t2", 
-        title: "Digital Dust", 
-        file: "Catalogo/Athoms/Synthetic Dreams/02_Digital_Dust.mp3", 
-        duration: "4:15" 
-      }
-    ]
-  },
-  
-  {
-    id: "bejaflor_1",
-    artist: "Bejaflor",
-    albumTitle: "Nature's Blueprint",
-    coverArt: "Catalogo/Bejaflor/Nature's Blueprint/cover.jpg",
-    tracks: [
-      { 
-        id: "bejaflor_t1", 
-        title: "Spring Awakening", 
-        file: "Catalogo/Bejaflor/Nature's Blueprint/01_Spring_Awakening.mp3", 
-        duration: "2:50" 
-      }
-    ]
-  },
-
-  {
-    id: "proxyfae_1",
-    artist: "Proxy Fae",
-    albumTitle: "Soft Armor",
-    coverArt: "Catalogo/Proxy Fae/Soft Armor/cover.jpg",
-    tracks: [
-      { 
-        id: "proxyfae_t1", 
-        title: "Velvet Shield", 
-        file: "Catalogo/Proxy Fae/Soft Armor/01_Velvet_Shield.mp3", 
-        duration: "5:01" 
+      {
+        "id": "t_2",
+        "title": "Dividir Master Final : ins&outs",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/2%20Dividir%20Master%20Final%20%3A%20ins%26outs.wav",
+        "duration": "--"
       },
-      { 
-        id: "proxyfae_t2", 
-        title: "Iron Lace", 
-        file: "Catalogo/Proxy Fae/Soft Armor/02_Iron_Lace.mp3", 
-        duration: "3:30" 
+      {
+        "id": "t_3",
+        "title": "DADA Master Final : ins&outs",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/3%20DADA%20Master%20Final%20%3A%20ins%26outs.wav",
+        "duration": "--"
+      },
+      {
+        "id": "t_4",
+        "title": "Perdão Master Final : ins&outs",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/4%20Perd%C3%A3o%20Master%20Final%20%3A%20ins%26outs.wav",
+        "duration": "--"
+      },
+      {
+        "id": "t_5",
+        "title": "E que? Master Final : ins&outs",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/5%20E%20que%3F%20Master%20Final%20%3A%20ins%26outs.wav",
+        "duration": "--"
+      },
+      {
+        "id": "t_6",
+        "title": "A Banda Master Final : ins&outs",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/6%20A%20Banda%20Master%20Final%20%3A%20ins%26outs.wav",
+        "duration": "--"
+      },
+      {
+        "id": "t_7",
+        "title": "Isolamento Master Final : ins&outs",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/7%20Isolamento%20Master%20Final%20%3A%20ins%26outs.wav",
+        "duration": "--"
+      },
+      {
+        "id": "t_8",
+        "title": "Casa Pt.2 Master Final : ins&outs",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/8%20Casa%20Pt.2%20Master%20Final%20%3A%20ins%26outs.wav",
+        "duration": "--"
+      },
+      {
+        "id": "t_9",
+        "title": "Lições Master Final : ins&outs",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/9%20Li%C3%A7%C3%B5es%20Master%20Final%20%3A%20ins%26outs.wav",
+        "duration": "--"
+      },
+      {
+        "id": "t_10",
+        "title": "Hinos Master Final : ins&outs",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/10%20Hinos%20Master%20Final%20%3A%20ins%26outs.wav",
+        "duration": "--"
       }
     ]
   }
-  
-  /* 
-  ===========================================
-  Para adicionares o próximo, copia este bloco e preenche:
-  ===========================================
-  ,{
-    id: "nomedoartista_2",
-    artist: "Nome do Artista",
-    albumTitle: "Nome do Album Novo",
-    coverArt: "Catalogo/Nome do Artista/Nome do Album Novo/cover.jpg",
-    tracks: [
-      { id: "nomedoartista_novo1", title: "Música 1", file: "Catalogo/Nome do Artista/Nome do Album Novo/musica_1.mp3", duration: "1:00" },
-      { id: "nomedoartista_novo2", title: "Música 2", file: "Catalogo/Nome do Artista/Nome do Album Novo/musica_2.mp3", duration: "2:00" }
-    ]
-  }
-  */
 ];

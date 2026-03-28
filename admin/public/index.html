@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>æ Label CMS</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="sidebar">
+    <h2>æ Admin</h2>
+    <nav>
+      <ul>
+        <li><a href="#" class="active" id="nav-music">Music Catalog</a></li>
+        <li><a href="#" id="nav-notify">Notifications</a></li>
+        <li><a href="#" id="nav-deploy">Publish</a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <div class="main-content">
+    <header>
+      <h1>Dashboard</h1>
+    </header>
+
+    <!-- Music Section -->
+    <section id="sec-music" class="tab-content active">
+      <div class="card">
+        <h3>Upload Track & Cover</h3>
+        <form id="upload-form">
+          <div class="form-group">
+            <label for="artist">Artist Name</label>
+            <input type="text" id="artist" name="artist" placeholder="e.g. My Artist" required>
+          </div>
+          <div class="form-group">
+            <label for="album">Album Name</label>
+            <input type="text" id="album" name="album" placeholder="e.g. The Album" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="audio">Audio File (.wav, .mp3)</label>
+            <input type="file" id="audio" name="audio" accept="audio/*">
+            <small>Leave empty to just create folder or upload cover</small>
+          </div>
+
+          <div class="form-group">
+            <label for="cover">Cover Image (.jpg, .png)</label>
+            <input type="file" id="cover" name="cover" accept="image/*">
+            <small>Leave empty if cover already exists</small>
+          </div>
+
+          <button type="submit" class="btn primary">Upload to Catalog</button>
+        </form>
+        <div id="upload-status" class="alert hidden"></div>
+      </div>
+
+      <div class="card mt-20">
+        <h3>Catalog Actions</h3>
+        <p>After uploading files, you must rebuild the catalog to update the system index.</p>
+        <button id="btn-rebuild" class="btn warning">Rebuild Catalog Index</button>
+        <div id="rebuild-status" class="alert hidden mt-10"></div>
+      </div>
+    </section>
+
+    <!-- Notifications Section -->
+    <section id="sec-notify" class="tab-content">
+      <div class="card">
+        <h3>Manage Notifications</h3>
+        <p>Edit the pop-down notifications that appear globally in the OS. Changes are automatically built.</p>
+        
+        <div id="notify-list" class="mt-20"></div>
+
+        <div class="mt-20" style="padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+          <h4>Add New Notification</h4>
+          <form id="notify-form" class="mt-10">
+            <div class="form-group">
+              <label for="n-title">Title</label>
+              <input type="text" id="n-title" placeholder="e.g. New Release" required>
+            </div>
+            <div class="form-group">
+              <label for="n-body">Message Body</label>
+              <input type="text" id="n-body" placeholder="e.g. Soft Armor is out now." required>
+            </div>
+            <button type="submit" class="btn primary">Add Notification</button>
+          </form>
+        </div>
+
+        <div class="mt-20">
+          <button id="btn-save-notify" class="btn warning">Save All & Rebuild</button>
+          <div id="notify-status" class="alert hidden mt-10"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Deployment Section -->
+    <section id="sec-deploy" class="tab-content">
+      <div class="card">
+        <h3>Publish to GitHub</h3>
+        <p>This will permanently push all your local changes (new music, updated catalog, design changes) straight to your live aeaeae.github.io website.</p>
+        
+        <button id="btn-publish" class="btn destructive">Commit & Push to Live</button>
+        <div id="publish-status" class="alert hidden mt-10"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

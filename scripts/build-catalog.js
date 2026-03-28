@@ -39,19 +39,19 @@ function buildCatalog() {
       
       // Construir caminho relativo standard do HTML
       const coverArtPath = coverFile 
-        ? `Catalogo/${artist}/${album}/${coverFile}` 
+        ? `Catalogo/${encodeURIComponent(artist)}/${encodeURIComponent(album)}/${encodeURIComponent(coverFile)}` 
         : 'assets/images/default-album-art.png';
 
       const tracks = [];
       const audioFiles = albumFiles
         .filter(f => /\.(mp3|wav)$/i.test(f))
-        .sort((a,b) => a.localeCompare(b)); // Ordena "01..." primeiro
+        .sort((a,b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })); // Ordena "10" depois de "2"
 
       for (const audioFile of audioFiles) {
         tracks.push({
           id: `t_${globalTrackId++}`,
           title: formatTitle(audioFile),
-          file: `Catalogo/${artist}/${album}/${audioFile}`,
+          file: `Catalogo/${encodeURIComponent(artist)}/${encodeURIComponent(album)}/${encodeURIComponent(audioFile)}`,
           duration: "--" // Duração extraída dinamicamente no frontend ou escondida
         });
       }
