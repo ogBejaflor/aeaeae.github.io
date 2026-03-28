@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>æ Label Website</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Top bar with system information -->
+  <div id="top-bar" role="banner">
+    <span id="battery-icon" aria-label="Battery status">🔋 Loading...</span>
+    <span id="volume-icon" aria-label="Volume level">🔊 50%</span>
+    <span id="date-time" aria-label="Current date and time">Date & Time</span>
+  </div>
+
+  <!-- Notifications root (fixed by CSS; sits above dock/windows) -->
+  <div id="ae-notify-root" aria-live="polite" aria-atomic="false" aria-relevant="additions removals"></div>
+
+  <!-- Desktop area -->
+  <div id="desktop" role="main">
+    <!-- (selection box is created/managed by JS; no static div here) -->
+
+    <!-- Desktop Folders -->
+    <div class="folder window-opener" data-window="artists-window" role="button" tabindex="0" aria-label="Open Artists">
+      <img src="assets/icons/folder-icon.png" alt="Artists Folder" />
+      <span class="folder-label">Artists</span>
+    </div>
+
+    <div class="folder window-opener" data-window="resources-window" role="button" tabindex="0" aria-label="Open Resources">
+      <img src="assets/icons/folder-icon.png" alt="Resources Folder" />
+      <span class="folder-label">Resources</span>
+    </div>
+
+    <div class="folder window-opener" data-window="archive-window" role="button" tabindex="0" aria-label="Open Archive">
+      <img src="assets/icons/folder-icon.png" alt="Archive Folder" />
+      <span class="folder-label">Archive</span>
+    </div>
+  </div>
+
+  <!-- ========================
+       WINDOWS
+  ========================= -->
+
+  <!-- Artists window -->
+  <div id="artists-window" class="window" style="display: none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Artists window"></button>
+        <button class="minimize-button" aria-label="Minimize Artists window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Artists window"></button>
+      </div>
+      <span class="window-title">Artists</span>
+    </div>
+    <div class="window-content">
+      <!-- 15 artist folders (alphabetical) -->
+      <div class="folder window-opener" data-window="adler-jack-window" tabindex="0">
+        <img src="assets/icons/folder-icon.png" alt="Adler Jack" />
+        <span class="folder-label">Adler Jack</span>
+      </div>
+      <div class="folder window-opener" data-window="athoms-window" tabindex="0">
+        <img src="assets/icons/folder-icon.png" alt="Athoms" />
+        <span class="folder-label">Athoms</span>
+      </div>
+      <div class="folder window-opener" data-window="bejaflor-window" tabindex="0">
+        <img src="assets/icons/folder-icon.png" alt="Bejaflor" />
+        <span class="folder-label">Bejaflor</span>
+      </div>
+      <div class="folder window-opener" data-window="carolina-miragaia-window" tabindex="0">
+        <img src="assets/icons/folder-icon.png" alt="Carolina Miragaia" />
+        <span class="folder-label">Carolina Miragaia</span>
+      </div>
+      <div class="folder window-opener" data-window="clauthewitch-window" tabindex="0">
+        <img src="assets/icons/folder-icon.png" alt="Clauthewitch" />
+        <span class="folder-label">Clauthewitch</span>
+      </div>
+      <div class="folder window-opener" data-window="escada-window" tabindex="0">
+        <img src="assets/icons/folder-icon.png" alt="Escada" />
+        <span class="folder-label">Escada</span>
+      </div>
+      <div class="folder window-opener" data-window="fausto-lobo-window" tabindex="0">
+        <img src="assets/icons/folder-icon.png" alt="Fausto Lobo" />
+        <span class="folder-label">Fausto Lobo</span>
+      </div>
+      <div class="folder window-opener" data-window="lil-audio-window" tabindex="0">
+        <img src="assets/icons/folder-icon.png" alt="Lil Audio" />
+        <span class="folder-label">Lil Audio</span>
+      </div>
+      <div class="folder window-opener" data-window="miana-window" tabindex="0">
+        <img src="assets/icons/folder-icon.png" alt="Miana" />
+        <span class="folder-label">Miana</span>
+      </div>
+      <div class="folder window-opener" data-window="nico-window" tabindex="0">
+        <img src="assets/icons/folder-icon.png" alt="Nicø" />
+        <span class="folder-label">Nicø</span>
+      </div>
+      <div class="folder window-opener" data-window="perola-window" tabindex="0">
+        <img src="assets/icons/folder-icon.png" alt="PÉROLA" />
+        <span class="folder-label">PÉROLA</span>
+      </div>
+      <div class="folder window-opener" data-window="phaser-window" tabindex="0">
+        <img src="assets/icons/folder-icon.png" alt="Phaser" />
+        <span class="folder-label">Phaser</span>
+      </div>
+      <div class="folder window-opener" data-window="proxy-fae-window" tabindex="0">
+        <img src="assets/icons/folder-icon.png" alt="Proxy Fae" />
+        <span class="folder-label">Proxy Fae</span>
+      </div>
+      <div class="folder window-opener" data-window="tet3-window" tabindex="0">
+        <img src="assets/icons/folder-icon.png" alt="Tet3" />
+        <span class="folder-label">Tet3</span>
+      </div>
+      <div class="folder window-opener" data-window="xualaura-window" tabindex="0">
+        <img src="assets/icons/folder-icon.png" alt="Xaulaura" />
+        <span class="folder-label">Xaulaura</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resources window -->
+  <div id="resources-window" class="window" style="display: none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Resources window"></button>
+        <button class="minimize-button" aria-label="Minimize Resources window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Resources window"></button>
+      </div>
+      <span class="window-title">Resources</span>
+    </div>
+    <div class="window-content">
+      <!-- Drop folders here; grid layout applies -->
+    </div>
+  </div>
+
+  <!-- Archive window -->
+  <div id="archive-window" class="window" style="display: none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Archive window"></button>
+        <button class="minimize-button" aria-label="Minimize Archive window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Archive window"></button>
+      </div>
+      <span class="window-title">Archive</span>
+    </div>
+    <div class="window-content">
+      <!-- Drop folders here; grid layout applies -->
+    </div>
+  </div>
+
+  <!-- Trash window -->
+  <div id="trash-window" class="window" style="display: none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Trash window"></button>
+        <button class="minimize-button" aria-label="Minimize Trash window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Trash window"></button>
+      </div>
+      <span class="window-title">Trash</span>
+    </div>
+    <div class="window-content">
+      <p>The trash is empty.</p>
+    </div>
+  </div>
+
+  <!-- ========================
+       ARTIST WINDOWS (empty shells for now)
+  ========================= -->
+  <div id="adler-jack-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Adler Jack window"></button>
+        <button class="minimize-button" aria-label="Minimize Adler Jack window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Adler Jack window"></button>
+      </div>
+      <span class="window-title">Adler Jack</span>
+    </div>
+    <div class="window-content"></div>
+  </div>
+
+  <div id="athoms-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Athoms window"></button>
+        <button class="minimize-button" aria-label="Minimize Athoms window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Athoms window"></button>
+      </div>
+      <span class="window-title">Athoms</span>
+    </div>
+    <div class="window-content"></div>
+  </div>
+
+  <div id="bejaflor-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Bejaflor window"></button>
+        <button class="minimize-button" aria-label="Minimize Bejaflor window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Bejaflor window"></button>
+      </div>
+      <span class="window-title">Bejaflor</span>
+    </div>
+    <div class="window-content"></div>
+  </div>
+
+  <div id="carolina-miragaia-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Carolina Miragaia window"></button>
+        <button class="minimize-button" aria-label="Minimize Carolina Miragaia window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Carolina Miragaia window"></button>
+      </div>
+      <span class="window-title">Carolina Miragaia</span>
+    </div>
+    <div class="window-content"></div>
+  </div>
+
+  <div id="clauthewitch-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Clauthewitch window"></button>
+        <button class="minimize-button" aria-label="Minimize Clauthewitch window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Clauthewitch window"></button>
+      </div>
+      <span class="window-title">Clauthewitch</span>
+    </div>
+    <div class="window-content"></div>
+  </div>
+
+  <div id="escada-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Escada window"></button>
+        <button class="minimize-button" aria-label="Minimize Escada window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Escada window"></button>
+      </div>
+      <span class="window-title">Escada</span>
+    </div>
+    <div class="window-content"></div>
+  </div>
+
+  <div id="fausto-lobo-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Fausto Lobo window"></button>
+        <button class="minimize-button" aria-label="Minimize Fausto Lobo window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Fausto Lobo window"></button>
+      </div>
+      <span class="window-title">Fausto Lobo</span>
+    </div>
+    <div class="window-content"></div>
+  </div>
+
+  <div id="lil-audio-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Lil Audio window"></button>
+        <button class="minimize-button" aria-label="Minimize Lil Audio window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Lil Audio window"></button>
+      </div>
+      <span class="window-title">Lil Audio</span>
+    </div>
+    <div class="window-content"></div>
+  </div>
+
+  <div id="miana-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Miana window"></button>
+        <button class="minimize-button" aria-label="Minimize Miana window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Miana window"></button>
+      </div>
+      <span class="window-title">Miana</span>
+    </div>
+    <div class="window-content"></div>
+  </div>
+
+  <div id="nico-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Nicø window"></button>
+        <button class="minimize-button" aria-label="Minimize Nicø window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Nicø window"></button>
+      </div>
+      <span class="window-title">Nicø</span>
+    </div>
+    <div class="window-content"></div>
+  </div>
+
+  <div id="perola-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close PÉROLA window"></button>
+        <button class="minimize-button" aria-label="Minimize PÉROLA window"></button>
+        <button class="fullscreen-button" aria-label="Maximize PÉROLA window"></button>
+      </div>
+      <span class="window-title">PÉROLA</span>
+    </div>
+    <div class="window-content"></div>
+  </div>
+
+  <div id="phaser-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Phaser window"></button>
+        <button class="minimize-button" aria-label="Minimize Phaser window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Phaser window"></button>
+      </div>
+      <span class="window-title">Phaser</span>
+    </div>
+    <div class="window-content"></div>
+  </div>
+
+  <div id="proxy-fae-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Proxy Fae window"></button>
+        <button class="minimize-button" aria-label="Minimize Proxy Fae window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Proxy Fae window"></button>
+      </div>
+      <span class="window-title">Proxy Fae</span>
+    </div>
+    <div class="window-content"></div>
+  </div>
+
+  <div id="tet3-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Tet3 window"></button>
+        <button class="minimize-button" aria-label="Minimize Tet3 window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Tet3 window"></button>
+      </div>
+      <span class="window-title">Tet3</span>
+    </div>
+    <div class="window-content"></div>
+  </div>
+
+  <div id="xualaura-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Xaulaura window"></button>
+        <button class="minimize-button" aria-label="Minimize Xaulaura window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Xaulaura window"></button>
+      </div>
+      <span class="window-title">Xaulaura</span>
+    </div>
+    <div class="window-content"></div>
+  </div>
+
+  <!-- Terminal window -->
+  <div id="terminal-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Terminal window"></button>
+        <button class="minimize-button" aria-label="Minimize Terminal window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Terminal window"></button>
+      </div>
+      <span class="window-title">Terminal</span>
+    </div>
+
+    <div class="window-content">
+      <div class="terminal">
+        <div class="terminal-screen" id="terminal-screen" aria-live="polite"></div>
+        <div class="terminal-input-row">
+          <span class="terminal-prompt" id="terminal-prompt">guest@ae:~$</span>
+          <input id="terminal-input" class="terminal-input" type="text" autocomplete="off" spellcheck="false" aria-label="Terminal input" placeholder="Type a command…" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom dock -->
+  <div id="dock-wrapper">
+    <div id="dock">
+      <div class="dock-item window-opener" data-window="terminal-window" role="button" tabindex="0">
+        <img src="assets/icons/terminal-icon.png" alt="Terminal" />
+      </div>
+      <div class="dock-item window-opener" data-window="audio-player-window" role="button" tabindex="0">
+        <img src="assets/icons/dock-audio.png" alt="Audio Player" />
+      </div>
+      <div class="dock-item window-opener" data-window="files-window" role="button" tabindex="0">
+        <img src="assets/icons/dock-files.png" alt="Files" />
+      </div>
+      <div class="dock-item window-opener" data-window="trash-window" role="button" tabindex="0">
+        <img src="assets/icons/trash-icon.png" alt="Trash" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Audio Player window -->
+  <div id="audio-player-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Audio Player window"></button>
+        <button class="minimize-button" aria-label="Minimize Audio Player window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Audio Player window"></button>
+      </div>
+      <span class="window-title">Audio Player</span>
+    </div>
+    <div class="window-content audio-app-container">
+      <div class="audio-sidebar">
+         <img src="assets/images/player-logo-placeholder.png" alt="Logo" class="audio-logo-img" onerror="this.style.display='none'" />
+         <ul class="audio-nav">
+           <li class="active" data-view="listen-now"><img src="assets/images/nav-listen-icon.png" class="nav-icon" onerror="this.style.display='none'" /> Listen Now</li>
+           <li data-view="artists"><img src="assets/images/nav-artists-icon.png" class="nav-icon" onerror="this.style.display='none'" /> Artists</li>
+           <li data-view="albums"><img src="assets/images/nav-albums-icon.png" class="nav-icon" onerror="this.style.display='none'" /> Albums</li>
+         </ul>
+      </div>
+      
+      <div class="audio-main">
+         <div class="audio-header">
+            <h2 id="audio-view-title">Listen Now</h2>
+         </div>
+         <div class="audio-scroll-area">
+           <div class="audio-grid" id="audio-grid">
+             <!-- JavaScript will inject albums/artists here -->
+           </div>
+           <div class="audio-tracklist" id="audio-tracklist" style="display:none;">
+             <!-- JavaScript injects tracks of selected album here -->
+           </div>
+         </div>
+      </div>
+      
+      <div class="audio-bottom-bar">
+         <div class="now-playing-info">
+            <img src="assets/images/default-album-art.png" id="np-art" alt="Album Art" />
+            <div class="np-text">
+               <div id="np-title">No track playing</div>
+               <div id="np-artist">---</div>
+            </div>
+         </div>
+         
+         <div class="player-controls">
+            <div class="player-buttons">
+               <img src="assets/images/btn-prev.png" id="btn-prev" class="ctrl-btn-img" alt="Prev" />
+               <img src="assets/images/btn-play.png" id="btn-play" class="ctrl-btn-img play-pause" alt="Play" />
+               <img src="assets/images/btn-next.png" id="btn-next" class="ctrl-btn-img" alt="Next" />
+            </div>
+            <div class="player-timeline">
+               <span id="time-current">0:00</span>
+               <div class="progress-bar-container" id="progress-container">
+                  <div class="progress-bar-fill" id="progress-fill"></div>
+               </div>
+               <span id="time-total">0:00</span>
+            </div>
+         </div>
+         
+         <div class="player-volume">
+            <img src="assets/images/icon-volume.png" class="vol-icon" alt="Vol" onerror="this.style.display='none'" />
+            <div class="vol-bar-container" id="vol-container">
+               <div class="vol-bar-fill" id="vol-fill"></div>
+            </div>
+         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Files window (placeholder) -->
+  <div id="files-window" class="window" style="display:none;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close Files window"></button>
+        <button class="minimize-button" aria-label="Minimize Files window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Files window"></button>
+      </div>
+      <span class="window-title">Files</span>
+    </div>
+    <div class="window-content"><p>Coming soon…</p></div>
+  </div>
+
+  <!-- Scripts (order matters) -->
+  <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>
+  <script src="assets/js/clockBattery.js"></script>
+  <script src="assets/js/windowDragResize.js"></script>
+  <script src="assets/js/windowControls.js"></script>
+  <script src="assets/js/trashBehavior.js"></script>
+  <script src="assets/js/folderSelection.js"></script>
+  <script src="assets/js/physics.js"></script>
+  <script src="assets/js/dockBehavior.js"></script>
+  <script src="assets/js/terminal.js"></script>
+
+  <!-- Notifications (new) -->
+  <script src="assets/js/notifications.js"></script>
+
+  <!-- Audio Player Apps -->
+  <script src="assets/js/musicData.js"></script>
+  <script src="assets/js/audioPlayer.js"></script>
+</body>
+</html>
