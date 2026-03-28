@@ -386,9 +386,7 @@
   }
 
   function reseedQueueIfEmpty() {
-    if (!queue.length) {
-      queue = shuffle(DEMO.slice());
-    }
+    // Desativado para que cada notificação apareça apenas uma vez
   }
 
   document.addEventListener('visibilitychange', () => {
