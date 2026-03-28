@@ -6,6 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>æ Label Website</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="assets/css/gallery.css" />
 </head>
 <body>
 
@@ -378,8 +379,8 @@
       <div class="dock-item window-opener" data-window="audio-player-window" role="button" tabindex="0">
         <img src="assets/icons/dock-audio.png" alt="Audio Player" />
       </div>
-      <div class="dock-item window-opener" data-window="files-window" role="button" tabindex="0">
-        <img src="assets/icons/dock-files.png" alt="Files" />
+      <div class="dock-item window-opener" data-window="gallery-window" role="button" tabindex="0">
+        <img src="assets/images/gallery-image.jpg" alt="Galery" />
       </div>
       <div class="dock-item window-opener" data-window="trash-window" role="button" tabindex="0">
         <img src="assets/icons/trash-icon.png" alt="Trash" />
@@ -455,17 +456,34 @@
     </div>
   </div>
 
-  <!-- Files window (placeholder) -->
-  <div id="files-window" class="window" style="display:none;">
+  <!-- Galery window -->
+  <div id="gallery-window" class="window" style="display:none;">
     <div class="window-header">
       <div class="window-controls">
-        <button class="close-button" aria-label="Close Files window"></button>
-        <button class="minimize-button" aria-label="Minimize Files window"></button>
-        <button class="fullscreen-button" aria-label="Maximize Files window"></button>
+        <button class="close-button" aria-label="Close Galery window"></button>
+        <button class="minimize-button" aria-label="Minimize Galery window"></button>
+        <button class="fullscreen-button" aria-label="Maximize Galery window"></button>
       </div>
-      <span class="window-title">Files</span>
+      <span class="window-title">Galery</span>
     </div>
-    <div class="window-content"><p>Coming soon…</p></div>
+    <div class="window-content gallery-app-container">
+      <div class="gallery-controls">
+        <button id="view-grid" class="btn-gallery-view active">Grid View</button>
+        <button id="view-list" class="btn-gallery-view">List View</button>
+      </div>
+      
+      <div id="gallery-content" class="gallery-grid">
+        <!-- Media dynamically inserted here via galleryApp.js -->
+      </div>
+      
+      <!-- Lightbox fully constrained to the window -->
+      <div id="gallery-lightbox" class="gallery-lightbox-overlay" style="display: none;">
+        <button id="lightbox-close" class="lightbox-btn lightbox-close" aria-label="Close Lightbox">&times;</button>
+        <button id="lightbox-prev" class="lightbox-btn lightbox-arrow lightbox-prev" aria-label="Previous">&lsaquo;</button>
+        <div class="lightbox-media-container" id="lightbox-media-container"></div>
+        <button id="lightbox-next" class="lightbox-btn lightbox-arrow lightbox-next" aria-label="Next">&rsaquo;</button>
+      </div>
+    </div>
   </div>
 
   <!-- Scripts (order matters) -->
@@ -483,6 +501,10 @@
   <!-- Notifications (new) -->
   <script src="assets/js/notificationsData.js"></script>
   <script src="assets/js/notifications.js"></script>
+
+  <!-- Galery App -->
+  <script src="assets/js/galleryData.js"></script>
+  <script src="assets/js/galleryApp.js"></script>
 
   <!-- Audio Player Apps -->
   <script src="assets/js/musicData.js"></script>

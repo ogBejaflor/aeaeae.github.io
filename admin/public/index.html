@@ -23,7 +23,7 @@
       <h1>Dashboard</h1>
     </header>
 
-    <!-- Music Section -->
+    <!-- Media Section -->
     <section id="sec-music" class="tab-content active">
       <div class="card">
         <h3>Upload Track & Cover</h3>
@@ -55,9 +55,22 @@
       </div>
 
       <div class="card mt-20">
-        <h3>Catalog Actions</h3>
-        <p>After uploading files, you must rebuild the catalog to update the system index.</p>
-        <button id="btn-rebuild" class="btn warning">Rebuild Catalog Index</button>
+        <h3>Upload Photo/Video (Galery)</h3>
+        <form id="upload-media-form">
+          <div class="form-group">
+            <label for="mediafile">Media File (.jpg, .png, .mp4)</label>
+            <input type="file" id="mediafile" name="mediafile" accept="image/*,video/*" required>
+            <small>Files uploaded here go to the Archive/ folder and will instantly appear in the Galery App.</small>
+          </div>
+          <button type="submit" class="btn primary">Upload to Galery</button>
+        </form>
+        <div id="media-status" class="alert hidden"></div>
+      </div>
+
+      <div class="card mt-20">
+        <h3>Catalog & Galery Actions</h3>
+        <p>After uploading files, you must rebuild the system to update the indices.</p>
+        <button id="btn-rebuild" class="btn warning">Rebuild All Indices</button>
         <div id="rebuild-status" class="alert hidden mt-10"></div>
       </div>
     </section>

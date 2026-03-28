@@ -150,7 +150,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- REBUILD CATALOG ---
+  // --- UPLOAD MEDIA (Galery) ---
+  const mediaForm = document.getElementById('upload-media-form');
+  const mediaStatus = document.getElementById('media-status');
+
+  mediaForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = mediaForm.querySelector('button');
+    btn.disabled = true;
+    btn.innerText = 'Uploading...';
+    
+    mediaStatus.className = 'alert mt-10';
+    mediaStatus.innerText = 'Uploading media, please wait...';
+
+    const formData = new FormData(mediaForm);
+
+    try {
+      const res = await fetch('/api/upload-media', {
+        method: 'POST',
+        body: formData
+      });
+      const json = await res.json();
+      
+      if (json.success) {
+        mediaStatus.className = 'alert success mt-10';
+        mediaStatus.innerText = 'Upload successful! Remember to Rebuild.';
+        mediaForm.reset();
+      } else {
+        throw new Error(json.message || 'Unknown error');
+      }
+    } catch (err) {
+      mediaStatus.className = 'alert error mt-10';
+      mediaStatus.innerText = 'Upload failed: ' + err.message;
+    } finally {
+      btn.disabled = false;
+      btn.innerText = 'Upload to Galery';
+    }
+  });
+
+  // --- REBUILD CATALOG & GALERY ---
   const btnRebuild = document.getElementById('btn-rebuild');
   const rebuildStatus = document.getElementById('rebuild-status');
 

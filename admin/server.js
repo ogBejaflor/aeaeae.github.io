@@ -75,10 +75,38 @@ app.post('/api/upload-track', upload.fields([{ name: 'audio', maxCount: 1 }, { n
 });
 
 // ----------------------------------------
+// Upload General Media (Galery / Archive)
+// ----------------------------------------
+const archiveDir = path.join(rootDir, 'Archive');
+
+const mediaStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    if (!fs.existsSync(archiveDir)) {
+      fs.mkdirSync(archiveDir, { recursive: true });
+    }
+    cb(null, archiveDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  }
+});
+const uploadMedia = multer({ storage: mediaStorage });
+
+app.post('/api/upload-media', uploadMedia.single('mediafile'), (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded.' });
+    res.json({ success: true, message: 'Media uploaded to Archive!' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Media upload failed.', error: err.message });
+  }
+});
+
+// ----------------------------------------
 // Trigger Scripts
 // ----------------------------------------
 app.post('/api/build-catalog', (req, res) => {
-  exec('node scripts/build-catalog.js', { cwd: rootDir }, (err, stdout, stderr) => {
+  exec('node scripts/build-catalog.js && node scripts/build-gallery.js', { cwd: rootDir }, (err, stdout, stderr) => {
     if (err) {
       console.error(err);
       return res.status(500).json({ success: false, output: stderr });
