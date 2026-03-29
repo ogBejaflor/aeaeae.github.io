@@ -115,7 +115,17 @@
     if (dragPayload.source === 'gallery') {
       const galleryWindow = dropTarget ? dropTarget.closest('#gallery-window') : null;
       if (!galleryWindow) {
-        dropToDesktop(dragPayload.data, e.clientX, e.clientY);
+        const folderWin = dropTarget ? dropTarget.closest('.window:not(#gallery-window):not(#preview-window):not(#trash-window):not(#terminal-window)') : null;
+        
+        if (folderWin) {
+          const contentEl = folderWin.querySelector('.window-content');
+          if (contentEl) {
+             dropToFileContainer(dragPayload.data, e.clientX, e.clientY, contentEl);
+          }
+        } else {
+           dropToFileContainer(dragPayload.data, e.clientX, e.clientY, document.getElementById('desktop'));
+        }
+        
         if (window.aeGalleryAPI) {
            window.aeGalleryAPI.removeItem(dragPayload.el);
         }
@@ -123,9 +133,8 @@
     }
   }
 
-  function dropToDesktop(itemData, x, y) {
-    const desktop = document.getElementById('desktop');
-    if (!desktop) return;
+  function dropToFileContainer(itemData, x, y, container) {
+    if (!container) return;
 
     const fileEl = document.createElement('div');
     fileEl.className = 'folder file-item';
@@ -146,11 +155,16 @@
     
     fileEl.innerHTML = mediaHtml + labelHtml;
     
-    fileEl.style.position = 'absolute';
-    fileEl.style.left = (x - 32) + 'px';
-    fileEl.style.top = (y - 32) + 'px';
+    // Convert screen coordinates to container-relative coordinates
+    const rect = container.getBoundingClientRect();
+    const relX = x - rect.left - 32;
+    const relY = y - rect.top - 32;
     
-    desktop.appendChild(fileEl);
+    fileEl.style.position = 'absolute';
+    fileEl.style.left = relX + 'px';
+    fileEl.style.top = relY + 'px';
+    
+    container.appendChild(fileEl);
 
     // Bind standard folder drag behaviors for when physics is disabled
     fileEl.addEventListener('dragstart', e => e.preventDefault());
@@ -162,12 +176,9 @@
     });
 
     if (window.physics && window.PHYSICS_ON) {
-       window.dispatchEvent(new CustomEvent('physics-ensure-scope', { detail: { el: desktop } }));
+       window.dispatchEvent(new CustomEvent('physics-ensure-scope', { detail: { el: container } }));
     } else {
        // if physics is off, make it absolute so it stays there
-       fileEl.style.position = 'absolute';
-       fileEl.style.left = (x - 32) + 'px';
-       fileEl.style.top = (y - 32) + 'px';
        fileEl.style.margin = '0';
     }
   }
@@ -175,8 +186,8 @@
   // --- Track Desktop .file-item dragging BACK TO GALLERY ---
   let desktopFileDragging = null;
   document.addEventListener('mousedown', (e) => {
-    const fileItem = e.target.closest('#desktop > .folder.file-item');
-    if (fileItem) {
+    const fileItem = e.target.closest('#desktop > .folder.file-item, .window-content > .folder.file-item');
+    if (fileItem && !fileItem.closest('#gallery-window')) {
        desktopFileDragging = fileItem;
     }
   });
@@ -188,6 +199,8 @@
        desktopFileDragging.style.display = ''; // restore
        
        const galleryWin = dropTarget ? dropTarget.closest('#gallery-window') : null;
+       const folderWin = dropTarget ? dropTarget.closest('.window:not(#gallery-window):not(#preview-window):not(#trash-window):not(#terminal-window)') : null;
+       const trashWin = dropTarget ? dropTarget.closest('#trash-window') : null;
        
        if (galleryWin && window.aeGalleryAPI && window.aeGalleryAPI.isOpen()) {
          try {
@@ -200,6 +213,26 @@
            desktopFileDragging.remove();
          } catch(err) {
            console.error("Failed to parse desktop file data", err);
+         }
+       } else if (trashWin) {
+          // If dropped on trash (already handled by Trash UI logic, do nothing here to let trash take it)
+       } else if (folderWin) {
+         // Dropped into a folder window
+         const contentEl = folderWin.querySelector('.window-content');
+         if (contentEl && !contentEl.contains(desktopFileDragging)) {
+            const rect = contentEl.getBoundingClientRect();
+            desktopFileDragging.style.left = (e.clientX - rect.left - 32) + 'px';
+            desktopFileDragging.style.top = (e.clientY - rect.top - 32) + 'px';
+            contentEl.appendChild(desktopFileDragging);
+         }
+       } else {
+         // Dropped onto desktop
+         const desktopEl = document.getElementById('desktop');
+         if (desktopEl && !desktopEl.contains(desktopFileDragging)) {
+            const rect = desktopEl.getBoundingClientRect();
+            desktopFileDragging.style.left = (e.clientX - rect.left - 32) + 'px';
+            desktopFileDragging.style.top = (e.clientY - rect.top - 32) + 'px';
+            desktopEl.appendChild(desktopFileDragging);
          }
        }
        desktopFileDragging = null;
