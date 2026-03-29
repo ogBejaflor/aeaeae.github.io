@@ -298,9 +298,12 @@ body {
 #trash-window .trash-item .restore-btn {
   border: 3px solid rgba(255,255,255,0.2);
   background: rgba(163, 163, 163, 0.849);
-  color: #ffffff00;
+  color: #ffffff; /* visible text */
   border-radius: 6px;
   cursor: pointer;
+  padding: 4px 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
 }
 
 /* =======================
@@ -407,6 +410,8 @@ body {
   align-items: center;
   cursor: pointer;
   transition: transform 0.3s ease;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .dock-item.hovered { transform: scale(1.7); }
