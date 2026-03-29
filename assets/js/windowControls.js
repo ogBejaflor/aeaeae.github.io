@@ -179,17 +179,38 @@ function addMinimizedWindowToDock(windowId) {
 
   const windowEl = document.getElementById(windowId);
   const titleText = windowEl?.querySelector('.window-title')?.textContent || 'Window';
-  // Try to infer an icon; fall back to folder icon
-  const iconInHeader = windowEl?.querySelector('.window-header img');
-  const iconSrc = iconInHeader ? iconInHeader.src : 'assets/icons/folder-icon.png';
+  
+  let iconSrc = 'assets/icons/folder-icon.png';
+  let isVideo = false;
+
+  if (windowId === 'preview-window') {
+     const previewImage = windowEl?.querySelector('.window-content img');
+     const previewVideo = windowEl?.querySelector('.window-content video');
+     if (previewImage) {
+        iconSrc = previewImage.src;
+     } else if (previewVideo) {
+        iconSrc = previewVideo.src;
+        isVideo = true;
+     }
+  } else {
+     const iconInHeader = windowEl?.querySelector('.window-header img');
+     if (iconInHeader) {
+        iconSrc = iconInHeader.src;
+     }
+  }
 
   // Create minimized folder-style icon
   const minimizedWindow = document.createElement('div');
   minimizedWindow.classList.add('dock-item', 'minimized-window');
   minimizedWindow.setAttribute('data-window', windowId);
+  
+  const mediaHtml = isVideo 
+    ? `<video src="${iconSrc}" alt="${titleText}" muted></video>`
+    : `<img src="${iconSrc}" alt="${titleText}" />`;
+
   minimizedWindow.innerHTML = `
     <div class="minimized-folder">
-      <img src="${iconSrc}" alt="${titleText}" />
+      ${mediaHtml}
       <div class="minimized-label">${titleText}</div>
     </div>
   `;
