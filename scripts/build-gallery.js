@@ -7,7 +7,7 @@ const scanDirs = ['Archive', 'Catalogo'];
 const outPath = path.join(rootDir, 'assets', 'js', 'galleryData.js');
 
 const imageExts = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp']);
-const videoExts = new Set(['.mp4', '.webm', '.ogg']);
+const videoExts = new Set(['.mp4', '.mov', '.webm', '.ogg']);
 
 const galleryMedia = [];
 

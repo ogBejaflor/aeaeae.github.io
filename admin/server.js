@@ -81,10 +81,14 @@ const archiveDir = path.join(rootDir, 'Archive');
 
 const mediaStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    if (!fs.existsSync(archiveDir)) {
-      fs.mkdirSync(archiveDir, { recursive: true });
+    let targetDir = archiveDir;
+    if (req.body.mediafolder) {
+      targetDir = path.join(archiveDir, req.body.mediafolder.trim());
     }
-    cb(null, archiveDir);
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+    cb(null, targetDir);
   },
   filename: (req, file, cb) => {
     cb(null, file.originalname);

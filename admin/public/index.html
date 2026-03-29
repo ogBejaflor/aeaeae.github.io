@@ -58,9 +58,14 @@
         <h3>Upload Photo/Video (Galery)</h3>
         <form id="upload-media-form">
           <div class="form-group">
-            <label for="mediafile">Media File (.jpg, .png, .mp4)</label>
+            <label for="mediafolder">Sub-folder in Archive (Optional)</label>
+            <input type="text" id="mediafolder" name="mediafolder" placeholder="e.g. Events, Covers, Videos">
+            <small>If left blank, the file goes directly into the main Archive/ folder.</small>
+          </div>
+          <div class="form-group">
+            <label for="mediafile">Media File (.jpg, .png, .mp4, .mov)</label>
             <input type="file" id="mediafile" name="mediafile" accept="image/*,video/*" required>
-            <small>Files uploaded here go to the Archive/ folder and will instantly appear in the Galery App.</small>
+            <small>Files uploaded here automatically organize into the Gallery App.</small>
           </div>
           <button type="submit" class="btn primary">Upload to Galery</button>
         </form>

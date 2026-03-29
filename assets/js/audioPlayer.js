@@ -317,6 +317,21 @@
   audio.volume = 0.5;
   volFill.style.width = '50%';
   
+  // Spacebar Play/Pause
+  window.addEventListener('keydown', (e) => {
+    // Ignore if typing in an input or textarea
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+      return;
+    }
+    
+    if (e.code === 'Space') {
+      e.preventDefault(); // Prevent scrolling down
+      if (queue.length > 0) {
+        togglePlay();
+      }
+    }
+  });
+
   // Boot
   renderListenNowView();
 })();
