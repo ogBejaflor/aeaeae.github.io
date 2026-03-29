@@ -238,13 +238,18 @@
     playNext();
   });
   
+  let isDraggingProgress = false;
+  let isDraggingVolume = false;
+
   audio.addEventListener('timeupdate', () => {
     if (!audio.duration) return;
     const current = audio.currentTime;
     const total = audio.duration;
     
-    progressFill.style.width = `${(current / total) * 100}%`;
-    timeCurrent.textContent = formatTime(current);
+    if (!isDraggingProgress) {
+      progressFill.style.width = `${(current / total) * 100}%`;
+      timeCurrent.textContent = formatTime(current);
+    }
     timeTotal.textContent = formatTime(total);
   });
   
@@ -255,19 +260,52 @@
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   }
   
-  // 4. Scrubbing & Volume
-  progressContainer.addEventListener('click', (e) => {
+  // 4. Scrubbing & Volume (Drag Support)
+  function updateProgressDrag(e) {
     if (!audio.duration) return;
     const rect = progressContainer.getBoundingClientRect();
-    const pos = (e.clientX - rect.left) / rect.width;
-    audio.currentTime = pos * audio.duration;
+    let pos = (e.clientX - rect.left) / rect.width;
+    pos = Math.max(0, Math.min(1, pos));
+    progressFill.style.width = `${pos * 100}%`;
+    timeCurrent.textContent = formatTime(pos * audio.duration);
+  }
+
+  progressContainer.addEventListener('mousedown', (e) => {
+    isDraggingProgress = true;
+    updateProgressDrag(e);
   });
   
-  volContainer.addEventListener('click', (e) => {
+  function updateVolumeDrag(e) {
     const rect = volContainer.getBoundingClientRect();
-    const pos = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    let pos = (e.clientX - rect.left) / rect.width;
+    pos = Math.max(0, Math.min(1, pos));
     audio.volume = pos;
     volFill.style.width = `${pos * 100}%`;
+  }
+
+  volContainer.addEventListener('mousedown', (e) => {
+    isDraggingVolume = true;
+    updateVolumeDrag(e);
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (isDraggingProgress) updateProgressDrag(e);
+    if (isDraggingVolume) updateVolumeDrag(e);
+  });
+
+  window.addEventListener('mouseup', (e) => {
+    if (isDraggingProgress) {
+      if (audio.duration) {
+        const rect = progressContainer.getBoundingClientRect();
+        let pos = (e.clientX - rect.left) / rect.width;
+        pos = Math.max(0, Math.min(1, pos));
+        audio.currentTime = pos * audio.duration;
+      }
+      isDraggingProgress = false;
+    }
+    if (isDraggingVolume) {
+      isDraggingVolume = false;
+    }
   });
   
   // Attach buttons

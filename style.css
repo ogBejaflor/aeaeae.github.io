@@ -610,8 +610,8 @@ body {
 }
 
 .audio-nav li.active {
-  background: rgba(110, 231, 242, 0.2);
-  color: #6ee7f2;
+  background: rgba(255, 42, 157, 0.2);
+  color: #ff2a9d;
 }
 
 .nav-icon {
@@ -753,8 +753,8 @@ body {
 }
 
 .track-play-btn {
-  background: #6ee7f2;
-  color: #111;
+  background: #ff2a9d;
+  color: #fff;
   border: none;
   padding: 8px 24px;
   border-radius: 20px;
@@ -796,10 +796,10 @@ body {
 
 /* Playing State Indicator for Tracklist */
 .track-item.playing .track-name {
-  color: #6ee7f2;
+  color: #ff2a9d;
 }
 .track-item.playing .track-num {
-  color: #6ee7f2;
+  color: #ff2a9d;
 }
 
 /* Bottom Player Bar */
@@ -917,9 +917,10 @@ body {
 .progress-bar-fill {
   height: 100%;
   width: 0%;
-  background: #fff;
+  background: #ff2a9d;
   border-radius: 2px;
   pointer-events: none;
+  position: relative;
 }
 
 .progress-bar-fill::after {
@@ -930,7 +931,7 @@ body {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #fff;
+  background: #ff2a9d;
   opacity: 0;
   transition: opacity 0.2s ease;
 }
@@ -965,7 +966,7 @@ body {
 .vol-bar-fill {
   height: 100%;
   width: 50%;
-  background: #fff;
+  background: #ff2a9d;
   border-radius: 2px;
   pointer-events: none;
 }
