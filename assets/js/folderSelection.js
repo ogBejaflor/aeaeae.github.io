@@ -600,3 +600,5 @@ bindFolderHandlers();
    bindFolderHandlers(containerEl);
    attachWindowContentSelectionHandlers();
 */
+window.bindFolderHandlers = bindFolderHandlers;
+window.startFolderDrag = startFolderDrag;

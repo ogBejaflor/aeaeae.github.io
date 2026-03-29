@@ -65,9 +65,37 @@ document.querySelectorAll('.folder').forEach(folder => {
   });
 });
 
+// Preview App logic
+window.openPreview = function(mediaData) {
+  const previewWin = document.getElementById('preview-window');
+  const previewContent = document.getElementById('preview-content');
+  if (!previewWin || !previewContent) return;
+  
+  previewWin.querySelector('.window-title').textContent = mediaData.filename || 'Preview';
+  
+  if (mediaData.type === 'image') {
+     previewContent.innerHTML = `<img src="${mediaData.src}" style="max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 4px;" draggable="false" />`;
+  } else {
+     previewContent.innerHTML = `<video src="${mediaData.src}" controls autoplay loop style="max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-radius: 4px;"></video>`;
+  }
+  
+  openWindowById('preview-window');
+};
+
 // Open selected folder or restore minimized window
 function openFolder(folder) {
   const windowId = folder.getAttribute('data-window');
+  
+  if (!windowId && folder.classList.contains('file-item')) {
+    try {
+      const mediaData = JSON.parse(folder.dataset.mediaData || "null");
+      if (mediaData) window.openPreview(mediaData);
+    } catch(err) {
+      console.error("Preview error:", err);
+    }
+    return;
+  }
+
   const windowElement = document.getElementById(windowId);
   const minimizedWindow = document.querySelector(`.minimized-window[data-window="${windowId}"]`);
   if (!windowElement) return;

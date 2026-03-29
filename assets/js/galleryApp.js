@@ -121,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     folderItems.forEach((item, index) => {
       const itemEl = document.createElement('div');
       itemEl.className = 'gallery-item';
+      itemEl.dataset.index = index;
       
       let mediaHtml = '';
       if (item.type === 'image') {
@@ -204,4 +205,51 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial render
   buildFolders();
   renderFolders();
+
+  // --- API for Inter-App Drag and Drop ---
+  window.aeGalleryAPI = {
+    isOpen: () => {
+      // It's open if it's visible, but actually we can just check if currentFolderName is not null to drop into it
+      return currentFolderName !== null;
+    },
+    getItemByEl: (el) => {
+      if (!currentFolderName) return null;
+      const arr = folders[currentFolderName];
+      // We need the index. Since renderGrid doesn't set dataset.index, let's fix renderGrid.
+      const indexStr = el.dataset.index;
+      if (indexStr === undefined) return null;
+      const i = parseInt(indexStr);
+      return arr[i] || null;
+    },
+    removeItem: (el) => {
+      if (!currentFolderName) return;
+      const indexStr = el.dataset.index;
+      if (indexStr === undefined) return;
+      const i = parseInt(indexStr);
+      
+      const arr = folders[currentFolderName];
+      arr.splice(i, 1);
+      
+      // Also remove from master galleryData if we want to be thorough
+      const masterIndex = galleryData.findIndex(item => item === arr[i]);
+      if (masterIndex > -1) galleryData.splice(masterIndex, 1);
+
+      // Re-render
+      renderGrid(currentFolderName);
+    },
+    addItem: (itemData) => {
+      if (!currentFolderName) return; // user must be inside a folder to drop!
+      
+      const arr = folders[currentFolderName];
+      arr.push(itemData);
+      
+      // Also add back to master if missing
+      if (!galleryData.includes(itemData)) {
+        galleryData.push(itemData);
+      }
+
+      // Re-render
+      renderGrid(currentFolderName);
+    }
+  };
 });

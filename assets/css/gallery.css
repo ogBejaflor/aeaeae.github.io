@@ -125,6 +125,8 @@
   cursor: pointer;
   position: relative;
   transition: transform 0.2s, box-shadow 0.2s;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .gallery-grid .gallery-item:hover {
@@ -152,6 +154,13 @@
   justify-content: center;
   backdrop-filter: blur(4px);
 }
+
+/* Prevent text selection in Gallery UI */
+.gallery-grid, .gallery-app-container, .gallery-content, .gallery-window, .gallery-back-btn, .gallery-folder, .gallery-folder-title {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 
 .lightbox-media-container {
   width: 80%;

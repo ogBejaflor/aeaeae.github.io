@@ -82,6 +82,8 @@ body {
   align-items: center;
   width: 100px;
   cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .folder img {
@@ -109,6 +111,33 @@ body {
 .folder-target {
   outline: 2px dashed rgba(110, 231, 242, 0.6);
   border-radius: 10px;
+}
+
+/* File Item Desktop Photos */
+.file-item {
+  position: absolute;
+  width: 80px; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.file-item .file-thumb {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #333;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+  pointer-events: none;
+}
+.file-item .folder-label {
+  margin-top: 4px;
+  max-width: 90px;
+  word-break: break-word;
+  text-align: center;
 }
 
 /* =======================
