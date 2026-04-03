@@ -21,19 +21,27 @@ dockItems.forEach(item => {
 
 // Show and hide the dock when the mouse is near the bottom
 const dockWrapper = document.getElementById('dock-wrapper');
+
+// Initial 1-second visibility
+let initialShowDone = false;
+dockWrapper.classList.add('show');
+
+setTimeout(() => {
+    initialShowDone = true;
+    dockWrapper.classList.remove('show');
+}, 1500); // 1.5s total to allow for a clearer visibility window before sliding down
+
 window.addEventListener('mousemove', (event) => {
+    // Prevent mouse moves from hiding the dock during its initial spotlight
+    if (!initialShowDone) return;
+
     const windowHeight = window.innerHeight;
     const mouseY = event.clientY;
 
-    // Log current mouse Y position for debugging
-    console.log("Mouse Y position:", mouseY);
-
     // Show the dock when the mouse is near the bottom
     if (windowHeight - mouseY < 100) {
-        console.log("Adding .show class to dock.");
         dockWrapper.classList.add('show');
     } else {
-        console.log("Removing .show class from dock.");
         dockWrapper.classList.remove('show');
     }
 });
