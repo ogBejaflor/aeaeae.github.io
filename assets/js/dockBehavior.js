@@ -29,7 +29,7 @@ dockWrapper.classList.add('show');
 setTimeout(() => {
     initialShowDone = true;
     dockWrapper.classList.remove('show');
-}, 1500); // 1.5s total to allow for a clearer visibility window before sliding down
+}, 2500); // 2.5s total to allow for a clearer visibility window before sliding down
 
 window.addEventListener('mousemove', (event) => {
     // Prevent mouse moves from hiding the dock during its initial spotlight
