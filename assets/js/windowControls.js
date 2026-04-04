@@ -183,7 +183,14 @@ function addMinimizedWindowToDock(windowId) {
   let iconSrc = 'assets/icons/folder-icon.png';
   let isVideo = false;
 
-  if (windowId === 'preview-window') {
+  // Static mapped icons for known apps
+  if (windowId === 'audio-player-window') {
+     iconSrc = 'assets/images/mini-audio.png';
+  } else if (windowId === 'terminal-window') {
+     iconSrc = 'assets/images/mini-terminal.png';
+  } else if (windowId === 'gallery-window') {
+     iconSrc = 'assets/images/mini-gallery.png';
+  } else if (windowId === 'preview-window') {
      const previewImage = windowEl?.querySelector('.window-content img');
      const previewVideo = windowEl?.querySelector('.window-content video');
      if (previewImage) {
@@ -198,22 +205,27 @@ function addMinimizedWindowToDock(windowId) {
         iconSrc = iconInHeader.src;
      }
   }
-
+  
   // Create minimized folder-style icon
   const minimizedWindow = document.createElement('div');
   minimizedWindow.classList.add('dock-item', 'minimized-window');
   minimizedWindow.setAttribute('data-window', windowId);
   
+  const folderWrapper = document.createElement('div');
+  folderWrapper.className = 'minimized-folder';
+  
   const mediaHtml = isVideo 
     ? `<video src="${iconSrc}" alt="${titleText}" muted></video>`
     : `<img src="${iconSrc}" alt="${titleText}" />`;
+    
+  folderWrapper.innerHTML = mediaHtml;
+  
+  const labelDiv = document.createElement('div');
+  labelDiv.className = 'minimized-label';
+  labelDiv.textContent = titleText;
+  folderWrapper.appendChild(labelDiv);
 
-  minimizedWindow.innerHTML = `
-    <div class="minimized-folder">
-      ${mediaHtml}
-      <div class="minimized-label">${titleText}</div>
-    </div>
-  `;
+  minimizedWindow.appendChild(folderWrapper);
 
   // Insert BEFORE Trash and after other minimized windows
   const trashDockItem = dock.querySelector('.dock-item[data-window="trash-window"]');
