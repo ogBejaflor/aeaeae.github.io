@@ -244,6 +244,11 @@ function addMinimizedWindowToDock(windowId) {
       dock.appendChild(minimizedWindow);
   }
 
+  // Attach universal dock item hover behaviors 
+  if (typeof window.attachDockItemHover === 'function') {
+      window.attachDockItemHover(minimizedWindow);
+  }
+
   // Click to restore
   minimizedWindow.addEventListener('click', function () {
     restoreMinimizedWindow(this, document.getElementById(windowId));

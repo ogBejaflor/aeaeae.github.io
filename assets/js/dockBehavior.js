@@ -1,7 +1,4 @@
-const dockItems = document.querySelectorAll('.dock-item');
-
-// Hover effect on dock items
-dockItems.forEach(item => {
+window.attachDockItemHover = function(item) {
     item.addEventListener('mouseenter', () => {
         item.classList.add('hovered');
         const prevSibling = item.previousElementSibling;
@@ -17,7 +14,10 @@ dockItems.forEach(item => {
         if (prevSibling) prevSibling.classList.remove('adjacent');
         if (nextSibling) nextSibling.classList.remove('adjacent');
     });
-});
+};
+
+const dockItems = document.querySelectorAll('.dock-item');
+dockItems.forEach(item => window.attachDockItemHover(item));
 
 // Show and hide the dock when the mouse is near the bottom
 const dockWrapper = document.getElementById('dock-wrapper');
