@@ -390,7 +390,7 @@ body {
 ======================= */
 #dock-wrapper {
   background-image: url('assets/icons/dock-background.png');
-  background-size: contain;
+  background-size: 100% 100%;
   background-repeat: no-repeat;
   background-position: center;
   padding: 20px 40px;
@@ -437,11 +437,11 @@ body {
 
 /* --- Folder-style minimized windows --- */
 .dock-item.minimized-window {
-  width: 90px;
-  height: 80px;
+  width: 80px;
+  height: auto;
   flex-direction: column;
   justify-content: flex-start;
-  margin-left: 5%;
+  margin-top: 20px;
   cursor: pointer;
   transition: transform 0.2s ease;
   text-align: center;

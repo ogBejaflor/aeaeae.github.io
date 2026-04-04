@@ -215,20 +215,22 @@ function addMinimizedWindowToDock(windowId) {
     </div>
   `;
 
-  // Insert to the RIGHT of Trash and after other minimized windows
+  // Insert BEFORE Trash and after other minimized windows
   const trashDockItem = dock.querySelector('.dock-item[data-window="trash-window"]');
   const minimizedItems = Array.from(dock.querySelectorAll('.minimized-window'));
   const lastMinimized = minimizedItems[minimizedItems.length - 1] || null;
 
-  const insertAfter = (refEl, newEl) => {
-    if (!refEl) dock.appendChild(newEl);
-    else if (refEl.nextSibling) dock.insertBefore(newEl, refEl.nextSibling);
-    else dock.appendChild(newEl);
-  };
-
-  if (lastMinimized) insertAfter(lastMinimized, minimizedWindow);
-  else if (trashDockItem) insertAfter(trashDockItem, minimizedWindow);
-  else dock.appendChild(minimizedWindow);
+  if (lastMinimized) {
+      if (lastMinimized.nextSibling) {
+          dock.insertBefore(minimizedWindow, lastMinimized.nextSibling);
+      } else {
+          dock.appendChild(minimizedWindow);
+      }
+  } else if (trashDockItem) {
+      dock.insertBefore(minimizedWindow, trashDockItem);
+  } else {
+      dock.appendChild(minimizedWindow);
+  }
 
   // Click to restore
   minimizedWindow.addEventListener('click', function () {
