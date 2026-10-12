@@ -7,6 +7,9 @@
   <title>æ Label Website</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="assets/css/gallery.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" />
   <link rel="stylesheet" href="assets/css/player.css" />
   <script type="importmap">
     {
@@ -410,14 +413,14 @@
     <div class="window-content ae-player" id="ae-player">
       <!-- 3D jewel case stage (assets/js/cdCase.js draws into this) -->
       <section class="aep-stage" id="aep-stage" aria-label="Disc">
-        <p class="aep-hint" id="aep-hint" aria-live="polite">tap the case to open · drag to turn it</p>
+        <p class="aep-hint" id="aep-hint" aria-live="polite">Tap to open · Drag to turn</p>
         <div class="aep-picker" id="aep-picker" role="listbox" aria-label="Choose a disc"></div>
       </section>
 
       <!-- Album, tracks and transport -->
       <aside class="aep-panel">
         <header class="aep-meta">
-          <span class="aep-eyebrow">æ · disc <span id="aep-disc-num">1</span></span>
+          <span class="aep-eyebrow">æ<span id="aep-disc-num">001</span> <span class="aep-eyebrow-sep">/</span> CD</span>
           <h2 class="aep-album" id="aep-album">—</h2>
           <p class="aep-artist" id="aep-artist"></p>
           <p class="aep-stats" id="aep-stats"></p>
@@ -427,7 +430,7 @@
 
         <footer class="aep-transport">
           <div class="aep-now">
-            <span class="aep-now-title" id="aep-now-title">Pick a disc and press play</span>
+            <span class="aep-now-title" id="aep-now-title">Nothing playing</span>
             <span class="aep-now-sub" id="aep-now-sub"></span>
           </div>
           <div class="aep-timeline">

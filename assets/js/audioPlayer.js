@@ -129,10 +129,10 @@ function syncSpin() {
 function updateHint() {
   let text;
   const playingHere = state.playingAlbum === state.shownAlbum && !audio.paused;
-  if (!state.shownAlbum) text = 'no discs in the catalogue yet';
-  else if (playingHere) text = 'spinning · tap the disc to pause';
-  else if (stage && stage.isOpen) text = 'tap the disc to play · tap the case to close';
-  else text = 'tap the case to open · drag to turn it';
+  if (!state.shownAlbum) text = 'No discs in the catalogue yet';
+  else if (playingHere) text = 'Playing · Tap the disc to pause';
+  else if (stage && stage.isOpen) text = 'Tap the disc to play · Tap the case to close';
+  else text = 'Tap to open · Drag to turn';
   els.hint.textContent = text;
 }
 
@@ -178,7 +178,7 @@ function showAlbum(album) {
   else if (els.root.classList.contains('aep-flat')) renderFlatDisc();
   // (if the 3D stage is still loading, initStage() shows the album once it's ready)
 
-  els.discNum.textContent = String(catalog.indexOf(album) + 1);
+  els.discNum.textContent = String(catalog.indexOf(album) + 1).padStart(3, '0');
   els.album.textContent = album.albumTitle;
   els.artist.textContent = album.artist;
   renderTracks();

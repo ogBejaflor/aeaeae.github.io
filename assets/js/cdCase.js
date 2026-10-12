@@ -204,7 +204,7 @@ function makePlastic({
   opacity = 0.03,      // body coverage when seen face-on
   edge = 0.7,          // extra coverage at grazing angles
   power = 2.2,         // how quickly coverage rises toward the edge
-  body = 0x7d8a9c,     // colour seen through thick/grazing plastic
+  body = 0x6f737a,     // colour seen through thick/grazing plastic
   spec = 1.0,          // reflection strength
   coat = 1,            // clearcoat layer
   irid = 0.45,         // thin-film rainbow sheen
@@ -430,8 +430,8 @@ function buildStudioEnv() {
       depthWrite: false,
       uniforms: {
         top: { value: new THREE.Color(0xffffff) },
-        mid: { value: new THREE.Color(0xdde9f6) },
-        bottom: { value: new THREE.Color(0x7d8ea3) },
+        mid: { value: new THREE.Color(0xeceef1) },
+        bottom: { value: new THREE.Color(0x8b8f96) },
       },
       vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
       fragmentShader: `uniform vec3 top; uniform vec3 mid; uniform vec3 bottom; varying vec3 vDir;
@@ -454,25 +454,25 @@ function buildStudioEnv() {
   // softboxes
   box(30, 10, 0xffffff, 2.4, [-18, 22, 22], [0, 0, 0]);
   box(8, 36, 0xffffff, 1.8, [34, 4, 14], [0, 0, 0]);
-  box(40, 6, 0xf1f6ff, 1.4, [0, -10, 40], [0, 0, 0]);
+  box(40, 6, 0xffffff, 1.4, [0, -10, 40], [0, 0, 0]);
   // dark flags (give the clear edges something to reflect)
-  box(14, 40, 0x1c2430, 1, [-36, 0, 6], [0, 0, 0]);
-  box(30, 10, 0x2a3442, 1, [10, -26, 20], [0, 0, 0]);
-  box(16, 16, 0x223040, 1, [20, 24, -10], [0, 0, 0]);
+  box(14, 40, 0x1b1c1f, 1, [-36, 0, 6], [0, 0, 0]);
+  box(30, 10, 0x2a2b2f, 1, [10, -26, 20], [0, 0, 0]);
+  box(16, 16, 0x222326, 1, [20, 24, -10], [0, 0, 0]);
   return env;
 }
 
 // ---------------------------------------------------------------------------
 // Background shadow texture (soft blob, cheap and always smooth)
 // ---------------------------------------------------------------------------
-function makeShadowTexture() {
+function makeShadowTexture(blur = 18, inset = 56) {
   const c = document.createElement('canvas');
   c.width = c.height = 256;
   const g = c.getContext('2d');
-  g.filter = 'blur(18px)';
-  g.fillStyle = 'rgba(30,60,110,1)';
+  g.filter = `blur(${blur}px)`;
+  g.fillStyle = 'rgba(12,14,18,1)';
   g.beginPath();
-  g.roundRect(56, 56, 144, 144, 18);
+  g.roundRect(inset, inset, 256 - inset * 2, 256 - inset * 2, 14);
   g.fill();
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
@@ -518,7 +518,7 @@ export class CDStage extends EventTarget {
     const key = new THREE.DirectionalLight(0xffffff, 1.1);
     key.position.set(-8, 12, 20);
     this.scene.add(key);
-    this.scene.add(new THREE.HemisphereLight(0xffffff, 0xcfe3ff, 0.35));
+    this.scene.add(new THREE.HemisphereLight(0xffffff, 0xe6e7ea, 0.35));
 
     // soft shadow card on the "table"
     this.shadowTex = makeShadowTexture();
@@ -530,6 +530,13 @@ export class CDStage extends EventTarget {
     this.shadowLid = this.shadow.clone();
     this.shadowLid.material = this.shadow.material.clone();
     this.scene.add(this.shadowLid);
+    // tight contact shadow right under the tray — what makes it feel like it's sitting there
+    this.contactTex = makeShadowTexture(7, 30);
+    this.contact = new THREE.Mesh(
+      new THREE.PlaneGeometry(W * 1.08, H * 1.08),
+      new THREE.MeshBasicMaterial({ map: this.contactTex, transparent: true, opacity: 0.2, depthWrite: false, toneMapped: false })
+    );
+    this.scene.add(this.contact);
 
     // --- case ---------------------------------------------------------------
     this.root = new THREE.Group();      // swaps/entrance move this
@@ -544,9 +551,9 @@ export class CDStage extends EventTarget {
     this.spread.add(caseGroup);
     this.caseGroup = caseGroup;
 
-    const plateMat = makePlastic({ opacity: 0.02, edge: 0.6, power: 3.0, spec: 0.3, coat: 0, irid: 0.15, side: THREE.FrontSide });
-    const railMat = makePlastic({ opacity: 0.22, edge: 0.85, power: 1.4, body: 0x56637a, spec: 0.9 });
-    const lidPlateMat = makePlastic({ opacity: 0.012, edge: 0.6, power: 2.6, spec: 0.15, coat: 0, irid: 0.15 });
+    const plateMat = makePlastic({ opacity: 0.02, edge: 0.6, power: 3.0, body: 0x70747b, spec: 0.3, coat: 0, irid: 0, side: THREE.FrontSide });
+    const railMat = makePlastic({ opacity: 0.24, edge: 0.88, power: 1.35, body: 0x5a5e66, spec: 0.95, irid: 0.12 });
+    const lidPlateMat = makePlastic({ opacity: 0.012, edge: 0.6, power: 2.6, body: 0x70747b, spec: 0.15, coat: 0, irid: 0 });
     this.materials = [plateMat, railMat, lidPlateMat];
 
     const base = buildBaseGeometry();
@@ -595,7 +602,7 @@ export class CDStage extends EventTarget {
     const rim = new THREE.Mesh(new THREE.RingGeometry(DISC_R - 0.06, DISC_R, seg, 1), mirrorMat);
     rim.position.z = top;
 
-    const clearMat = makePlastic({ opacity: 0.05, edge: 0.55, power: 1.8, body: 0x8794a6, spec: 0.6, coat: 0 });
+    const clearMat = makePlastic({ opacity: 0.05, edge: 0.55, power: 1.8, body: 0x8a8e95, spec: 0.6, coat: 0, irid: 0 });
     const hubClear = new THREE.Mesh(new THREE.RingGeometry(HOLE_R, 1.55, 64, 1), clearMat);
     hubClear.position.z = top;
     hubClear.renderOrder = 2;
@@ -627,6 +634,10 @@ export class CDStage extends EventTarget {
       dragging: false,
       swap: null,          // { phase: 'out'|'wait'|'in', t, ready, apply }
       hasAlbum: false,
+      // hover wobble: tilt toward the cursor on a loose (underdamped) spring
+      hover: { x: 0, y: 0, vx: 0, vy: 0, tx: 0, ty: 0 },
+      flourish: null,      // { t } — the full turn the case does when it opens
+      discBoost: 0,        // extra disc spin (rad/s) that decays — the whirl on open
     };
     this.rest = { x: -0.2, y: 0.22 };
     this.clock = new THREE.Clock();
@@ -651,6 +662,18 @@ export class CDStage extends EventTarget {
     open = !!open;
     if (this.state.open === open) return;
     this.state.open = open;
+    const s = this.state;
+    if (!this.reduceMotion) {
+      if (open) {
+        s.flourish = { t: 0 };
+        s.discBoost = TAU * 2.6;
+      } else {
+        // closing: a little shudder as the lid snaps shut
+        s.hover.vy -= 2.2;
+        s.hover.vx += 1.2;
+        s.discBoost = Math.max(s.discBoost, TAU * 0.6);
+      }
+    }
     this.dispatchEvent(new CustomEvent('openchange', { detail: { open } }));
   }
 
@@ -698,6 +721,8 @@ export class CDStage extends EventTarget {
     this.materials.forEach(m => m.dispose());
     this.shadowTex.dispose();
     this.shadow.material.dispose();
+    this.contactTex.dispose();
+    this.contact.material.dispose();
     this.shadowLid.material.dispose();
     this.envRT.dispose();
     this.renderer.dispose();
@@ -719,7 +744,8 @@ export class CDStage extends EventTarget {
   _frame(openE) {
     if (!this._size) return;
     const { w, h } = this._size;
-    const reserveBottom = Math.min(110, h * 0.22);
+    const pickerShown = !!this.container.querySelector('.aep-picker:not([hidden])');
+    const reserveBottom = Math.min(pickerShown ? 110 : 56, h * 0.22);
     const usableH = Math.max(80, h - reserveBottom - 16);
     const tanHalf = Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2));
     const needW = (W + W * openE) * lerp(1.12, 1.05, openE);
@@ -759,8 +785,36 @@ export class CDStage extends EventTarget {
     const target = s.spinning ? TAU * 0.55 : 0;
     const rate = s.spinning ? 1.6 : 1.1;
     s.spinSpeed += (target - s.spinSpeed) * (1 - Math.exp(-rate * dt));
-    s.discAngle -= s.spinSpeed * dt;
+    s.discBoost *= Math.exp(-1.3 * dt);
+    if (s.discBoost < 0.01) s.discBoost = 0;
+    s.discAngle -= (s.spinSpeed + s.discBoost) * dt;
     this.disc.rotation.z = s.discAngle;
+
+    // hover wobble
+    const h = s.hover;
+    {
+      const k = 55, c = 2 * Math.sqrt(k) * 0.26;
+      const active = !s.dragging && !this.reduceMotion;
+      const tx = active ? h.tx : 0, ty = active ? h.ty : 0;
+      h.vx += (-k * (h.x - tx) - c * h.vx) * dt;
+      h.vy += (-k * (h.y - ty) - c * h.vy) * dt;
+      h.x += h.vx * dt;
+      h.y += h.vy * dt;
+    }
+
+    // the turn on open: one full revolution, lifted toward you mid-spin
+    let flourishY = 0, flourishLift = 0, flourishTip = 0;
+    if (s.flourish) {
+      s.flourish.t += dt / 1.3;
+      const ft = clamp(s.flourish.t, 0, 1);
+      flourishY = TAU * easeInOut(ft);
+      flourishLift = Math.sin(Math.PI * ft) * 2.2;
+      flourishTip = Math.sin(Math.PI * ft) * 0.18;
+      if (s.flourish.t >= 1) {
+        s.flourish = null;
+        s.hover.vy += 1.4; // settle with a small overshoot
+      }
+    }
 
     // drag / inertia / spring back to rest (nearest full turn, so flips settle face-up)
     if (!s.dragging) {
@@ -772,8 +826,9 @@ export class CDStage extends EventTarget {
       }
     }
     const idle = this.reduceMotion ? 0 : 1;
-    this.tilt.rotation.x = this.rest.x + s.rot.x + Math.sin(t * 0.7) * 0.025 * idle;
-    this.tilt.rotation.y = this.rest.y * (1 - openE * 0.6) + s.rot.y + Math.sin(t * 0.45) * 0.04 * idle;
+    this.tilt.rotation.x = this.rest.x + s.rot.x + h.x - flourishTip + Math.sin(t * 0.7) * 0.025 * idle;
+    this.tilt.rotation.y = this.rest.y * (1 - openE * 0.6) + s.rot.y + h.y + flourishY + Math.sin(t * 0.45) * 0.04 * idle;
+    this.tilt.rotation.z = h.y * -0.12;
 
     // framing follows the opening
     this._frame(openE);
@@ -802,15 +857,20 @@ export class CDStage extends EventTarget {
         if (sw.t >= 1) s.swap = null;
       }
     }
-    this.root.position.set(0, this.fit.liftY + swapY, FLOOR_GAP);
+    this.root.position.set(0, this.fit.liftY + swapY, FLOOR_GAP + flourishLift);
     this.root.rotation.z = swapRot;
 
     // shadow card follows the case footprint
     const shadowAlpha = sw ? clamp(1 - Math.abs(swapY) / (this.fit.viewH * 0.5), 0, 1) : 1;
     // one card under the tray, a fainter one under the (thin) lid once it lands
     const sy = this.fit.liftY + swapY - 1.2;
-    this.shadow.position.set(1.1 + this.spread.position.x, sy, 0);
-    this.shadow.material.opacity = 0.32 * shadowAlpha;
+    // lifting toward the camera (the open spin) softens and spreads the shadow
+    const liftK = 1 / (1 + flourishLift * 0.45);
+    this.shadow.position.set(1.1 + this.spread.position.x + flourishLift * 0.5, sy - flourishLift * 0.5, 0);
+    this.shadow.scale.setScalar(1 + flourishLift * 0.08);
+    this.shadow.material.opacity = 0.24 * shadowAlpha * liftK;
+    this.contact.position.set(0.35 + this.spread.position.x, sy + 0.75, 0.01);
+    this.contact.material.opacity = 0.2 * shadowAlpha * Math.pow(liftK, 3);
     this.shadowLid.position.set(1.1 + this.spread.position.x - W, sy, 0);
     this.shadowLid.material.opacity = 0.1 * shadowAlpha * Math.pow(openE, 3);
 
@@ -840,10 +900,23 @@ export class CDStage extends EventTarget {
       this.state.vel.x = this.state.vel.y = 0;
     });
 
+    let lastHover = null;
     el.addEventListener('pointermove', e => {
       if (!down) {
-        // hover cursor
         if (!this.state.hasAlbum) return;
+        // lean toward the cursor; quick flicks add a bit of jiggle
+        const r = el.getBoundingClientRect();
+        const nx = ((e.clientX - r.left) / r.width) * 2 - 1;
+        const ny = ((e.clientY - r.top) / r.height) * 2 - 1;
+        const hv = this.state.hover;
+        hv.ty = clamp(nx, -1, 1) * 0.24;
+        hv.tx = clamp(ny, -1, 1) * 0.18;
+        if (lastHover) {
+          hv.vy += clamp((e.clientX - lastHover.x) * 0.012, -0.6, 0.6);
+          hv.vx += clamp((e.clientY - lastHover.y) * 0.01, -0.5, 0.5);
+        }
+        lastHover = { x: e.clientX, y: e.clientY };
+        // hover cursor
         const p = pick(e);
         const overDisc = p.disc && (this.state.openP > 0.6);
         el.style.cursor = overDisc ? 'pointer' : (p.case || p.disc) ? 'grab' : 'default';
@@ -885,6 +958,11 @@ export class CDStage extends EventTarget {
       }
     };
     el.addEventListener('pointerup', end);
+    el.addEventListener('pointerleave', () => {
+      lastHover = null;
+      this.state.hover.tx = 0;
+      this.state.hover.ty = 0;
+    });
     el.addEventListener('pointercancel', () => { down = null; this.state.dragging = false; });
   }
 
