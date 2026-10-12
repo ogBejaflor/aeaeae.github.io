@@ -426,15 +426,15 @@ function buildStudioEnv() {
       side: THREE.BackSide,
       depthWrite: false,
       uniforms: {
-        top: { value: new THREE.Color(0xffffff) },
-        mid: { value: new THREE.Color(0xeceef1) },
-        bottom: { value: new THREE.Color(0x8b8f96) },
+        top: { value: new THREE.Color(0x3a3c42) },
+        mid: { value: new THREE.Color(0x17181b) },
+        bottom: { value: new THREE.Color(0x08080a) },
       },
       vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
       fragmentShader: `uniform vec3 top; uniform vec3 mid; uniform vec3 bottom; varying vec3 vDir;
         void main(){ float y = vDir.y;
           vec3 c = y > 0.0 ? mix(mid, top, smoothstep(0.0, 0.7, y)) : mix(mid, bottom, smoothstep(0.0, 0.8, -y));
-          gl_FragColor = vec4(c * 0.85, 1.0); }`,
+          gl_FragColor = vec4(c, 1.0); }`,
     })
   );
   env.add(sky);
@@ -449,11 +449,11 @@ function buildStudioEnv() {
     env.add(m);
   };
   // softboxes
-  box(30, 10, 0xffffff, 2.4, [-18, 22, 22], [0, 0, 0]);
-  box(8, 36, 0xffffff, 1.8, [34, 4, 14], [0, 0, 0]);
-  box(40, 6, 0xffffff, 1.4, [0, -10, 40], [0, 0, 0]);
+  box(30, 10, 0xffffff, 3.2, [-18, 22, 22], [0, 0, 0]);
+  box(8, 36, 0xffffff, 2.4, [34, 4, 14], [0, 0, 0]);
+  box(40, 6, 0xdfe3ea, 0.9, [0, -10, 40], [0, 0, 0]);
   // dark flags (give the clear edges something to reflect)
-  box(14, 40, 0x1b1c1f, 1, [-36, 0, 6], [0, 0, 0]);
+  box(14, 40, 0x000000, 1, [-36, 0, 6], [0, 0, 0]);
   box(30, 10, 0x2a2b2f, 1, [10, -26, 20], [0, 0, 0]);
   box(16, 16, 0x222326, 1, [20, 24, -10], [0, 0, 0]);
   return env;
@@ -467,7 +467,7 @@ function makeShadowTexture(blur = 18, inset = 56) {
   c.width = c.height = 256;
   const g = c.getContext('2d');
   g.filter = `blur(${blur}px)`;
-  g.fillStyle = 'rgba(12,14,18,1)';
+  g.fillStyle = 'rgba(0,0,0,1)';
   g.beginPath();
   g.roundRect(inset, inset, 256 - inset * 2, 256 - inset * 2, 14);
   g.fill();
@@ -666,11 +666,11 @@ class CaseItem {
     this.shadows.scale.setScalar(scale);
     const spreadX = this.spread.position.x;
     this.shadow.position.set(1.1 + spreadX + lift * 0.5, -lift * 0.5, 0);
-    this.shadow.material.opacity = 0.24 * sv * liftK;
+    this.shadow.material.opacity = 0.55 * sv * liftK;
     this.shadowLid.position.set(1.1 + spreadX - W, 0, 0);
-    this.shadowLid.material.opacity = 0.1 * sv * Math.pow(openE, 3);
+    this.shadowLid.material.opacity = 0.25 * sv * Math.pow(openE, 3);
     this.contact.position.set(0.35 + spreadX, 0.75, 0.01);
-    this.contact.material.opacity = 0.2 * sv * Math.pow(liftK, 3);
+    this.contact.material.opacity = 0.6 * sv * Math.pow(liftK, 3);
     this.shadows.visible = this.root.visible;
 
     return openE;
@@ -709,7 +709,7 @@ export class CDStage extends EventTarget {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.setClearColor(0x000000, 0);
     this.renderer.toneMapping = THREE.NeutralToneMapping;
-    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.toneMappingExposure = 1.12;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.canvas = this.renderer.domElement;
     this.canvas.className = 'aep-canvas';
@@ -732,7 +732,7 @@ export class CDStage extends EventTarget {
     const key = new THREE.DirectionalLight(0xffffff, 1.1);
     key.position.set(-8, 12, 20);
     this.scene.add(key);
-    this.scene.add(new THREE.HemisphereLight(0xffffff, 0xe6e7ea, 0.35));
+    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x1a1b1e, 0.25));
 
     this.row = new THREE.Group();
     this.scene.add(this.row);
@@ -758,10 +758,10 @@ export class CDStage extends EventTarget {
         unitPlane: new THREE.PlaneGeometry(1, 1),
       },
       mat: {
-        plate: makePlastic({ opacity: 0.02, edge: 0.6, power: 3.0, body: 0x70747b, spec: 0.3, coat: 0, irid: 0, side: THREE.FrontSide }),
-        rail: makePlastic({ opacity: 0.24, edge: 0.88, power: 1.35, body: 0x5a5e66, spec: 0.95, irid: 0.12 }),
-        lidPlate: makePlastic({ opacity: 0.012, edge: 0.6, power: 2.6, body: 0x70747b, spec: 0.15, coat: 0, irid: 0 }),
-        clear: makePlastic({ opacity: 0.05, edge: 0.55, power: 1.8, body: 0x8a8e95, spec: 0.6, coat: 0, irid: 0 }),
+        plate: makePlastic({ opacity: 0.015, edge: 0.35, power: 3.0, body: 0x878d96, spec: 0.5, coat: 0, irid: 0, side: THREE.FrontSide }),
+        rail: makePlastic({ opacity: 0.08, edge: 0.5, power: 1.8, body: 0x8a9099, spec: 1.1, irid: 0.18 }),
+        lidPlate: makePlastic({ opacity: 0.01, edge: 0.5, power: 2.6, body: 0x9aa0a9, spec: 0.35, coat: 0, irid: 0 }),
+        clear: makePlastic({ opacity: 0.05, edge: 0.5, power: 1.8, body: 0xa3a9b2, spec: 0.8, coat: 0, irid: 0 }),
         // printed label: cover at its true colours (emissive) + a glossy coat
         art: new THREE.MeshPhysicalMaterial({
           color: 0x1a1a1a, emissive: 0xffffff, emissiveIntensity: 0.92,

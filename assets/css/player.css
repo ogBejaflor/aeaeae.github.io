@@ -1,6 +1,7 @@
 /* =========================================================
-   æ player — hyperreal studio: white sweep, clear plastic,
-   black type, silver hairlines. Clean, not sci-fi.
+   æ player — hyperreal studio after dark: black sweep under a
+   single soft spotlight, clear plastic catching the light,
+   white type, hairlines. Clean, not sci-fi.
    Views: artists (merry-go-round) → albums (3D cases) → open (tracklist)
    ========================================================= */
 
@@ -14,13 +15,16 @@
 }
 
 .window .window-content.ae-player {
-  --aep-ink: #0b0c0e;
-  --aep-ink-2: #5f636a;
-  --aep-ink-3: #9a9da3;
-  --aep-line: #e6e7e9;
-  --aep-track: #e3e4e7;
-  --aep-paper: #ffffff;
-  --aep-hover: #f3f4f5;
+  --aep-ink: #f2f3f5;
+  --aep-ink-2: #a4a8af;
+  --aep-ink-3: #6d7179;
+  --aep-line: rgba(255, 255, 255, 0.08);
+  --aep-track: rgba(255, 255, 255, 0.14);
+  --aep-paper: #121315;          /* panels */
+  --aep-chip: #1b1c1f;           /* pills, round buttons */
+  --aep-hover: rgba(255, 255, 255, 0.06);
+  --aep-solid-bg: #f4f5f7;       /* the play button: the one bright object */
+  --aep-solid-fg: #0b0c0e;
   --aep-sans: "Geist", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --aep-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
   --aep-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -35,10 +39,11 @@
   -webkit-font-smoothing: antialiased;
   user-select: none;
   -webkit-user-select: none;
-  /* seamless photo-studio sweep */
+  /* black studio sweep under one soft spotlight */
   background:
-    radial-gradient(70% 55% at 50% 40%, #ffffff 0%, rgba(255, 255, 255, 0) 70%),
-    linear-gradient(180deg, #f7f7f8 0%, #f1f1f3 58%, #e6e7e9 100%);
+    radial-gradient(55% 45% at 50% 38%, rgba(255, 255, 255, 0.075) 0%, rgba(255, 255, 255, 0) 70%),
+    linear-gradient(180deg, #0f1012 0%, #0b0b0d 60%, #060607 100%);
+  color-scheme: dark;
 }
 
 .ae-player button { font: inherit; color: inherit; }
@@ -89,8 +94,8 @@
   padding: 0 12px 0 8px;
   border: 0;
   border-radius: 999px;
-  background: var(--aep-paper);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.06);
+  background: var(--aep-chip);
+  box-shadow: inset 0 0 0 1px var(--aep-line), 0 4px 12px rgba(0, 0, 0, 0.3);
   font-size: 12.5px !important;
   font-weight: 500;
   cursor: pointer;
@@ -164,15 +169,15 @@
   inset: 0;
   padding: 0;
   border: 0;
-  border-radius: 14px;
+  border-radius: 18px;
   overflow: hidden;
-  background: #dcdde0;
+  background: #1a1b1e;
   cursor: pointer;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 18px 36px rgba(0, 0, 0, 0.12);
-  /* a faint floor reflection, like a product shot */
-  -webkit-box-reflect: below 8px linear-gradient(transparent 72%, rgba(255, 255, 255, 0.22));
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55);
+  /* reflection on the glossy black floor */
+  -webkit-box-reflect: below 10px linear-gradient(transparent 62%, rgba(255, 255, 255, 0.16));
 }
 
 .aep-card:focus-visible { outline: 2px solid var(--aep-ink); outline-offset: 3px; }
@@ -198,8 +203,8 @@
   padding: 14px;
   text-align: left;
   background:
-    radial-gradient(120% 80% at 20% 0%, hsl(var(--h) 30% 97%) 0%, transparent 60%),
-    linear-gradient(160deg, hsl(var(--h) 14% 90%) 0%, hsl(var(--h) 18% 78%) 100%);
+    radial-gradient(120% 90% at 20% 0%, hsl(var(--h) 22% 30% / 0.9) 0%, transparent 62%),
+    linear-gradient(160deg, hsl(var(--h) 10% 17%) 0%, hsl(var(--h) 14% 9%) 100%);
 }
 
 .aep-card-ph-name {
@@ -215,13 +220,13 @@
   align-self: flex-end;
   font-family: var(--aep-mono);
   font-size: 11px;
-  color: rgba(11, 12, 14, 0.45);
+  color: rgba(255, 255, 255, 0.35);
 }
 
 /* glossy print sheen */
 .aep-card-gloss {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, 0) 70%, rgba(255, 255, 255, 0.12) 100%);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 36%, rgba(255, 255, 255, 0) 72%, rgba(255, 255, 255, 0.06) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
   border-radius: inherit;
   pointer-events: none;
 }
@@ -314,10 +319,9 @@
   background-position: center;
   /* a tiny jewel case: hinge strip on the left, clear edge, glint */
   box-shadow:
-    inset 4px 0 0 rgba(255, 255, 255, 0.55),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.6),
-    0 0 0 1px rgba(0, 0, 0, 0.08),
-    0 4px 10px rgba(0, 0, 0, 0.14);
+    inset 4px 0 0 rgba(255, 255, 255, 0.28),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.5);
   transition: transform 0.2s var(--aep-ease);
 }
 
@@ -352,7 +356,7 @@
   z-index: 1;
 }
 
-.aep-canvas:focus-visible { box-shadow: inset 0 0 0 2px rgba(11, 12, 14, 0.25); }
+.aep-canvas:focus-visible { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.2); }
 
 .aep-caption {
   position: absolute;
@@ -392,8 +396,8 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: var(--aep-paper);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.08);
+  background: var(--aep-chip);
+  box-shadow: inset 0 0 0 1px var(--aep-line), 0 6px 16px rgba(0, 0, 0, 0.35);
   cursor: pointer;
   z-index: 3;
   transition: opacity 0.3s ease, background 0.15s ease;
@@ -453,7 +457,7 @@
   min-height: 0;
   background: var(--aep-paper);
   border-left: 1px solid var(--aep-line);
-  box-shadow: -20px 0 50px rgba(0, 0, 0, 0.05);
+  box-shadow: -20px 0 50px rgba(0, 0, 0, 0.45);
   z-index: 8;
   transform: translateX(100%);
   visibility: hidden;
@@ -543,7 +547,7 @@
   list-style: none;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: #d4d5d8 transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.16) transparent;
 }
 
 /* rows cascade in as the panel arrives */
@@ -749,12 +753,12 @@
 .aep-play {
   width: 48px;
   height: 48px;
-  background: var(--aep-ink);
-  color: var(--aep-paper) !important;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+  background: var(--aep-solid-bg);
+  color: var(--aep-solid-fg) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2), 0 6px 24px rgba(255, 255, 255, 0.12);
 }
 
-.aep-play:hover { background: #26282c; }
+.aep-play:hover { background: #ffffff; }
 
 .aep-play svg {
   width: 18px;
@@ -807,8 +811,8 @@
   max-width: min(320px, calc(100% - 32px));
   padding: 6px 6px 6px 6px;
   border-radius: 999px;
-  background: var(--aep-paper);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 10px 28px rgba(0, 0, 0, 0.1);
+  background: var(--aep-chip);
+  box-shadow: inset 0 0 0 1px var(--aep-line), 0 10px 28px rgba(0, 0, 0, 0.45);
   z-index: 7;
   overflow: hidden;
   animation: aep-rise 0.4s var(--aep-ease) both;
@@ -836,8 +840,8 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #d9dadd center/cover;
-  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.2);
+  background: #2a2b2f center/cover;
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.2);
   -webkit-mask: radial-gradient(circle, transparent 0 14%, #000 15%);
   mask: radial-gradient(circle, transparent 0 14%, #000 15%);
 }

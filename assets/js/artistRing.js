@@ -94,22 +94,24 @@ export class ArtistRing extends EventTarget {
   _layout() {
     const w = this.wrap.clientWidth, h = this.wrap.clientHeight;
     if (!w || !h) return;
-    const cardW = clamp(Math.min(w * 0.24, h * 0.42), 120, 230);
-    const cardH = cardW * 1.25;
+    // square cards with plenty of air between them
+    const cardW = clamp(Math.min(w * 0.19, h * 0.36), 104, 200);
+    const cardH = cardW;
     this.step = 360 / Math.max(this.n, 1);
-    // radius so neighbours don't overlap, but small enough that the far side stays in view
-    const r = Math.max((cardW * 1.12) / (2 * Math.tan(Math.PI / Math.max(this.n, 3))), cardW * 1.4);
+    const gap = 1.75; // centre-to-centre distance, in card widths
+    const r = Math.max((cardW * gap) / (2 * Math.tan(Math.PI / Math.max(this.n, 3))), cardW * 1.8);
     this.radius = r;
     this.cardW = cardW;
     this.wrap.style.setProperty('--card-w', `${cardW}px`);
     this.wrap.style.setProperty('--card-h', `${cardH}px`);
-    this.wrap.style.setProperty('--persp', `${Math.max(900, r * 3.2)}px`);
-    this._apply(true);
+    this.wrap.style.setProperty('--persp', `${Math.max(900, r * 2.6)}px`);
+    this._apply(performance.now() / 1000);
   }
 
-  _apply(force) {
+  _apply(t = 0) {
     if (!this.step) return;
     const r = this.radius;
+    const bobAmp = this.reduceMotion ? 0 : this.cardW * 0.06;
     this.ring.style.transform = `translateZ(${-r}px) rotateX(-7deg) rotateY(${-this.pos * this.step}deg)`;
     this.cards.forEach((c, i) => {
       let rel = mod(i - this.pos + this.n / 2, this.n) - this.n / 2;  // -n/2 … n/2
@@ -118,7 +120,11 @@ export class ArtistRing extends EventTarget {
       const front = Math.abs(rel) < 0.5;
       // the front card steps out of the ring a little
       const pop = Math.pow(Math.max(0, Math.cos(ang)), 8) * this.cardW * 0.22;
-      c.style.transform = `rotateY(${i * this.step}deg) translateZ(${(r + pop).toFixed(1)}px)`;
+      // like horses on a merry-go-round: each card rides gently up and down,
+      // and sits at its own slight angle so the ring feels hand-placed
+      const bob = Math.sin(i * 1.9 + t * 1.25) * bobAmp;
+      const lean = (((i * 37) % 7) - 3) * 0.7;
+      c.style.transform = `rotateY(${i * this.step}deg) translateZ(${(r + pop).toFixed(1)}px) translateY(${bob.toFixed(1)}px) rotateZ(${lean}deg)`;
       c.style.opacity = (0.18 + 0.82 * Math.pow(facing, 1.6)).toFixed(3);
       c.style.zIndex = String(Math.round(facing * 100));
       c.classList.toggle('is-front', front);
@@ -137,10 +143,7 @@ export class ArtistRing extends EventTarget {
       this.vel += (-k * (this.pos - this.target) - c * this.vel) * dt;
       this.pos += this.vel * dt;
     }
-    if (Math.abs(this.pos - this.target) > 0.0005 || Math.abs(this.vel) > 0.0005 || this.dragging || this._dirty) {
-      this._dirty = false;
-      this._apply();
-    }
+    this._apply(now / 1000);
   }
 
   _bind() {
