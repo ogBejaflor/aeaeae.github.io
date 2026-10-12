@@ -410,24 +410,56 @@
       </div>
       <span class="window-title">Audio Player</span>
     </div>
-    <div class="window-content ae-player" id="ae-player">
-      <!-- 3D jewel case stage (assets/js/cdCase.js draws into this) -->
-      <section class="aep-stage" id="aep-stage" aria-label="Disc">
-        <p class="aep-hint" id="aep-hint" aria-live="polite">Tap to open · Drag to turn</p>
-        <div class="aep-picker" id="aep-picker" role="listbox" aria-label="Choose a disc"></div>
+    <div class="window-content ae-player" id="ae-player" data-view="artists">
+      <!-- top bar: where you are -->
+      <header class="aep-top">
+        <button class="aep-back" id="aep-back" type="button" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+          <span>Artists</span>
+        </button>
+        <p class="aep-crumb" id="aep-crumb">æ <span class="aep-crumb-sep">/</span> Artists</p>
+        <span class="aep-count" id="aep-count"></span>
+      </header>
+
+      <!-- view 1: artists on a merry-go-round, their albums small along the bottom -->
+      <section class="aep-artists" id="aep-artists" aria-label="Artists">
+        <div class="aep-ring-wrap" id="aep-ring-wrap">
+          <div class="aep-ring" id="aep-ring" role="listbox" aria-label="Artists" tabindex="0"></div>
+        </div>
+        <div class="aep-artist-info">
+          <h2 class="aep-artist-name" id="aep-artist-name"></h2>
+          <p class="aep-artist-meta" id="aep-artist-meta"></p>
+        </div>
+        <div class="aep-strip" id="aep-strip" aria-label="Releases"></div>
       </section>
 
-      <!-- Album, tracks and transport -->
-      <aside class="aep-panel">
+      <!-- view 2: the artist's albums as 3D cases (assets/js/cdCase.js draws here) -->
+      <section class="aep-stage" id="aep-stage" aria-label="Albums">
+        <div class="aep-caption" id="aep-caption" aria-live="polite">
+          <h2 class="aep-cap-title" id="aep-cap-title"></h2>
+          <p class="aep-cap-meta" id="aep-cap-meta"></p>
+        </div>
+        <button class="aep-arrow aep-arrow-prev" id="aep-arrow-prev" type="button" aria-label="Previous album">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <button class="aep-arrow aep-arrow-next" id="aep-arrow-next" type="button" aria-label="Next album">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+        <p class="aep-hint" id="aep-hint"></p>
+      </section>
+
+      <!-- opened album: tracklist + transport slide in -->
+      <aside class="aep-panel" id="aep-panel" aria-label="Tracklist" aria-hidden="true">
+        <button class="aep-panel-close" id="aep-panel-close" type="button" aria-label="Close album">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
         <header class="aep-meta">
-          <span class="aep-eyebrow">æ<span id="aep-disc-num">001</span> <span class="aep-eyebrow-sep">/</span> CD</span>
-          <h2 class="aep-album" id="aep-album">—</h2>
+          <span class="aep-eyebrow" id="aep-catno"></span>
+          <h2 class="aep-album" id="aep-album"></h2>
           <p class="aep-artist" id="aep-artist"></p>
           <p class="aep-stats" id="aep-stats"></p>
         </header>
-
         <ol class="aep-tracks" id="aep-tracks" aria-label="Tracks"></ol>
-
         <footer class="aep-transport">
           <div class="aep-now">
             <span class="aep-now-title" id="aep-now-title">Nothing playing</span>
@@ -441,16 +473,9 @@
             <span class="aep-time" id="aep-t-tot">0:00</span>
           </div>
           <div class="aep-controls">
-            <button class="aep-btn" id="aep-prev" aria-label="Previous track">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 6v12M18 6.5v11a.8.8 0 0 1-1.2.7L9.2 12.7a.8.8 0 0 1 0-1.4l7.6-5.5a.8.8 0 0 1 1.2.7Z"/></svg>
-            </button>
-            <button class="aep-btn aep-play" id="aep-play" aria-label="Play">
-              <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8a.9.9 0 0 0 1.4.8l10-6.4a.9.9 0 0 0 0-1.6l-10-6.4A.9.9 0 0 0 8 5.6Z"/></svg>
-              <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.2"/><rect x="13.5" y="5" width="4" height="14" rx="1.2"/></svg>
-            </button>
-            <button class="aep-btn" id="aep-next" aria-label="Next track">
-              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 6v12M6 6.5v11a.8.8 0 0 0 1.2.7l7.6-5.5a.8.8 0 0 0 0-1.4L7.2 5.8A.8.8 0 0 0 6 6.5Z"/></svg>
-            </button>
+            <button class="aep-btn" id="aep-prev" type="button" aria-label="Previous track"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 6v12M18 6.5v11a.8.8 0 0 1-1.2.7L9.2 12.7a.8.8 0 0 1 0-1.4l7.6-5.5a.8.8 0 0 1 1.2.7Z"/></svg></button>
+            <button class="aep-btn aep-play" id="aep-play" type="button" aria-label="Play"><svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8a.9.9 0 0 0 1.4.8l10-6.4a.9.9 0 0 0 0-1.6l-10-6.4A.9.9 0 0 0 8 5.6Z"/></svg><svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.2"/><rect x="13.5" y="5" width="4" height="14" rx="1.2"/></svg></button>
+            <button class="aep-btn" id="aep-next" type="button" aria-label="Next track"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 6v12M6 6.5v11a.8.8 0 0 0 1.2.7l7.6-5.5a.8.8 0 0 0 0-1.4L7.2 5.8A.8.8 0 0 0 6 6.5Z"/></svg></button>
             <div class="aep-vol">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1Z"/><path class="w1" d="M15.5 9a4 4 0 0 1 0 6"/><path class="w2" d="M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
               <div class="aep-bar aep-vol-bar" id="aep-vol" role="slider" tabindex="0" aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
@@ -460,6 +485,20 @@
           </div>
         </footer>
       </aside>
+
+      <!-- now playing, while you browse -->
+      <div class="aep-mini" id="aep-mini" hidden>
+        <button class="aep-mini-info" id="aep-mini-info" type="button" aria-label="Show the album that's playing">
+          <span class="aep-mini-disc" id="aep-mini-disc"></span>
+          <span class="aep-mini-text">
+            <span class="aep-mini-title" id="aep-mini-title"></span>
+            <span class="aep-mini-sub" id="aep-mini-sub"></span>
+          </span>
+        </button>
+        <button class="aep-btn aep-mini-play" id="aep-mini-play" type="button" aria-label="Pause"><svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8a.9.9 0 0 0 1.4.8l10-6.4a.9.9 0 0 0 0-1.6l-10-6.4A.9.9 0 0 0 8 5.6Z"/></svg><svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.2"/><rect x="13.5" y="5" width="4" height="14" rx="1.2"/></svg></button>
+        <button class="aep-btn" id="aep-mini-next" type="button" aria-label="Next track"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 6v12M6 6.5v11a.8.8 0 0 0 1.2.7l7.6-5.5a.8.8 0 0 0 0-1.4L7.2 5.8A.8.8 0 0 0 6 6.5Z"/></svg></button>
+        <span class="aep-mini-progress"><span id="aep-mini-fill"></span></span>
+      </div>
     </div>
   </div>
 

@@ -1,13 +1,14 @@
 /* =========================================================
    æ player — hyperreal studio: white sweep, clear plastic,
    black type, silver hairlines. Clean, not sci-fi.
+   Views: artists (merry-go-round) → albums (3D cases) → open (tracklist)
    ========================================================= */
 
 #audio-player-window {
-  width: min(980px, 94vw);
-  height: min(620px, 84vh);
+  width: min(1040px, 94vw);
+  height: min(660px, 86vh);
   min-width: 360px;
-  min-height: 420px;
+  min-height: 460px;
   container-type: inline-size;
   container-name: aeplayer;
 }
@@ -22,31 +23,323 @@
   --aep-hover: #f3f4f5;
   --aep-sans: "Geist", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --aep-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --aep-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --aep-panel-w: 340px;
 
-  display: flex;
+  position: relative;
+  display: block;
   padding: 0;
-  gap: 0;
-  grid-template-columns: none;
-  grid-auto-rows: auto;
   overflow: hidden;
   color: var(--aep-ink);
   font-family: var(--aep-sans);
   -webkit-font-smoothing: antialiased;
   user-select: none;
   -webkit-user-select: none;
-}
-
-/* ---------- Stage: a seamless photo-studio sweep ---------- */
-.aep-stage {
-  position: relative;
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
+  /* seamless photo-studio sweep */
   background:
-    radial-gradient(70% 55% at 50% 42%, #ffffff 0%, rgba(255, 255, 255, 0) 70%),
-    linear-gradient(180deg, #f7f7f8 0%, #f1f1f3 58%, #e7e8ea 100%);
+    radial-gradient(70% 55% at 50% 40%, #ffffff 0%, rgba(255, 255, 255, 0) 70%),
+    linear-gradient(180deg, #f7f7f8 0%, #f1f1f3 58%, #e6e7e9 100%);
 }
 
+.ae-player button { font: inherit; color: inherit; }
+
+/* ---------- top bar ---------- */
+.aep-top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  z-index: 6;
+  pointer-events: none;
+}
+
+.aep-top > * { pointer-events: auto; }
+
+.aep-crumb {
+  margin: 0;
+  font-family: var(--aep-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--aep-ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aep-crumb-sep { color: var(--aep-ink-3); margin: 0 2px; }
+
+.aep-count {
+  margin-left: auto;
+  font-family: var(--aep-mono);
+  font-size: 11px;
+  color: var(--aep-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.aep-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 12px 0 8px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--aep-paper);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.06);
+  font-size: 12.5px !important;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.aep-back[hidden] { display: none; }
+.aep-back:hover { background: var(--aep-hover); }
+.aep-back:focus-visible { outline: 1.5px solid var(--aep-ink); outline-offset: 2px; }
+
+.aep-back svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- view switching ---------- */
+.aep-artists,
+.aep-stage {
+  position: absolute;
+  inset: 0;
+  transition: opacity 0.45s var(--aep-ease), transform 0.6s var(--aep-ease), visibility 0s linear 0s;
+}
+
+.ae-player[data-view="artists"] .aep-stage {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0s linear 0.45s;
+}
+
+.ae-player[data-view="albums"] .aep-artists {
+  opacity: 0;
+  transform: scale(1.12);
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.6s var(--aep-ease), visibility 0s linear 0.5s;
+}
+
+/* ---------- View 1: the merry-go-round ---------- */
+.aep-ring-wrap {
+  position: absolute;
+  top: 52px;
+  left: 0;
+  right: 0;
+  bottom: 150px;
+  display: grid;
+  place-items: center;
+  perspective: var(--persp, 1400px);
+  perspective-origin: 50% 30%;
+  cursor: grab;
+  touch-action: pan-y;
+  overflow: hidden;
+}
+
+.aep-ring-wrap.is-dragging { cursor: grabbing; }
+
+.aep-ring {
+  position: relative;
+  width: var(--card-w, 180px);
+  height: var(--card-h, 225px);
+  transform-style: preserve-3d;
+  outline: none;
+}
+
+.aep-card {
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #dcdde0;
+  cursor: pointer;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 18px 36px rgba(0, 0, 0, 0.12);
+  /* a faint floor reflection, like a product shot */
+  -webkit-box-reflect: below 8px linear-gradient(transparent 72%, rgba(255, 255, 255, 0.22));
+}
+
+.aep-card:focus-visible { outline: 2px solid var(--aep-ink); outline-offset: 3px; }
+
+.aep-card-img,
+.aep-card-ph,
+.aep-card-gloss {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.aep-card-img {
+  background-size: cover;
+  background-position: center;
+}
+
+/* typographic card for artists without a photo yet */
+.aep-card-ph {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 14px;
+  text-align: left;
+  background:
+    radial-gradient(120% 80% at 20% 0%, hsl(var(--h) 30% 97%) 0%, transparent 60%),
+    linear-gradient(160deg, hsl(var(--h) 14% 90%) 0%, hsl(var(--h) 18% 78%) 100%);
+}
+
+.aep-card-ph-name {
+  font-size: calc(var(--card-w, 180px) * 0.135);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: var(--aep-ink);
+  overflow-wrap: anywhere;
+}
+
+.aep-card-ph-mark {
+  align-self: flex-end;
+  font-family: var(--aep-mono);
+  font-size: 11px;
+  color: rgba(11, 12, 14, 0.45);
+}
+
+/* glossy print sheen */
+.aep-card-gloss {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.38) 0%, rgba(255, 255, 255, 0) 38%, rgba(255, 255, 255, 0) 70%, rgba(255, 255, 255, 0.12) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.aep-card.is-nudged .aep-card-img,
+.aep-card.is-nudged .aep-card-ph {
+  animation: aep-nudge 0.42s ease;
+}
+
+@keyframes aep-nudge {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-7px); }
+  45% { transform: translateX(6px); }
+  70% { transform: translateX(-3px); }
+}
+
+.aep-artist-info {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 88px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.aep-artist-name {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  text-wrap: balance;
+}
+
+.aep-artist-meta {
+  margin: 6px 0 0;
+  font-family: var(--aep-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--aep-ink-3);
+}
+
+/* the front artist's releases, small along the bottom */
+.aep-strip {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 18px;
+  height: 58px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.aep-strip::-webkit-scrollbar { display: none; }
+
+.aep-strip-empty {
+  margin: 14px 0 0;
+  font-family: var(--aep-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--aep-ink-3);
+}
+
+.aep-mini-case {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 64px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  animation: aep-rise 0.45s var(--aep-ease) both;
+  animation-delay: var(--d, 0ms);
+}
+
+.aep-mini-case-art {
+  display: block;
+  width: 40px;
+  height: 36px;
+  border-radius: 2px;
+  background-size: cover;
+  background-position: center;
+  /* a tiny jewel case: hinge strip on the left, clear edge, glint */
+  box-shadow:
+    inset 4px 0 0 rgba(255, 255, 255, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.6),
+    0 0 0 1px rgba(0, 0, 0, 0.08),
+    0 4px 10px rgba(0, 0, 0, 0.14);
+  transition: transform 0.2s var(--aep-ease);
+}
+
+.aep-mini-case:hover .aep-mini-case-art { transform: translateY(-3px) rotate(-2deg); }
+.aep-mini-case:focus-visible { outline: 1.5px solid var(--aep-ink); outline-offset: 3px; border-radius: 4px; }
+
+.aep-mini-case-title {
+  max-width: 64px;
+  font-family: var(--aep-mono);
+  font-size: 9.5px;
+  color: var(--aep-ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes aep-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- View 2: the cases ---------- */
 .aep-canvas {
   position: absolute;
   inset: 0;
@@ -59,16 +352,76 @@
   z-index: 1;
 }
 
-.aep-canvas:focus-visible {
-  box-shadow: inset 0 0 0 2px rgba(11, 12, 14, 0.35);
+.aep-canvas:focus-visible { box-shadow: inset 0 0 0 2px rgba(11, 12, 14, 0.25); }
+
+.aep-caption {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 52px;
+  text-align: center;
+  z-index: 2;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.4s var(--aep-ease);
+}
+
+.aep-cap-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.aep-cap-meta {
+  margin: 5px 0 0;
+  font-family: var(--aep-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--aep-ink-3);
+}
+
+.aep-arrow {
+  position: absolute;
+  top: calc(50% - 20px);
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--aep-paper);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  z-index: 3;
+  transition: opacity 0.3s ease, background 0.15s ease;
+}
+
+.aep-arrow[hidden] { display: none; }
+.aep-arrow:hover { background: var(--aep-hover); }
+.aep-arrow:focus-visible { outline: 1.5px solid var(--aep-ink); outline-offset: 2px; }
+.aep-arrow-prev { left: 18px; }
+.aep-arrow-next { right: 18px; }
+
+.aep-arrow svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .aep-hint {
   position: absolute;
-  left: 50%;
-  bottom: 74px;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  bottom: 22px;
   margin: 0;
+  text-align: center;
   font-family: var(--aep-mono);
   font-size: 10.5px;
   letter-spacing: 0.06em;
@@ -77,110 +430,72 @@
   white-space: nowrap;
   pointer-events: none;
   z-index: 2;
+  transition: right 0.55s var(--aep-ease);
 }
 
-.aep-stage:has(.aep-picker[hidden]) .aep-hint {
-  bottom: 22px;
-}
+.ae-player.is-open .aep-caption { opacity: 0; transform: translateY(8px); }
+.ae-player.is-open .aep-arrow { opacity: 0; pointer-events: none; }
+.ae-player.is-open .aep-hint { right: var(--aep-panel-w); }
 
-/* disc picker — a white pill like a product carousel */
-.aep-picker {
-  position: absolute;
-  left: 50%;
-  bottom: 18px;
-  transform: translateX(-50%);
-  max-width: calc(100% - 32px);
-  display: flex;
-  gap: 2px;
-  padding: 5px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  border-radius: 999px;
-  background: var(--aep-paper);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.07);
-  z-index: 2;
-}
+.ae-player.aep-no3d .aep-caption,
+.ae-player.aep-no3d .aep-hint,
+.ae-player.aep-no3d .aep-arrow { display: none; }
 
-.aep-picker::-webkit-scrollbar { display: none; }
-.aep-picker[hidden] { display: none; }
-
-.aep-pick {
-  flex: none;
-  width: 34px;
-  height: 34px;
-  padding: 4px;
-  border: 0;
-  border-radius: 50%;
-  background: transparent;
-  cursor: pointer;
-  position: relative;
-  transition: background 0.15s ease;
-}
-
-.aep-pick:hover { background: var(--aep-hover); }
-.aep-pick:focus-visible { outline: 1.5px solid var(--aep-ink); outline-offset: 1px; }
-
-.aep-pick-disc {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background-size: cover;
-  background-position: center;
-  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.2);
-  -webkit-mask: radial-gradient(circle, transparent 0 14%, #000 15%);
-  mask: radial-gradient(circle, transparent 0 14%, #000 15%);
-}
-
-.aep-pick.is-active::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  bottom: -1px;
-  width: 4px;
-  height: 4px;
-  margin-left: -2px;
-  border-radius: 50%;
-  background: var(--aep-ink);
-}
-
-.aep-pick.is-playing .aep-pick-disc { animation: aep-spin 1.6s linear infinite; }
-
-@keyframes aep-spin { to { transform: rotate(360deg); } }
-
-/* fallback when WebGL isn't available */
-.aep-flat-disc {
-  position: absolute;
-  left: 50%;
-  top: calc(50% - 40px);
-  width: min(62%, 300px);
-  aspect-ratio: 1;
-  max-width: 100%;
-  transform: translate(-50%, -50%);
-  border: 0;
-  padding: 0;
-  border-radius: 50%;
-  background: #d9dadd center/cover;
-  cursor: pointer;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.16);
-  -webkit-mask: radial-gradient(circle, transparent 0 7%, #000 7.5%);
-  mask: radial-gradient(circle, transparent 0 7%, #000 7.5%);
-}
-
-.ae-player.is-spinning .aep-flat-disc { animation: aep-spin 1.8s linear infinite; }
-
-/* ---------- Panel ---------- */
+/* ---------- View 3: the tracklist panel ---------- */
 .aep-panel {
-  flex: 0 0 304px;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--aep-panel-w);
   display: flex;
   flex-direction: column;
   min-height: 0;
   background: var(--aep-paper);
   border-left: 1px solid var(--aep-line);
+  box-shadow: -20px 0 50px rgba(0, 0, 0, 0.05);
+  z-index: 8;
+  transform: translateX(100%);
+  visibility: hidden;
+  transition: transform 0.45s var(--aep-ease), visibility 0s linear 0.45s;
+}
+
+/* slides in once the case is mid-spin, so it reads as the album opening up */
+.ae-player.is-open .aep-panel {
+  transform: none;
+  visibility: visible;
+  transition: transform 0.6s var(--aep-ease) 0.3s, visibility 0s linear 0s;
+}
+
+.aep-panel-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.aep-panel-close:hover { background: var(--aep-hover); }
+.aep-panel-close:focus-visible { outline: 1.5px solid var(--aep-ink); outline-offset: 1px; }
+
+.aep-panel-close svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
 }
 
 .aep-meta {
-  padding: 24px 24px 16px;
+  padding: 24px 56px 16px 24px;
   border-bottom: 1px solid var(--aep-line);
 }
 
@@ -191,8 +506,6 @@
   letter-spacing: 0.04em;
   color: var(--aep-ink-3);
 }
-
-.aep-eyebrow-sep { opacity: 0.5; }
 
 .aep-album {
   margin: 14px 0 4px;
@@ -222,7 +535,6 @@
   min-height: 1em;
 }
 
-/* track list */
 .aep-tracks {
   flex: 1 1 auto;
   min-height: 0;
@@ -234,6 +546,9 @@
   scrollbar-color: #d4d5d8 transparent;
 }
 
+/* rows cascade in as the panel arrives */
+.ae-player.is-open .aep-track { animation: aep-rise 0.5s var(--aep-ease) both; animation-delay: calc(var(--d, 0ms) + 0.35s); }
+
 .aep-track-btn {
   width: 100%;
   display: grid;
@@ -244,10 +559,8 @@
   border: 0;
   border-radius: 8px;
   background: transparent;
-  font: inherit;
-  font-size: 14px;
+  font-size: 14px !important;
   letter-spacing: -0.01em;
-  color: var(--aep-ink);
   text-align: left;
   cursor: pointer;
   transition: background 0.12s ease;
@@ -280,7 +593,6 @@
 .aep-track.is-current .aep-track-title { font-weight: 600; }
 .aep-track.is-current .aep-track-dur { color: var(--aep-ink); }
 
-/* small level meter in place of the number while playing */
 .aep-track-num .eq { display: none; }
 .aep-track.is-current .aep-track-num .n { display: none; }
 .aep-track.is-current .aep-track-num .eq {
@@ -364,7 +676,6 @@
   touch-action: none;
 }
 
-/* generous hit area around the thin line */
 .aep-bar::before {
   content: "";
   position: absolute;
@@ -417,7 +728,6 @@
   border: 0;
   border-radius: 50%;
   background: transparent;
-  color: var(--aep-ink);
   cursor: pointer;
   transition: background 0.12s ease, transform 0.12s ease;
 }
@@ -440,7 +750,7 @@
   width: 48px;
   height: 48px;
   background: var(--aep-ink);
-  color: var(--aep-paper);
+  color: var(--aep-paper) !important;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
 }
 
@@ -452,9 +762,12 @@
   stroke-width: 0.8;
 }
 
-.aep-play .i-pause { display: none; }
-.ae-player.is-playing .aep-play .i-play { display: none; }
-.ae-player.is-playing .aep-play .i-pause { display: block; }
+.aep-play .i-pause,
+.aep-mini-play .i-pause { display: none; }
+.ae-player.is-playing .aep-play .i-play,
+.ae-player.is-playing .aep-mini-play .i-play { display: none; }
+.ae-player.is-playing .aep-play .i-pause,
+.ae-player.is-playing .aep-mini-play .i-pause { display: block; }
 
 .aep-vol {
   margin-left: auto;
@@ -483,21 +796,128 @@
 
 .aep-vol-bar { width: 72px; }
 
-/* ---------- Narrow windows: stack stage over panel ---------- */
+/* ---------- Mini now-playing ---------- */
+.aep-mini {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  max-width: min(320px, calc(100% - 32px));
+  padding: 6px 6px 6px 6px;
+  border-radius: 999px;
+  background: var(--aep-paper);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 10px 28px rgba(0, 0, 0, 0.1);
+  z-index: 7;
+  overflow: hidden;
+  animation: aep-rise 0.4s var(--aep-ease) both;
+}
+
+.aep-mini[hidden] { display: none; }
+
+.aep-mini-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+  padding: 0 8px 0 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.aep-mini-info:focus-visible { outline: 1.5px solid var(--aep-ink); outline-offset: 2px; border-radius: 999px; }
+
+.aep-mini-disc {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #d9dadd center/cover;
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.2);
+  -webkit-mask: radial-gradient(circle, transparent 0 14%, #000 15%);
+  mask: radial-gradient(circle, transparent 0 14%, #000 15%);
+}
+
+.ae-player.is-playing .aep-mini-disc { animation: aep-spin 1.8s linear infinite; }
+
+@keyframes aep-spin { to { transform: rotate(360deg); } }
+
+.aep-mini-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.aep-mini-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aep-mini-sub {
+  font-size: 11px;
+  color: var(--aep-ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.aep-mini .aep-btn { width: 34px; height: 34px; }
+
+.aep-mini-progress {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 2px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: var(--aep-track);
+  overflow: hidden;
+}
+
+.aep-mini-progress > span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--aep-ink);
+}
+
+/* ---------- Narrow windows ---------- */
 @container aeplayer (max-width: 700px) {
-  .window .window-content.ae-player { flex-direction: column; }
-  .aep-stage { flex: 1 1 55%; min-height: 220px; }
+  .window .window-content.ae-player { --aep-panel-w: 100%; }
+  .aep-ring-wrap { bottom: 140px; }
+  .aep-artist-name { font-size: 24px; }
   .aep-panel {
-    flex: 1 1 45%;
+    top: auto;
+    left: 0;
+    width: auto;
+    height: 58%;
     border-left: 0;
     border-top: 1px solid var(--aep-line);
+    border-radius: 16px 16px 0 0;
+    transform: translateY(100%);
   }
-  .aep-meta { padding: 16px 20px 12px; }
+  .ae-player.is-open .aep-hint { right: 0; bottom: calc(58% + 10px); }
+  .aep-meta { padding: 18px 56px 12px 20px; }
   .aep-album { font-size: 22px; margin-top: 8px; }
+  .aep-mini { top: 58px; bottom: auto; }
+  .aep-arrow { top: calc(45% - 20px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .aep-pick.is-playing .aep-pick-disc,
-  .ae-player.is-spinning .aep-flat-disc,
-  .aep-track-num .eq i { animation: none; }
+  .ae-player *,
+  .ae-player *::before,
+  .ae-player *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
+  }
 }

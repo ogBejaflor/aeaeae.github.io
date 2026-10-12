@@ -1,15 +1,11 @@
 // assets/js/cdCase.js
-// A clear CD jewel case rendered with three.js — no 3D models, just procedural
+// Clear CD jewel cases rendered with three.js — no 3D models, just procedural
 // geometry and a couple of small shader patches:
 //   • clear plastic: fresnel-driven alpha so faces stay glassy and edges catch light
 //   • disc data side: a diffraction-grating term that throws CD rainbows
 //
-// Usage:
-//   const stage = new CDStage(containerEl);
-//   await stage.setAlbum({ id, coverArt, albumTitle, artist });
-//   stage.addEventListener('disctap', ...)   // tapped the disc while the case is open
-//   stage.addEventListener('openchange', e => e.detail.open)
-//   stage.setOpen(true); stage.setSpinning(true);
+// CDStage shows an artist's albums as a row of cases you slide between; the
+// centred case opens with a full spin while the lid flies open.
 
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -481,7 +477,226 @@ function makeShadowTexture(blur = 18, inset = 56) {
 }
 
 // ---------------------------------------------------------------------------
-// The stage
+// One jewel case (an album). Geometry and most materials are shared; each case
+// owns its printed-disc material, its shadow cards and its animation state.
+// ---------------------------------------------------------------------------
+const SPACING = W * 1.32;   // distance between neighbouring cases in the row
+
+class CaseItem {
+  constructor(shared, album, index) {
+    this.album = album;
+    this.index = index;
+
+    // root: placed by the row layout · tilt: hover/drag/spin · spread: shifts as the lid opens
+    this.root = new THREE.Group();
+    this.tilt = new THREE.Group();
+    this.spread = new THREE.Group();
+    this.root.add(this.tilt);
+    this.tilt.add(this.spread);
+
+    const caseGroup = new THREE.Group();
+    caseGroup.position.set(0, 0, -0.55);
+    this.spread.add(caseGroup);
+
+    this.basePlate = new THREE.Mesh(shared.geo.basePlate, shared.mat.plate);
+    this.baseRails = new THREE.Mesh(shared.geo.baseRails, shared.mat.rail);
+    this.basePlate.renderOrder = 1;
+    this.baseRails.renderOrder = 2;
+    caseGroup.add(this.basePlate, this.baseRails);
+
+    this.lidPivot = new THREE.Group();
+    this.lidPivot.position.set(-W / 2, 0, HINGE_Z);
+    this.lidPlate = new THREE.Mesh(shared.geo.lidPlate, shared.mat.lidPlate);
+    this.lidRim = new THREE.Mesh(shared.geo.lidRim, shared.mat.rail);
+    this.lidPlate.renderOrder = 4;
+    this.lidRim.renderOrder = 3;
+    this.lidPivot.add(this.lidPlate, this.lidRim);
+    caseGroup.add(this.lidPivot);
+
+    // disc
+    this.disc = new THREE.Group();
+    this.disc.position.set(DISC_X, 0, DISC_Z);
+    caseGroup.add(this.disc);
+    const top = DISC_T / 2, bot = -DISC_T / 2;
+    this.artMat = shared.mat.art.clone();
+    const art = new THREE.Mesh(shared.geo.art, this.artMat);
+    art.position.z = top + 0.001;
+    const mirror = new THREE.Mesh(shared.geo.mirror, shared.mat.mirror);
+    mirror.position.z = top;
+    const rim = new THREE.Mesh(shared.geo.rim, shared.mat.mirror);
+    rim.position.z = top;
+    const hubClear = new THREE.Mesh(shared.geo.hubClear, shared.mat.clear);
+    hubClear.position.z = top;
+    hubClear.renderOrder = 2;
+    const data = new THREE.Mesh(shared.geo.data, shared.mat.data);
+    data.position.z = bot;
+    const edge = new THREE.Mesh(shared.geo.edge, shared.mat.edge);
+    this.disc.add(art, mirror, rim, hubClear, data, edge);
+    this.discParts = [art, mirror, rim, data, edge, hubClear];
+    this.caseParts = [this.basePlate, this.baseRails, this.lidPlate, this.lidRim];
+
+    // shadow cards live on the "floor", outside the tilt
+    this.shadows = new THREE.Group();
+    const card = (tex, w, h, opacity) => new THREE.Mesh(
+      shared.geo.unitPlane,
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity, depthWrite: false, toneMapped: false })
+    );
+    this.shadow = card(shared.shadowTex, 1, 1, 0.24);
+    this.shadow.scale.set(W * 1.6, H * 1.6, 1);
+    this.shadowLid = card(shared.shadowTex, 1, 1, 0);
+    this.shadowLid.scale.set(W * 1.6, H * 1.6, 1);
+    this.contact = card(shared.contactTex, 1, 1, 0.2);
+    this.contact.scale.set(W * 1.08, H * 1.08, 1);
+    this.contact.position.z = 0.01;
+    this.shadows.add(this.shadow, this.shadowLid, this.contact);
+
+    this.s = {
+      open: false, openP: 0, openE: 0,
+      spinning: false, spinSpeed: 0, discAngle: 0, discBoost: 0,
+      rot: { x: 0, y: 0 }, vel: { x: 0, y: 0 }, dragging: false,
+      hover: { x: 0, y: 0, vx: 0, vy: 0, tx: 0, ty: 0 },
+      flourish: null,
+      pop: 0, popT: 0, popDir: 1, popDelay: 0,   // pop-in / pop-out
+      lay: { x: index * SPACING, sc: 1, ry: 0, z: 0 }, // smoothed layout
+    };
+  }
+
+  setTexture(tex) {
+    this.artMat.map = tex;
+    this.artMat.emissiveMap = tex;
+    this.artMat.needsUpdate = true;
+  }
+
+  setOpen(open, reduceMotion) {
+    const s = this.s;
+    if (s.open === open) return;
+    s.open = open;
+    if (!reduceMotion) {
+      // full turn — one way to open, back the other way to close; the lid follows from it
+      s.flourish = { t: 0, dir: open ? -1 : 1 };
+      s.discBoost = open ? TAU * 2.6 : Math.max(s.discBoost, TAU * 1.2);
+    }
+  }
+
+  // Per-frame animation. `lay` is the target layout from the row; returns the eased open amount.
+  update(dt, t, lay, opts) {
+    const s = this.s;
+    const rm = opts.reduceMotion;
+
+    // pop in / out
+    if (s.popDelay > 0) s.popDelay -= dt;
+    else s.popT = clamp(s.popT + s.popDir * dt / (s.popDir > 0 ? (rm ? 0.2 : 0.65) : (rm ? 0.12 : 0.28)), 0, 1);
+    const popScale = s.popDir > 0 ? easeOutBack(s.popT) : easeInOut(s.popT);
+
+    // layout smoothing (critically-damped-ish follow)
+    const f = 1 - Math.exp(-(opts.snap ? 60 : 9) * dt);
+    for (const k of ['x', 'sc', 'ry', 'z']) s.lay[k] += (lay[k] - s.lay[k]) * f;
+
+    // lid (flung by the spin, both ways)
+    const openDur = rm ? 0.25 : 0.55;
+    const held = s.flourish && easeOutCubic(clamp(s.flourish.t, 0, 1)) < 0.8;
+    s.openP = clamp(s.openP + (held ? 0 : s.open ? 1 : -1) * dt / openDur, 0, 1);
+    const lidTarget = s.open ? easeOutCubic(s.openP) : 1 - easeOutCubic(1 - s.openP);
+    s.openE += (lidTarget - s.openE) * (1 - Math.exp(-28 * dt));
+    const openE = s.openE;
+    this.lidPivot.rotation.y = -Math.PI * openE;
+    this.spread.position.x = (W / 2) * openE;
+
+    // disc
+    const spinTarget = s.spinning ? TAU * 0.55 : 0;
+    s.spinSpeed += (spinTarget - s.spinSpeed) * (1 - Math.exp(-(s.spinning ? 1.6 : 1.1) * dt));
+    s.discBoost *= Math.exp(-1.3 * dt);
+    if (s.discBoost < 0.01) s.discBoost = 0;
+    s.discAngle -= (s.spinSpeed + s.discBoost) * dt;
+    this.disc.rotation.z = s.discAngle;
+
+    // hover wobble (loose spring)
+    const h = s.hover;
+    {
+      const k = 55, c = 2 * Math.sqrt(k) * 0.26;
+      const on = opts.hoverable && !s.dragging && !rm;
+      h.vx += (-k * (h.x - (on ? h.tx : 0)) - c * h.vx) * dt;
+      h.vy += (-k * (h.y - (on ? h.ty : 0)) - c * h.vy) * dt;
+      h.x += h.vx * dt;
+      h.y += h.vy * dt;
+    }
+
+    // the spin
+    let fy = 0, lift = 0, tip = 0;
+    if (s.flourish) {
+      s.flourish.t += dt / 0.75;
+      const ft = clamp(s.flourish.t, 0, 1);
+      fy = s.flourish.dir * TAU * easeOutCubic(ft);
+      lift = Math.sin(Math.PI * ft) * 2.2;
+      tip = Math.sin(Math.PI * ft) * 0.18;
+      if (s.flourish.t >= 1) {
+        h.vy += 1.4 * s.flourish.dir;
+        s.flourish = null;
+      }
+    }
+
+    // drag spring back (nearest full turn)
+    if (!s.dragging) {
+      for (const axis of ['x', 'y']) {
+        const goal = axis === 'y' ? Math.round(s.rot.y / TAU) * TAU : 0;
+        const k = 14, c = 2 * Math.sqrt(k) * 0.75;
+        s.vel[axis] += (-k * (s.rot[axis] - goal) - c * s.vel[axis]) * dt;
+        s.rot[axis] += s.vel[axis] * dt;
+      }
+    }
+
+    const idle = rm ? 0 : 1;
+    const phase = this.index * 1.7;
+    this.tilt.rotation.x = opts.restX + s.rot.x + h.x - tip + Math.sin(t * 0.7 + phase) * 0.025 * idle;
+    this.tilt.rotation.y = opts.restY * (1 - openE * 0.6) + s.rot.y + h.y + fy + s.lay.ry
+      + Math.sin(t * 0.45 + phase) * 0.04 * idle;
+    this.tilt.rotation.z = h.y * -0.12;
+
+    // pop-in rises from below
+    const rise = s.popDir > 0 ? (1 - clamp(s.popT * 1.6, 0, 1)) * -4 : 0;
+    const scale = Math.max(0.0001, s.lay.sc * popScale);
+    this.root.position.set(s.lay.x, rise, FLOOR_GAP + lift + s.lay.z);
+    this.root.scale.setScalar(scale);
+    this.root.visible = scale > 0.002;
+
+    // shadows
+    const liftK = 1 / (1 + lift * 0.45);
+    const sv = clamp(popScale, 0, 1) * (rise < -0.5 ? 0.3 : 1);
+    this.shadows.position.set(s.lay.x, rise - 1.2 * scale, 0);
+    this.shadows.scale.setScalar(scale);
+    const spreadX = this.spread.position.x;
+    this.shadow.position.set(1.1 + spreadX + lift * 0.5, -lift * 0.5, 0);
+    this.shadow.material.opacity = 0.24 * sv * liftK;
+    this.shadowLid.position.set(1.1 + spreadX - W, 0, 0);
+    this.shadowLid.material.opacity = 0.1 * sv * Math.pow(openE, 3);
+    this.contact.position.set(0.35 + spreadX, 0.75, 0.01);
+    this.contact.material.opacity = 0.2 * sv * Math.pow(liftK, 3);
+    this.shadows.visible = this.root.visible;
+
+    return openE;
+  }
+
+  dispose(scene) {
+    this.root.parent?.remove(this.root);
+    this.shadows.parent?.remove(this.shadows);
+    this.artMat.dispose();
+    this.shadow.material.dispose();
+    this.shadowLid.material.dispose();
+    this.contact.material.dispose();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// The stage: a row of cases. Slide between them; the centred one can be
+// opened (it spins, the lid flies open) while a side panel slides in.
+//
+//   stage.setAlbums(albums, focusIndex)   → pops the cases up
+//   stage.clear()                         → pops them away (Promise)
+//   stage.focusTo(i) / next() / prev()
+//   stage.open() / close()                → open or close the centred case
+//   stage.setPanelInset(px)               → keep the open case clear of a side panel
+//   stage.setSpinningAlbum(albumId|null)
+// Events: 'focuschange' {index} · 'openchange' {index, open} · 'disctap' {index}
 // ---------------------------------------------------------------------------
 export class CDStage extends EventTarget {
   constructor(container) {
@@ -499,8 +714,8 @@ export class CDStage extends EventTarget {
     this.canvas = this.renderer.domElement;
     this.canvas.className = 'aep-canvas';
     this.canvas.setAttribute('tabindex', '0');
-    this.canvas.setAttribute('role', 'button');
-    this.canvas.setAttribute('aria-label', 'CD case. Press Enter to open or close, Space to play.');
+    this.canvas.setAttribute('role', 'listbox');
+    this.canvas.setAttribute('aria-label', 'Albums. Left and right to browse, Enter to open, Escape to close.');
     container.prepend(this.canvas);
 
     // --- scene --------------------------------------------------------------
@@ -510,222 +725,208 @@ export class CDStage extends EventTarget {
     this.envRT = pmrem.fromScene(studio, 0.02);
     studio.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
     this.scene.environment = this.envRT.texture;
-    this.scene.environmentIntensity = 1.0;
     pmrem.dispose();
 
-    this.camera = new THREE.PerspectiveCamera(26, 1, 1, 400);
+    this.camera = new THREE.PerspectiveCamera(26, 1, 1, 600);
     this.camera.position.set(0, 0, 60);
-
     const key = new THREE.DirectionalLight(0xffffff, 1.1);
     key.position.set(-8, 12, 20);
     this.scene.add(key);
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0xe6e7ea, 0.35));
 
-    // soft shadow card on the "table"
-    this.shadowTex = makeShadowTexture();
-    this.shadow = new THREE.Mesh(
-      new THREE.PlaneGeometry(W * 1.6, H * 1.6),
-      new THREE.MeshBasicMaterial({ map: this.shadowTex, transparent: true, opacity: 0.28, depthWrite: false, toneMapped: false })
-    );
-    this.scene.add(this.shadow);
-    this.shadowLid = this.shadow.clone();
-    this.shadowLid.material = this.shadow.material.clone();
-    this.scene.add(this.shadowLid);
-    // tight contact shadow right under the tray — what makes it feel like it's sitting there
-    this.contactTex = makeShadowTexture(7, 30);
-    this.contact = new THREE.Mesh(
-      new THREE.PlaneGeometry(W * 1.08, H * 1.08),
-      new THREE.MeshBasicMaterial({ map: this.contactTex, transparent: true, opacity: 0.2, depthWrite: false, toneMapped: false })
-    );
-    this.scene.add(this.contact);
+    this.row = new THREE.Group();
+    this.scene.add(this.row);
 
-    // --- case ---------------------------------------------------------------
-    this.root = new THREE.Group();      // swaps/entrance move this
-    this.tilt = new THREE.Group();      // drag + idle rotation
-    this.spread = new THREE.Group();    // shifts right as the lid opens so the pair stays centred
-    this.root.add(this.tilt);
-    this.tilt.add(this.spread);
-    this.scene.add(this.root);
-
-    const caseGroup = new THREE.Group();
-    caseGroup.position.set(0, 0, -0.55); // rotate around the case's middle, not its back
-    this.spread.add(caseGroup);
-    this.caseGroup = caseGroup;
-
-    const plateMat = makePlastic({ opacity: 0.02, edge: 0.6, power: 3.0, body: 0x70747b, spec: 0.3, coat: 0, irid: 0, side: THREE.FrontSide });
-    const railMat = makePlastic({ opacity: 0.24, edge: 0.88, power: 1.35, body: 0x5a5e66, spec: 0.95, irid: 0.12 });
-    const lidPlateMat = makePlastic({ opacity: 0.012, edge: 0.6, power: 2.6, body: 0x70747b, spec: 0.15, coat: 0, irid: 0 });
-    this.materials = [plateMat, railMat, lidPlateMat];
-
+    // --- shared geometry + materials ----------------------------------------
     const base = buildBaseGeometry();
-    this.basePlate = new THREE.Mesh(base.plate, plateMat);
-    this.baseRails = new THREE.Mesh(base.rails, railMat);
-    this.basePlate.renderOrder = 1;
-    this.baseRails.renderOrder = 2;
-    caseGroup.add(this.basePlate, this.baseRails);
-
-    this.lidPivot = new THREE.Group();
-    this.lidPivot.position.set(-W / 2, 0, HINGE_Z);
     const lid = buildLidGeometry();
-    this.lidPlate = new THREE.Mesh(lid.plate, lidPlateMat);
-    this.lidRim = new THREE.Mesh(lid.rim, railMat);
-    this.lidPlate.renderOrder = 4;
-    this.lidRim.renderOrder = 3;
-    this.lidPivot.add(this.lidPlate, this.lidRim);
-    caseGroup.add(this.lidPivot);
-
-    // --- disc ---------------------------------------------------------------
-    this.disc = new THREE.Group();
-    this.disc.position.set(DISC_X, 0, DISC_Z);
-    caseGroup.add(this.disc);
-
-    const seg = 160;
-    const PRINT_IN = 1.95;
-    const top = DISC_T / 2, bot = -DISC_T / 2;
-
-    // printed label: cover shown at its true colours (emissive) + a glossy coat on top
-    this.artMat = new THREE.MeshPhysicalMaterial({
-      color: 0x1a1a1a,
-      emissive: 0xffffff,
-      emissiveIntensity: 0.92,
-      roughness: 0.38,
-      metalness: 0,
-      clearcoat: 0.8,
-      clearcoatRoughness: 0.12,
-      envMapIntensity: 0.6,
-    });
-    const art = new THREE.Mesh(new THREE.RingGeometry(PRINT_IN, DISC_R - 0.06, seg, 1), this.artMat);
-    art.position.z = top + 0.001;
-
-    const mirrorMat = makeMirrorRing();
-    const mirror = new THREE.Mesh(new THREE.RingGeometry(1.55, PRINT_IN, seg, 1), mirrorMat);
-    mirror.position.z = top;
-    const rim = new THREE.Mesh(new THREE.RingGeometry(DISC_R - 0.06, DISC_R, seg, 1), mirrorMat);
-    rim.position.z = top;
-
-    const clearMat = makePlastic({ opacity: 0.05, edge: 0.55, power: 1.8, body: 0x8a8e95, spec: 0.6, coat: 0, irid: 0 });
-    const hubClear = new THREE.Mesh(new THREE.RingGeometry(HOLE_R, 1.55, 64, 1), clearMat);
-    hubClear.position.z = top;
-    hubClear.renderOrder = 2;
-
-    const dataMat = makeDataSide();
+    const seg = 160, PRINT_IN = 1.95;
     const dataGeo = new THREE.RingGeometry(1.55, DISC_R, seg, 1);
     dataGeo.rotateY(Math.PI);
-    const data = new THREE.Mesh(dataGeo, dataMat);
-    data.position.z = bot;
-
-    const edgeMat = new THREE.MeshStandardMaterial({ color: 0xd6dbe2, metalness: 0.7, roughness: 0.3 });
     const edgeGeo = new THREE.CylinderGeometry(DISC_R, DISC_R, DISC_T, seg, 1, true);
     edgeGeo.rotateX(Math.PI / 2);
-    const edge = new THREE.Mesh(edgeGeo, edgeMat);
-
-    this.disc.add(art, mirror, rim, hubClear, data, edge);
-    this.discParts = [art, mirror, rim, data, edge, hubClear];
-    this.materials.push(this.artMat, mirrorMat, clearMat, dataMat, edgeMat);
+    this.shared = {
+      geo: {
+        basePlate: base.plate, baseRails: base.rails,
+        lidPlate: lid.plate, lidRim: lid.rim,
+        art: new THREE.RingGeometry(PRINT_IN, DISC_R - 0.06, seg, 1),
+        mirror: new THREE.RingGeometry(1.55, PRINT_IN, seg, 1),
+        rim: new THREE.RingGeometry(DISC_R - 0.06, DISC_R, seg, 1),
+        hubClear: new THREE.RingGeometry(HOLE_R, 1.55, 64, 1),
+        data: dataGeo,
+        edge: edgeGeo,
+        unitPlane: new THREE.PlaneGeometry(1, 1),
+      },
+      mat: {
+        plate: makePlastic({ opacity: 0.02, edge: 0.6, power: 3.0, body: 0x70747b, spec: 0.3, coat: 0, irid: 0, side: THREE.FrontSide }),
+        rail: makePlastic({ opacity: 0.24, edge: 0.88, power: 1.35, body: 0x5a5e66, spec: 0.95, irid: 0.12 }),
+        lidPlate: makePlastic({ opacity: 0.012, edge: 0.6, power: 2.6, body: 0x70747b, spec: 0.15, coat: 0, irid: 0 }),
+        clear: makePlastic({ opacity: 0.05, edge: 0.55, power: 1.8, body: 0x8a8e95, spec: 0.6, coat: 0, irid: 0 }),
+        // printed label: cover at its true colours (emissive) + a glossy coat
+        art: new THREE.MeshPhysicalMaterial({
+          color: 0x1a1a1a, emissive: 0xffffff, emissiveIntensity: 0.92,
+          roughness: 0.38, metalness: 0, clearcoat: 0.8, clearcoatRoughness: 0.12, envMapIntensity: 0.6,
+        }),
+        mirror: makeMirrorRing(),
+        data: makeDataSide(),
+        edge: new THREE.MeshStandardMaterial({ color: 0xd6dbe2, metalness: 0.7, roughness: 0.3 }),
+      },
+      shadowTex: makeShadowTexture(),
+      contactTex: makeShadowTexture(7, 30),
+    };
 
     // --- state --------------------------------------------------------------
-    this.state = {
-      open: false,
-      openP: 0,            // 0 closed … 1 fully open (linear, eased when applied)
-      spinning: false,
-      spinSpeed: 0,
-      discAngle: 0,
-      rot: { x: 0, y: 0 },   // user drag offset
-      vel: { x: 0, y: 0 },
-      dragging: false,
-      swap: null,          // { phase: 'out'|'wait'|'in', t, ready, apply }
-      hasAlbum: false,
-      // hover wobble: tilt toward the cursor on a loose (underdamped) spring
-      hover: { x: 0, y: 0, vx: 0, vy: 0, tx: 0, ty: 0 },
-      flourish: null,      // { t } — the full turn the case does when it opens
-      discBoost: 0,        // extra disc spin (rad/s) that decays — the whirl on open
-    };
+    this.items = [];
+    this.focus = 0;
+    this.scroll = 0;          // fractional index under the centre
+    this.scrollVel = 0;
+    this.openIndex = -1;
+    this.openAmt = 0;         // 0 browsing … 1 a case is open (smoothed)
+    this.panelInset = 0;
+    this.panelSide = 'right';
+    this.panelOn = false;
+    this.panelAmt = 0;
+    this.spinningId = null;
+    this.active = false;
     this.rest = { x: -0.2, y: 0.22 };
     this.clock = new THREE.Clock();
-    this.fit = { dist: 60, worldPerPx: 0.05, viewH: 20 };
+    this.fit = { worldPerPx: 0.05, viewH: 20, liftY: 0 };
 
     this._bindPointer();
     this._bindKeys();
-
     this.resizeObserver = new ResizeObserver(() => this._resize());
     this.resizeObserver.observe(container);
     this._resize();
 
-    this.root.visible = false;
     this._loop = this._loop.bind(this);
     this._raf = requestAnimationFrame(this._loop);
   }
 
   // ---------------------------------------------------------------- public API
-  get isOpen() { return this.state.open; }
+  get count() { return this.items.length; }
+  get isOpen() { return this.openIndex >= 0; }
 
-  setOpen(open) {
-    open = !!open;
-    if (this.state.open === open) return;
-    this.state.open = open;
-    const s = this.state;
-    if (!this.reduceMotion) {
-      // both ways the case does a full turn and the lid follows from it:
-      // opening spins one way, closing spins back the other way
-      s.flourish = { t: 0, dir: open ? -1 : 1 };
-      s.discBoost = open ? TAU * 2.6 : Math.max(s.discBoost, TAU * 1.2);
-    }
-    this.dispatchEvent(new CustomEvent('openchange', { detail: { open } }));
+  /** Replace the row with these albums; they pop up around `focusIndex`. */
+  async setAlbums(albums, focusIndex = 0) {
+    const token = (this._token = (this._token || 0) + 1);
+    if (this.items.length) await this.clear(true);
+    if (token !== this._token) return;
+    this.active = true;
+    this.openIndex = -1;
+    this.focus = clamp(focusIndex, 0, Math.max(0, albums.length - 1));
+    this.scroll = this.focus;
+    this.scrollVel = 0;
+    this.items = albums.map((album, i) => {
+      const it = new CaseItem(this.shared, album, i);
+      it.s.lay = { ...this._layoutFor(i), sc: this._layoutFor(i).sc };
+      it.s.popDelay = (this.reduceMotion ? 0 : 0.07) * Math.abs(i - this.focus);
+      it.s.spinning = album.id === this.spinningId;
+      this.row.add(it.root);
+      this.row.add(it.shadows);
+      it.root.visible = false;
+      it.shadows.visible = false;
+      loadCoverTexture(album, this.renderer).then(tex => it.setTexture(tex));
+      return it;
+    });
+    this._emitFocus();
   }
 
-  toggleOpen() { this.setOpen(!this.state.open); }
+  /** Pop every case away. Resolves when they're gone. */
+  clear(keepActive = false) {
+    if (!this.items.length) { if (!keepActive) this.active = false; return Promise.resolve(); }
+    if (this.openIndex >= 0) this._setOpenIndex(-1);
+    const leaving = this.items;
+    this.items = [];
+    leaving.forEach((it, i) => { it.s.popDir = -1; it.s.popT = Math.min(it.s.popT, 1); it.s.popDelay = 0.03 * Math.abs(i - this.focus); });
+    this._leaving = (this._leaving || []).concat(leaving);
+    return new Promise(resolve => {
+      const check = () => {
+        if (leaving.every(it => it.s.popT <= 0 && it.s.popDelay <= 0)) {
+          leaving.forEach(it => it.dispose(this.scene));
+          this._leaving = this._leaving.filter(it => !leaving.includes(it));
+          if (!keepActive && !this.items.length) this.active = false;
+          resolve();
+        } else requestAnimationFrame(check);
+      };
+      check();
+    });
+  }
 
-  setSpinning(on) { this.state.spinning = !!on; }
-
-  /** Show an album. First call drops the case in; later calls swap cases. */
-  async setAlbum(album) {
-    const texPromise = loadCoverTexture(album, this.renderer);
-    const apply = tex => {
-      this.artMat.map = tex;
-      this.artMat.emissiveMap = tex;
-      this.artMat.needsUpdate = true;
-      this.state.discAngle = 0;
-    };
-
-    if (!this.state.hasAlbum) {
-      this.state.hasAlbum = true;
-      const tex = await texPromise;
-      apply(tex);
-      this.root.visible = true;
-      this.state.swap = { phase: 'in', t: 0 };
-      return;
+  focusTo(i) {
+    if (!this.items.length) return;
+    i = clamp(Math.round(i), 0, this.items.length - 1);
+    if (this.openIndex >= 0 && i !== this.openIndex) this._setOpenIndex(-1);
+    if (i !== this.focus) {
+      this.focus = i;
+      this._emitFocus();
     }
+  }
+  next() { this.focusTo(this.focus + 1); }
+  prev() { this.focusTo(this.focus - 1); }
 
-    // swap: slide current case out, change the disc, drop the new case in
-    const swap = { phase: 'out', t: 0, ready: false, tex: null };
-    this.state.swap = swap;
-    texPromise.then(tex => { swap.tex = tex; swap.ready = true; });
-    swap.apply = () => {
-      apply(swap.tex);
-      this.state.openP = 0;
-      if (this.state.open) {
-        this.state.open = false;
-        this.dispatchEvent(new CustomEvent('openchange', { detail: { open: false } }));
-      }
-    };
+  open() { if (this.items.length) this._setOpenIndex(this.focus); }
+  close() { this._setOpenIndex(-1); }
+
+  /** Keep the open case clear of a panel on the right (or, in narrow windows, the bottom). */
+  setPanelInset(px, side = 'right') {
+    if (px) { this.panelInset = Math.max(0, px); this.panelSide = side; }
+    this.panelOn = !!px;
+  }
+
+  setSpinningAlbum(id) {
+    this.spinningId = id;
+    this.items.forEach(it => { it.s.spinning = !!id && it.album.id === id; });
   }
 
   dispose() {
     cancelAnimationFrame(this._raf);
     this.resizeObserver.disconnect();
-    this.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); });
-    this.materials.forEach(m => m.dispose());
-    this.shadowTex.dispose();
-    this.shadow.material.dispose();
-    this.contactTex.dispose();
-    this.contact.material.dispose();
-    this.shadowLid.material.dispose();
+    [...this.items, ...(this._leaving || [])].forEach(it => it.dispose(this.scene));
+    Object.values(this.shared.geo).forEach(g => g.dispose());
+    Object.values(this.shared.mat).forEach(m => m.dispose());
+    this.shared.shadowTex.dispose();
+    this.shared.contactTex.dispose();
     this.envRT.dispose();
     this.renderer.dispose();
     this.canvas.remove();
   }
 
   // ---------------------------------------------------------------- internals
+  _emitFocus() {
+    this.dispatchEvent(new CustomEvent('focuschange', { detail: { index: this.focus } }));
+  }
+
+  _setOpenIndex(i) {
+    const prev = this.openIndex;
+    if (prev === i) return;
+    if (prev >= 0 && this.items[prev]) {
+      this.items[prev].setOpen(false, this.reduceMotion);
+      this.dispatchEvent(new CustomEvent('openchange', { detail: { index: prev, open: false } }));
+    }
+    this.openIndex = i;
+    if (i >= 0 && this.items[i]) {
+      if (this.focus !== i) { this.focus = i; this._emitFocus(); }
+      this.items[i].setOpen(true, this.reduceMotion);
+      this.dispatchEvent(new CustomEvent('openchange', { detail: { index: i, open: true } }));
+    }
+  }
+
+  // Target layout for case i: a gentle cover-flow while browsing; when a case
+  // is open, its neighbours slide out of the way and shrink to nothing.
+  _layoutFor(i) {
+    const off = i - this.scroll;
+    const a = Math.min(Math.abs(off), 1.4);
+    let x = off * SPACING - Math.sign(off) * a * W * 0.12;
+    let sc = lerp(1, 0.74, Math.min(a, 1));
+    const ry = -clamp(off, -1, 1) * 0.42;
+    const z = -a * 2.4;
+    if (this.openIndex >= 0 && i !== this.openIndex) {
+      x += Math.sign(i - this.openIndex) * SPACING * 1.2 * this.openAmt;
+      sc *= 1 - this.openAmt;
+    }
+    return { x, sc, ry: ry * (1 - this.openAmt * (i === this.openIndex ? 1 : 0)), z };
+  }
+
   _resize() {
     const w = this.container.clientWidth;
     const h = this.container.clientHeight;
@@ -736,27 +937,28 @@ export class CDStage extends EventTarget {
     this._size = { w, h };
   }
 
-  // Frame the case (wider when open) inside the area above the picker.
   _frame(openE) {
-    if (!this._size) return;
     const { w, h } = this._size;
-    const pickerShown = !!this.container.querySelector('.aep-picker:not([hidden])');
-    const reserveBottom = Math.min(pickerShown ? 110 : 56, h * 0.22);
-    const usableH = Math.max(80, h - reserveBottom - 16);
     const tanHalf = Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2));
-    const needW = (W + W * openE) * lerp(1.12, 1.05, openE);
-    const needH = H * 1.3;
+    const right = this.panelSide === 'right' ? this.panelAmt * this.panelInset : 0;
+    const bottomPanel = this.panelSide === 'bottom' ? this.panelAmt * this.panelInset : 0;
+    const reserveTop = 56;
+    const reserveBottom = Math.max(Math.min(120, h * 0.24) * (1 - this.openAmt) + 24 * this.openAmt, bottomPanel);
+    const usableH = Math.max(80, h - reserveTop - reserveBottom);
+    const usableW = Math.max(120, w - right);
+    // browsing frames one case with its neighbours peeking in; open frames case + lid
+    const needH = H * lerp(1.32, 1.3, this.openAmt);
+    const needW = lerp(W * 1.25, (W + W * openE) * 1.06, this.openAmt);
     const dH = (needH / 2) / tanHalf * (h / usableH);
-    const dW = (needW / 2) / (tanHalf * this.camera.aspect);
+    const dW = (needW / 2) / (tanHalf * this.camera.aspect) * (w / usableW);
     const dist = Math.max(dH, dW);
     this.camera.position.set(0, 0, dist);
     this.camera.lookAt(0, 0, 0);
     const viewH = 2 * dist * tanHalf;
-    this.fit.dist = dist;
     this.fit.viewH = viewH;
     this.fit.worldPerPx = viewH / h;
-    // lift the case so it sits centred in the space above the picker
-    this.fit.liftY = (reserveBottom / 2) * this.fit.worldPerPx;
+    this.fit.liftY = ((reserveBottom - reserveTop) / 2) * this.fit.worldPerPx;
+    this.fit.shiftX = -(right / 2) * this.fit.worldPerPx;
   }
 
   _visible() {
@@ -765,153 +967,80 @@ export class CDStage extends EventTarget {
 
   _loop() {
     this._raf = requestAnimationFrame(this._loop);
-    const dt = Math.min(this.clock.getDelta(), 1 / 20);
+    const dt = Math.min(this.clock.getDelta(), 1 / 15);
     if (!this._visible() || !this._size) return;
-    const s = this.state;
+    const busy = this.active || (this._leaving && this._leaving.length);
+    if (!busy) return;
     const t = this.clock.elapsedTime;
 
-    // lid
-    // when opening, the lid waits for the spin to be nearly done, then swings quickly
-    // the lid is flung by the spin: it lets go while the case is still turning
-    // (≈80% of the way round) and swings fast, easing as it lands — both ways
-    const openDur = this.reduceMotion ? 0.25 : 0.55;
-    const held = s.flourish && easeOutCubic(clamp(s.flourish.t, 0, 1)) < 0.8;
-    s.openP = clamp(s.openP + (held ? 0 : s.open ? 1 : -1) * dt / openDur, 0, 1);
-    const lidTarget = s.open ? easeOutCubic(s.openP) : 1 - easeOutCubic(1 - s.openP);
-    // low-pass so reversing mid-swing never jumps
-    s.openE = s.openE === undefined ? lidTarget : s.openE + (lidTarget - s.openE) * (1 - Math.exp(-28 * dt));
-    const openE = s.openE;
-    this.lidPivot.rotation.y = -Math.PI * openE;
-    this.spread.position.x = (W / 2) * openE;
-
-    // disc spin (eases up and down like a real drive)
-    const target = s.spinning ? TAU * 0.55 : 0;
-    const rate = s.spinning ? 1.6 : 1.1;
-    s.spinSpeed += (target - s.spinSpeed) * (1 - Math.exp(-rate * dt));
-    s.discBoost *= Math.exp(-1.3 * dt);
-    if (s.discBoost < 0.01) s.discBoost = 0;
-    s.discAngle -= (s.spinSpeed + s.discBoost) * dt;
-    this.disc.rotation.z = s.discAngle;
-
-    // hover wobble
-    const h = s.hover;
-    {
-      const k = 55, c = 2 * Math.sqrt(k) * 0.26;
-      const active = !s.dragging && !this.reduceMotion;
-      const tx = active ? h.tx : 0, ty = active ? h.ty : 0;
-      h.vx += (-k * (h.x - tx) - c * h.vx) * dt;
-      h.vy += (-k * (h.y - ty) - c * h.vy) * dt;
-      h.x += h.vx * dt;
-      h.y += h.vy * dt;
+    // scroll toward focus (unless the user is dragging the row)
+    if (!this._rowDrag) {
+      const k = 40, c = 2 * Math.sqrt(k) * 0.9;
+      this.scrollVel += (-k * (this.scroll - this.focus) - c * this.scrollVel) * dt;
+      this.scroll += this.scrollVel * dt;
     }
+    const openT = this.openIndex >= 0 ? 1 : 0;
+    this.openAmt += (openT - this.openAmt) * (1 - Math.exp(-7 * dt));
+    this.panelAmt += ((this.panelOn ? 1 : 0) - this.panelAmt) * (1 - Math.exp(-7 * dt));
 
-    // the turn on open: one full revolution, lifted toward you mid-spin
-    let flourishY = 0, flourishLift = 0, flourishTip = 0;
-    if (s.flourish) {
-      s.flourish.t += dt / 0.75;
-      const ft = clamp(s.flourish.t, 0, 1);
-      flourishY = s.flourish.dir * TAU * easeOutCubic(ft); // starts fast, eases out
-      flourishLift = Math.sin(Math.PI * ft) * 2.2;
-      flourishTip = Math.sin(Math.PI * ft) * 0.18;
-      if (s.flourish.t >= 1) {
-        s.hover.vy += 1.4 * s.flourish.dir; // carry a little momentum past the end
-        s.flourish = null;
-      }
-    }
-
-    // drag / inertia / spring back to rest (nearest full turn, so flips settle face-up)
-    if (!s.dragging) {
-      for (const axis of ['x', 'y']) {
-        const goal = axis === 'y' ? Math.round(s.rot.y / TAU) * TAU : 0;
-        const k = 14, c = 2 * Math.sqrt(k) * 0.75;
-        s.vel[axis] += (-k * (s.rot[axis] - goal) - c * s.vel[axis]) * dt;
-        s.rot[axis] += s.vel[axis] * dt;
-      }
-    }
-    const idle = this.reduceMotion ? 0 : 1;
-    this.tilt.rotation.x = this.rest.x + s.rot.x + h.x - flourishTip + Math.sin(t * 0.7) * 0.025 * idle;
-    this.tilt.rotation.y = this.rest.y * (1 - openE * 0.6) + s.rot.y + h.y + flourishY + Math.sin(t * 0.45) * 0.04 * idle;
-    this.tilt.rotation.z = h.y * -0.12;
-
-    // framing follows the opening
+    // framing follows the open case's lid
+    const openItem = this.items[this.openIndex] || this.items[this._lastOpen] || null;
+    if (this.openIndex >= 0) this._lastOpen = this.openIndex;
+    const openE = openItem ? openItem.s.openE : 0;
     this._frame(openE);
+    this.row.position.set(this.fit.shiftX, this.fit.liftY, 0);
 
-    // swap / entrance
-    let swapY = 0, swapRot = 0;
-    const sw = s.swap;
-    if (sw) {
-      const travel = this.fit.viewH * 0.95;
-      if (sw.phase === 'out') {
-        sw.t += dt / (this.reduceMotion ? 0.15 : 0.38);
-        const e = easeIn(clamp(sw.t, 0, 1));
-        swapY = -travel * e;
-        swapRot = 0.25 * e;
-        if (sw.t >= 1) { sw.phase = 'wait'; sw.t = 0; }
-      }
-      if (sw.phase === 'wait') {
-        swapY = -travel;
-        if (sw.ready) { sw.apply(); sw.phase = 'in'; sw.t = 0; }
-      }
-      if (sw.phase === 'in') {
-        sw.t += dt / (this.reduceMotion ? 0.2 : 0.7);
-        const e = easeOutBack(clamp(sw.t, 0, 1));
-        swapY = travel * (1 - e);
-        swapRot = -0.18 * (1 - e);
-        if (sw.t >= 1) s.swap = null;
-      }
-    }
-    this.root.position.set(0, this.fit.liftY + swapY, FLOOR_GAP + flourishLift);
-    this.root.rotation.z = swapRot;
-
-    // shadow card follows the case footprint
-    const shadowAlpha = sw ? clamp(1 - Math.abs(swapY) / (this.fit.viewH * 0.5), 0, 1) : 1;
-    // one card under the tray, a fainter one under the (thin) lid once it lands
-    const sy = this.fit.liftY + swapY - 1.2;
-    // lifting toward the camera (the open spin) softens and spreads the shadow
-    const liftK = 1 / (1 + flourishLift * 0.45);
-    this.shadow.position.set(1.1 + this.spread.position.x + flourishLift * 0.5, sy - flourishLift * 0.5, 0);
-    this.shadow.scale.setScalar(1 + flourishLift * 0.08);
-    this.shadow.material.opacity = 0.24 * shadowAlpha * liftK;
-    this.contact.position.set(0.35 + this.spread.position.x, sy + 0.75, 0.01);
-    this.contact.material.opacity = 0.2 * shadowAlpha * Math.pow(liftK, 3);
-    this.shadowLid.position.set(1.1 + this.spread.position.x - W, sy, 0);
-    this.shadowLid.material.opacity = 0.1 * shadowAlpha * Math.pow(openE, 3);
+    const opts = { reduceMotion: this.reduceMotion, restX: this.rest.x, restY: this.rest.y, snap: false };
+    this.items.forEach((it, i) => {
+      const lay = this._layoutFor(i);
+      it.update(dt, t, lay, { ...opts, hoverable: i === this.focus });
+    });
+    (this._leaving || []).forEach(it => it.update(dt, t, it.s.lay, { ...opts, hoverable: false }));
 
     this.renderer.render(this.scene, this.camera);
   }
 
   // ---------------------------------------------------------------- pointer
+  _pick(e) {
+    const r = this.canvas.getBoundingClientRect();
+    const ndc = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    const ray = this._ray || (this._ray = new THREE.Raycaster());
+    ray.setFromCamera(ndc, this.camera);
+    let best = null;
+    this.items.forEach((it, i) => {
+      if (!it.root.visible || it.root.scale.x < 0.1) return;
+      const d = ray.intersectObjects(it.discParts, false)[0];
+      const c = ray.intersectObjects(it.caseParts, false)[0];
+      const hit = d && c ? (d.distance < c.distance ? d : c) : (d || c);
+      if (hit && (!best || hit.distance < best.dist)) best = { index: i, dist: hit.distance, disc: !!d, discFirst: !!d && (!c || d.distance <= c.distance) };
+    });
+    return best;
+  }
+
   _bindPointer() {
     const el = this.canvas;
-    const ray = new THREE.Raycaster();
-    const ndc = new THREE.Vector2();
     let down = null;
-
-    const pick = e => {
-      const r = el.getBoundingClientRect();
-      ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
-      ray.setFromCamera(ndc, this.camera);
-      const hitsDisc = ray.intersectObjects(this.discParts, false);
-      const hitsCase = ray.intersectObjects([this.basePlate, this.baseRails, this.lidPlate, this.lidRim], false);
-      return { disc: hitsDisc[0] || null, case: hitsCase[0] || null };
-    };
+    let lastHover = null;
 
     el.addEventListener('pointerdown', e => {
       if (e.button !== 0) return;
       el.setPointerCapture(e.pointerId);
-      down = { x: e.clientX, y: e.clientY, t: e.timeStamp, lx: e.clientX, ly: e.clientY, lt: performance.now(), moved: false };
-      this.state.vel.x = this.state.vel.y = 0;
+      const openItem = this.items[this.openIndex];
+      down = {
+        x: e.clientX, y: e.clientY, t: e.timeStamp, lx: e.clientX, ly: e.clientY, lt: performance.now(),
+        moved: false, mode: openItem ? 'turn' : 'row', startScroll: this.scroll, vx: 0,
+      };
+      if (openItem) { openItem.s.vel.x = openItem.s.vel.y = 0; }
     });
 
-    let lastHover = null;
     el.addEventListener('pointermove', e => {
+      const focusItem = this.items[this.focus];
       if (!down) {
-        if (!this.state.hasAlbum) return;
-        // lean toward the cursor; quick flicks add a bit of jiggle
+        if (!focusItem) return;
         const r = el.getBoundingClientRect();
         const nx = ((e.clientX - r.left) / r.width) * 2 - 1;
         const ny = ((e.clientY - r.top) / r.height) * 2 - 1;
-        const hv = this.state.hover;
+        const hv = focusItem.s.hover;
         hv.ty = clamp(nx, -1, 1) * 0.24;
         hv.tx = clamp(ny, -1, 1) * 0.18;
         if (lastHover) {
@@ -919,63 +1048,110 @@ export class CDStage extends EventTarget {
           hv.vx += clamp((e.clientY - lastHover.y) * 0.01, -0.5, 0.5);
         }
         lastHover = { x: e.clientX, y: e.clientY };
-        // hover cursor
-        const p = pick(e);
-        const overDisc = p.disc && (this.state.openP > 0.6);
-        el.style.cursor = overDisc ? 'pointer' : (p.case || p.disc) ? 'grab' : 'default';
+        const p = this._pick(e);
+        const openItem = this.items[this.openIndex];
+        el.style.cursor = !p ? 'default'
+          : (openItem && p.index === this.openIndex && p.disc && openItem.s.openP > 0.6) ? 'pointer'
+          : (this.openIndex < 0) ? 'pointer' : 'grab';
         return;
       }
       const dx = e.clientX - down.x, dy = e.clientY - down.y;
-      if (!down.moved && Math.hypot(dx, dy) > 5) {
+      if (!down.moved && Math.hypot(dx, dy) > 6) {
         down.moved = true;
-        this.state.dragging = true;
         el.style.cursor = 'grabbing';
+        if (down.mode === 'turn') this.items[this.openIndex].s.dragging = true;
+        else this._rowDrag = true;
       }
-      if (down.moved) {
-        const now = performance.now();
-        const mx = e.clientX - down.lx, my = e.clientY - down.ly;
-        const dtm = Math.max(1, now - down.lt) / 1000;
-        const s = this.state;
+      if (!down.moved) return;
+      const now = performance.now();
+      const mx = e.clientX - down.lx, my = e.clientY - down.ly;
+      const dtm = Math.max(1, now - down.lt) / 1000;
+      if (down.mode === 'turn') {
+        const s = this.items[this.openIndex].s;
         s.rot.y += mx * 0.0105;
         s.rot.x = clamp(s.rot.x + my * 0.0085, -1.25, 1.25);
         s.vel.y = lerp(s.vel.y, (mx * 0.0105) / dtm, 0.5);
         s.vel.x = lerp(s.vel.x, (my * 0.0085) / dtm, 0.5);
-        down.lx = e.clientX; down.ly = e.clientY; down.lt = now;
+      } else {
+        const pxPerCase = SPACING / this.fit.worldPerPx;
+        const n = this.items.length;
+        let sc = down.startScroll - dx / pxPerCase;
+        // rubber-band past the ends
+        if (sc < 0) sc = sc * 0.35;
+        if (sc > n - 1) sc = n - 1 + (sc - (n - 1)) * 0.35;
+        this.scroll = sc;
+        down.vx = lerp(down.vx, -(mx / pxPerCase) / dtm, 0.4);
+        // the focused case swings a little with the drag
+        const fi = this.items[this.focus];
+        if (fi) fi.s.hover.vy += clamp(mx * 0.01, -0.4, 0.4);
       }
+      down.lx = e.clientX; down.ly = e.clientY; down.lt = now;
     });
 
     const end = e => {
       if (!down) return;
-      const wasTap = !down.moved && e.timeStamp - down.t < 600;
-      this.state.dragging = false;
-      el.style.cursor = 'grab';
+      const d = down;
       down = null;
-      if (!wasTap || (this.state.swap && this.state.swap.phase !== 'in')) return;
-      const p = pick(e);
-      // Disc counts when the lid is out of the way (or the hit is on the disc before any plastic)
-      const discFirst = p.disc && (!p.case || p.disc.distance <= p.case.distance);
-      if (p.disc && (this.state.openP > 0.6 || discFirst && this.state.open)) {
-        this.dispatchEvent(new CustomEvent('disctap'));
-      } else if (p.case || p.disc) {
-        this.toggleOpen();
+      el.style.cursor = 'grab';
+      if (d.mode === 'turn' && this.items[this.openIndex]) this.items[this.openIndex].s.dragging = false;
+      if (this._rowDrag) {
+        this._rowDrag = false;
+        this.scrollVel = d.vx;
+        this.focusTo(Math.round(this.scroll + d.vx * 0.18));
+        return;
+      }
+      const wasTap = !d.moved && e.timeStamp - d.t < 600;
+      if (!wasTap) return;
+      const p = this._pick(e);
+      if (!p) return;
+      if (this.openIndex >= 0) {
+        const it = this.items[this.openIndex];
+        if (p.index !== this.openIndex) return;
+        if (p.disc && (it.s.openP > 0.6 || p.discFirst)) this.dispatchEvent(new CustomEvent('disctap', { detail: { index: p.index } }));
+        else this.close();
+      } else if (p.index !== this.focus) {
+        this.focusTo(p.index);
+      } else {
+        this.open();
       }
     };
     el.addEventListener('pointerup', end);
+    el.addEventListener('pointercancel', () => {
+      if (down && down.mode === 'turn' && this.items[this.openIndex]) this.items[this.openIndex].s.dragging = false;
+      if (this._rowDrag) { this._rowDrag = false; this.focusTo(Math.round(this.scroll)); }
+      down = null;
+    });
     el.addEventListener('pointerleave', () => {
       lastHover = null;
-      this.state.hover.tx = 0;
-      this.state.hover.ty = 0;
+      this.items.forEach(it => { it.s.hover.tx = 0; it.s.hover.ty = 0; });
     });
-    el.addEventListener('pointercancel', () => { down = null; this.state.dragging = false; });
+
+    // wheel / trackpad: step through the row
+    let acc = 0, lastStep = 0;
+    el.addEventListener('wheel', e => {
+      if (this.openIndex >= 0 || this.items.length < 2) return;
+      e.preventDefault();
+      acc += Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      const now = performance.now();
+      if (Math.abs(acc) > 40 && now - lastStep > 160) {
+        this.focusTo(this.focus + Math.sign(acc));
+        acc = 0;
+        lastStep = now;
+      }
+    }, { passive: false });
   }
 
   _bindKeys() {
     this.canvas.addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); this.toggleOpen(); }
-      if (e.key === 'ArrowLeft') this.state.vel.y -= 2.5;
-      if (e.key === 'ArrowRight') this.state.vel.y += 2.5;
-      if (e.key === 'ArrowUp') this.state.vel.x -= 2;
-      if (e.key === 'ArrowDown') this.state.vel.x += 2;
+      const open = this.openIndex >= 0;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const dir = e.key === 'ArrowRight' ? 1 : -1;
+        if (open) this.items[this.openIndex].s.vel.y += 2.5 * dir;
+        else this.focusTo(this.focus + dir);
+      }
+      if (e.key === 'Enter') { e.preventDefault(); open ? this.close() : this.open(); }
+      if (e.key === 'Escape' && open) { e.preventDefault(); e.stopPropagation(); this.close(); }
     });
   }
 }
