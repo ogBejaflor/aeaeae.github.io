@@ -777,10 +777,15 @@ export class CDStage extends EventTarget {
 
     // lid
     // when opening, the lid waits for the spin to be nearly done, then swings quickly
-    const openDur = this.reduceMotion ? 0.25 : 0.6;
-    const lidGo = s.open && (!s.flourish || s.flourish.t >= 0.62);
+    // when opening, the lid is flung open by the spin: it lets go while the case
+    // is still turning (≈80% of the way round) and swings fast, easing as it lands
+    const openDur = this.reduceMotion ? 0.25 : 0.55;
+    const lidGo = s.open && (!s.flourish || easeOutCubic(clamp(s.flourish.t, 0, 1)) >= 0.8);
     s.openP = clamp(s.openP + (lidGo ? 1 : s.open ? 0 : -1) * dt / openDur, 0, 1);
-    const openE = easeInOut(s.openP);
+    const lidTarget = s.open ? easeOutCubic(s.openP) : easeInOut(s.openP);
+    // low-pass so reversing mid-swing never jumps
+    s.openE = s.openE === undefined ? lidTarget : s.openE + (lidTarget - s.openE) * (1 - Math.exp(-28 * dt));
+    const openE = s.openE;
     this.lidPivot.rotation.y = -Math.PI * openE;
     this.spread.position.x = (W / 2) * openE;
 
