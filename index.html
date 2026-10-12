@@ -7,6 +7,15 @@
   <title>æ Label Website</title>
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="assets/css/gallery.css" />
+  <link rel="stylesheet" href="assets/css/player.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.min.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+      }
+    }
+  </script>
 </head>
 <body>
 
@@ -398,61 +407,56 @@
       </div>
       <span class="window-title">Audio Player</span>
     </div>
-    <div class="window-content audio-app-container">
-      <div class="audio-sidebar">
-         <img src="assets/images/player-logo-placeholder.png" alt="Logo" class="audio-logo-img" onerror="this.style.display='none'" />
-         <ul class="audio-nav">
-           <li class="active" data-view="listen-now"><img src="assets/images/nav-listen-icon.png" class="nav-icon" onerror="this.style.display='none'" /> Listen Now</li>
-           <li data-view="artists"><img src="assets/images/nav-artists-icon.png" class="nav-icon" onerror="this.style.display='none'" /> Artists</li>
-           <li data-view="albums"><img src="assets/images/nav-albums-icon.png" class="nav-icon" onerror="this.style.display='none'" /> Albums</li>
-         </ul>
-      </div>
-      
-      <div class="audio-main">
-         <div class="audio-header">
-            <h2 id="audio-view-title">Listen Now</h2>
-         </div>
-         <div class="audio-scroll-area">
-           <div class="audio-grid" id="audio-grid">
-             <!-- JavaScript will inject albums/artists here -->
-           </div>
-           <div class="audio-tracklist" id="audio-tracklist" style="display:none;">
-             <!-- JavaScript injects tracks of selected album here -->
-           </div>
-         </div>
-      </div>
-      
-      <div class="audio-bottom-bar">
-         <div class="now-playing-info">
-            <img src="assets/images/default-album-art.png" id="np-art" alt="Album Art" />
-            <div class="np-text">
-               <div id="np-title">No track playing</div>
-               <div id="np-artist">---</div>
+    <div class="window-content ae-player" id="ae-player">
+      <!-- 3D jewel case stage (assets/js/cdCase.js draws into this) -->
+      <section class="aep-stage" id="aep-stage" aria-label="Disc">
+        <p class="aep-hint" id="aep-hint" aria-live="polite">tap the case to open · drag to turn it</p>
+        <div class="aep-picker" id="aep-picker" role="listbox" aria-label="Choose a disc"></div>
+      </section>
+
+      <!-- Album, tracks and transport -->
+      <aside class="aep-panel">
+        <header class="aep-meta">
+          <span class="aep-eyebrow">æ · disc <span id="aep-disc-num">1</span></span>
+          <h2 class="aep-album" id="aep-album">—</h2>
+          <p class="aep-artist" id="aep-artist"></p>
+          <p class="aep-stats" id="aep-stats"></p>
+        </header>
+
+        <ol class="aep-tracks" id="aep-tracks" aria-label="Tracks"></ol>
+
+        <footer class="aep-transport">
+          <div class="aep-now">
+            <span class="aep-now-title" id="aep-now-title">Pick a disc and press play</span>
+            <span class="aep-now-sub" id="aep-now-sub"></span>
+          </div>
+          <div class="aep-timeline">
+            <span class="aep-time" id="aep-t-cur">0:00</span>
+            <div class="aep-bar" id="aep-progress" role="slider" tabindex="0" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div class="aep-bar-fill" id="aep-progress-fill"></div>
             </div>
-         </div>
-         
-         <div class="player-controls">
-            <div class="player-buttons">
-               <img src="assets/images/btn-prev.png" id="btn-prev" class="ctrl-btn-img" alt="Prev" />
-               <img src="assets/images/btn-play.png" id="btn-play" class="ctrl-btn-img play-pause" alt="Play" />
-               <img src="assets/images/btn-next.png" id="btn-next" class="ctrl-btn-img" alt="Next" />
+            <span class="aep-time" id="aep-t-tot">0:00</span>
+          </div>
+          <div class="aep-controls">
+            <button class="aep-btn" id="aep-prev" aria-label="Previous track">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 6v12M18 6.5v11a.8.8 0 0 1-1.2.7L9.2 12.7a.8.8 0 0 1 0-1.4l7.6-5.5a.8.8 0 0 1 1.2.7Z"/></svg>
+            </button>
+            <button class="aep-btn aep-play" id="aep-play" aria-label="Play">
+              <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8a.9.9 0 0 0 1.4.8l10-6.4a.9.9 0 0 0 0-1.6l-10-6.4A.9.9 0 0 0 8 5.6Z"/></svg>
+              <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.2"/><rect x="13.5" y="5" width="4" height="14" rx="1.2"/></svg>
+            </button>
+            <button class="aep-btn" id="aep-next" aria-label="Next track">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 6v12M6 6.5v11a.8.8 0 0 0 1.2.7l7.6-5.5a.8.8 0 0 0 0-1.4L7.2 5.8A.8.8 0 0 0 6 6.5Z"/></svg>
+            </button>
+            <div class="aep-vol">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.2L12 5.5v13l-4.8-4H4a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1Z"/><path class="w1" d="M15.5 9a4 4 0 0 1 0 6"/><path class="w2" d="M18 6.5a7.5 7.5 0 0 1 0 11"/></svg>
+              <div class="aep-bar aep-vol-bar" id="aep-vol" role="slider" tabindex="0" aria-label="Volume" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70">
+                <div class="aep-bar-fill" id="aep-vol-fill"></div>
+              </div>
             </div>
-            <div class="player-timeline">
-               <span id="time-current">0:00</span>
-               <div class="progress-bar-container" id="progress-container">
-                  <div class="progress-bar-fill" id="progress-fill"></div>
-               </div>
-               <span id="time-total">0:00</span>
-            </div>
-         </div>
-         
-         <div class="player-volume">
-            <img src="assets/images/icon-volume.png" class="vol-icon" alt="Vol" onerror="this.style.display='none'" />
-            <div class="vol-bar-container" id="vol-container">
-               <div class="vol-bar-fill" id="vol-fill"></div>
-            </div>
-         </div>
-      </div>
+          </div>
+        </footer>
+      </aside>
     </div>
   </div>
 
@@ -519,6 +523,6 @@
 
   <!-- Audio Player Apps -->
   <script src="assets/js/musicData.js"></script>
-  <script src="assets/js/audioPlayer.js"></script>
+  <script type="module" src="assets/js/audioPlayer.js"></script>
 </body>
 </html>
