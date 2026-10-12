@@ -33,6 +33,7 @@ const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 const easeInOut = t => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const easeIn = t => t * t * t;
+const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
 const easeOutBack = t => {
   const c1 = 1.4, c3 = c1 + 1;
   return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
@@ -775,8 +776,10 @@ export class CDStage extends EventTarget {
     const t = this.clock.elapsedTime;
 
     // lid
-    const openDur = this.reduceMotion ? 0.25 : 0.85;
-    s.openP = clamp(s.openP + (s.open ? 1 : -1) * dt / openDur, 0, 1);
+    // when opening, the lid waits for the spin to be nearly done, then swings quickly
+    const openDur = this.reduceMotion ? 0.25 : 0.6;
+    const lidGo = s.open && (!s.flourish || s.flourish.t >= 0.62);
+    s.openP = clamp(s.openP + (lidGo ? 1 : s.open ? 0 : -1) * dt / openDur, 0, 1);
     const openE = easeInOut(s.openP);
     this.lidPivot.rotation.y = -Math.PI * openE;
     this.spread.position.x = (W / 2) * openE;
@@ -805,9 +808,9 @@ export class CDStage extends EventTarget {
     // the turn on open: one full revolution, lifted toward you mid-spin
     let flourishY = 0, flourishLift = 0, flourishTip = 0;
     if (s.flourish) {
-      s.flourish.t += dt / 1.3;
+      s.flourish.t += dt / 0.75;
       const ft = clamp(s.flourish.t, 0, 1);
-      flourishY = TAU * easeInOut(ft);
+      flourishY = TAU * easeOutCubic(ft); // starts fast, eases into the opening
       flourishLift = Math.sin(Math.PI * ft) * 2.2;
       flourishTip = Math.sin(Math.PI * ft) * 0.18;
       if (s.flourish.t >= 1) {
