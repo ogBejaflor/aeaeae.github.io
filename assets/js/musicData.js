@@ -72,3 +72,113 @@ window.musicCatalog = [
     ]
   }
 ];
+
+window.musicArtists = [
+  {
+    "id": "ar_1",
+    "name": "Adler Jack",
+    "photo": null,
+    "bio": "",
+    "albums": []
+  },
+  {
+    "id": "ar_2",
+    "name": "Athoms",
+    "photo": null,
+    "bio": "",
+    "albums": []
+  },
+  {
+    "id": "ar_3",
+    "name": "Bejaflor",
+    "photo": null,
+    "bio": "",
+    "albums": [
+      "a_1"
+    ]
+  },
+  {
+    "id": "ar_4",
+    "name": "Carolina Miragaia",
+    "photo": null,
+    "bio": "",
+    "albums": []
+  },
+  {
+    "id": "ar_5",
+    "name": "Clauthewitch",
+    "photo": null,
+    "bio": "",
+    "albums": []
+  },
+  {
+    "id": "ar_6",
+    "name": "Escada",
+    "photo": null,
+    "bio": "",
+    "albums": []
+  },
+  {
+    "id": "ar_7",
+    "name": "Fausto Lobo",
+    "photo": null,
+    "bio": "",
+    "albums": []
+  },
+  {
+    "id": "ar_8",
+    "name": "Lil Audio",
+    "photo": null,
+    "bio": "",
+    "albums": []
+  },
+  {
+    "id": "ar_9",
+    "name": "Miana",
+    "photo": null,
+    "bio": "",
+    "albums": []
+  },
+  {
+    "id": "ar_10",
+    "name": "Nicø",
+    "photo": null,
+    "bio": "",
+    "albums": []
+  },
+  {
+    "id": "ar_11",
+    "name": "PÉROLA",
+    "photo": null,
+    "bio": "",
+    "albums": []
+  },
+  {
+    "id": "ar_12",
+    "name": "Phaser",
+    "photo": null,
+    "bio": "",
+    "albums": []
+  },
+  {
+    "id": "ar_13",
+    "name": "Proxy Fae",
+    "photo": null,
+    "bio": "",
+    "albums": []
+  },
+  {
+    "id": "ar_14",
+    "name": "Tet3",
+    "photo": null,
+    "bio": "",
+    "albums": []
+  },
+  {
+    "id": "ar_15",
+    "name": "Xaulaura",
+    "photo": null,
+    "bio": "",
+    "albums": []
+  }
+];
