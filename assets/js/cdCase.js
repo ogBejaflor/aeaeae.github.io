@@ -708,6 +708,7 @@ export class CDStage extends EventTarget {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     this.renderer.setClearColor(0x000000, 0);
+    this.renderer.autoClear = false; // shadows render in their own pass first
     this.renderer.toneMapping = THREE.NeutralToneMapping;
     this.renderer.toneMappingExposure = 1.12;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -736,6 +737,11 @@ export class CDStage extends EventTarget {
 
     this.row = new THREE.Group();
     this.scene.add(this.row);
+    // Shadows live in a separate scene drawn underneath, so a case tilting
+    // toward you can never dip "below the floor" and get shadowed over.
+    this.shadowScene = new THREE.Scene();
+    this.shadowRow = new THREE.Group();
+    this.shadowScene.add(this.shadowRow);
 
     // --- shared geometry + materials ----------------------------------------
     const base = buildBaseGeometry();
@@ -764,7 +770,7 @@ export class CDStage extends EventTarget {
         clear: makePlastic({ opacity: 0.05, edge: 0.5, power: 1.8, body: 0xa3a9b2, spec: 0.8, coat: 0, irid: 0 }),
         // printed label: cover at its true colours (emissive) + a glossy coat
         art: new THREE.MeshPhysicalMaterial({
-          color: 0x1a1a1a, emissive: 0xffffff, emissiveIntensity: 0.92,
+          color: 0x1a1a1a, emissive: 0xffffff, emissiveIntensity: 1.0,
           roughness: 0.38, metalness: 0, clearcoat: 0.8, clearcoatRoughness: 0.12, envMapIntensity: 0.6,
         }),
         mirror: makeMirrorRing(),
@@ -822,7 +828,7 @@ export class CDStage extends EventTarget {
       it.s.popDelay = (this.reduceMotion ? 0 : 0.07) * Math.abs(i - this.focus);
       it.s.spinning = album.id === this.spinningId;
       this.row.add(it.root);
-      this.row.add(it.shadows);
+      this.shadowRow.add(it.shadows);
       it.root.visible = false;
       it.shadows.visible = false;
       loadCoverTexture(album, this.renderer).then(tex => it.setTexture(tex));
@@ -989,6 +995,7 @@ export class CDStage extends EventTarget {
     const openE = openItem ? openItem.s.openE : 0;
     this._frame(openE);
     this.row.position.set(this.fit.shiftX, this.fit.liftY, 0);
+    this.shadowRow.position.copy(this.row.position);
 
     const opts = { reduceMotion: this.reduceMotion, restX: this.rest.x, restY: this.rest.y, snap: false };
     this.items.forEach((it, i) => {
@@ -997,6 +1004,9 @@ export class CDStage extends EventTarget {
     });
     (this._leaving || []).forEach(it => it.update(dt, t, it.s.lay, { ...opts, hoverable: false }));
 
+    this.renderer.clear();
+    this.renderer.render(this.shadowScene, this.camera);
+    this.renderer.clearDepth();
     this.renderer.render(this.scene, this.camera);
   }
 
