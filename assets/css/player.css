@@ -182,6 +182,14 @@
 
 .aep-card:focus-visible { outline: 2px solid var(--aep-ink); outline-offset: 3px; }
 
+/* the artist in focus: a crisp rim of light and a deeper drop shadow */
+.aep-card.is-front {
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.22),
+    0 0 40px rgba(255, 255, 255, 0.06),
+    0 30px 60px rgba(0, 0, 0, 0.65);
+}
+
 .aep-card-img,
 .aep-card-ph,
 .aep-card-gloss {

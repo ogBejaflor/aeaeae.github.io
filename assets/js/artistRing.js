@@ -95,7 +95,8 @@ export class ArtistRing extends EventTarget {
     const w = this.wrap.clientWidth, h = this.wrap.clientHeight;
     if (!w || !h) return;
     // square cards with plenty of air between them
-    const cardW = clamp(Math.min(w * 0.19, h * 0.36), 104, 200);
+    // base size; the card in focus is drawn ~1.55× this
+    const cardW = clamp(Math.min(w * 0.17, h * 0.3), 96, 180);
     const cardH = cardW;
     this.step = 360 / Math.max(this.n, 1);
     const gap = 1.75; // centre-to-centre distance, in card widths
@@ -118,14 +119,21 @@ export class ArtistRing extends EventTarget {
       const ang = rel * this.step * Math.PI / 180;
       const facing = (Math.cos(ang) + 1) / 2;                        // 1 front … 0 back
       const front = Math.abs(rel) < 0.5;
-      // the front card steps out of the ring a little
-      const pop = Math.pow(Math.max(0, Math.cos(ang)), 8) * this.cardW * 0.22;
+      // emphasis: 1 for the card in focus, easing to 0 by the time a neighbour arrives
+      const near = Math.max(0, 1 - Math.abs(rel));
+      const e = near * near * (3 - 2 * near);
+      // the focused card grows, steps out of the ring and straightens up
+      const pop = e * this.cardW * 0.35;
+      const scale = 1 + 0.55 * e;
       // like horses on a merry-go-round: each card rides gently up and down,
       // and sits at its own slight angle so the ring feels hand-placed
-      const bob = Math.sin(i * 1.9 + t * 1.25) * bobAmp;
-      const lean = (((i * 37) % 7) - 3) * 0.7;
-      c.style.transform = `rotateY(${i * this.step}deg) translateZ(${(r + pop).toFixed(1)}px) translateY(${bob.toFixed(1)}px) rotateZ(${lean}deg)`;
-      c.style.opacity = (0.18 + 0.82 * Math.pow(facing, 1.6)).toFixed(3);
+      const bob = Math.sin(i * 1.9 + t * 1.25) * bobAmp * (1 - 0.6 * e);
+      const lean = (((i * 37) % 7) - 3) * 0.7 * (1 - e);
+      c.style.transform = `rotateY(${i * this.step}deg) translateZ(${(r + pop).toFixed(1)}px) translateY(${bob.toFixed(1)}px) rotateZ(${lean.toFixed(2)}deg) scale(${scale.toFixed(3)})`;
+      // everyone else steps back into the dark
+      const base = 0.12 + 0.5 * Math.pow(facing, 1.6);
+      c.style.opacity = (base + (1 - base) * e).toFixed(3);
+      c.style.setProperty('--focus', e.toFixed(3));
       c.style.zIndex = String(Math.round(facing * 100));
       c.classList.toggle('is-front', front);
       c.style.pointerEvents = facing > 0.45 ? 'auto' : 'none';
