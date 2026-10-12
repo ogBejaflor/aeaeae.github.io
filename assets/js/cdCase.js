@@ -665,15 +665,10 @@ export class CDStage extends EventTarget {
     this.state.open = open;
     const s = this.state;
     if (!this.reduceMotion) {
-      if (open) {
-        s.flourish = { t: 0 };
-        s.discBoost = TAU * 2.6;
-      } else {
-        // closing: a little shudder as the lid snaps shut
-        s.hover.vy -= 2.2;
-        s.hover.vx += 1.2;
-        s.discBoost = Math.max(s.discBoost, TAU * 0.6);
-      }
+      // both ways the case does a full turn and the lid follows from it:
+      // opening spins one way, closing spins back the other way
+      s.flourish = { t: 0, dir: open ? -1 : 1 };
+      s.discBoost = open ? TAU * 2.6 : Math.max(s.discBoost, TAU * 1.2);
     }
     this.dispatchEvent(new CustomEvent('openchange', { detail: { open } }));
   }
@@ -777,12 +772,12 @@ export class CDStage extends EventTarget {
 
     // lid
     // when opening, the lid waits for the spin to be nearly done, then swings quickly
-    // when opening, the lid is flung open by the spin: it lets go while the case
-    // is still turning (≈80% of the way round) and swings fast, easing as it lands
+    // the lid is flung by the spin: it lets go while the case is still turning
+    // (≈80% of the way round) and swings fast, easing as it lands — both ways
     const openDur = this.reduceMotion ? 0.25 : 0.55;
-    const lidGo = s.open && (!s.flourish || easeOutCubic(clamp(s.flourish.t, 0, 1)) >= 0.8);
-    s.openP = clamp(s.openP + (lidGo ? 1 : s.open ? 0 : -1) * dt / openDur, 0, 1);
-    const lidTarget = s.open ? easeOutCubic(s.openP) : easeInOut(s.openP);
+    const held = s.flourish && easeOutCubic(clamp(s.flourish.t, 0, 1)) < 0.8;
+    s.openP = clamp(s.openP + (held ? 0 : s.open ? 1 : -1) * dt / openDur, 0, 1);
+    const lidTarget = s.open ? easeOutCubic(s.openP) : 1 - easeOutCubic(1 - s.openP);
     // low-pass so reversing mid-swing never jumps
     s.openE = s.openE === undefined ? lidTarget : s.openE + (lidTarget - s.openE) * (1 - Math.exp(-28 * dt));
     const openE = s.openE;
@@ -815,12 +810,12 @@ export class CDStage extends EventTarget {
     if (s.flourish) {
       s.flourish.t += dt / 0.75;
       const ft = clamp(s.flourish.t, 0, 1);
-      flourishY = TAU * easeOutCubic(ft); // starts fast, eases into the opening
+      flourishY = s.flourish.dir * TAU * easeOutCubic(ft); // starts fast, eases out
       flourishLift = Math.sin(Math.PI * ft) * 2.2;
       flourishTip = Math.sin(Math.PI * ft) * 0.18;
       if (s.flourish.t >= 1) {
+        s.hover.vy += 1.4 * s.flourish.dir; // carry a little momentum past the end
         s.flourish = null;
-        s.hover.vy += 1.4; // settle with a small overshoot
       }
     }
 
