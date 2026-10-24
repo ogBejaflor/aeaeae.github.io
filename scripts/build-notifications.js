@@ -1,17 +1,3 @@
-const fs = require('fs');
-const path = require('path');
-
-const rootDir = path.join(__dirname, '..');
-const dataFile = path.join(rootDir, 'data', 'notifications.json');
-const outputFile = path.join(rootDir, 'assets', 'js', 'notificationsData.js');
-
-try {
-  let rawdata = fs.readFileSync(dataFile, 'utf8');
-  let notifications = JSON.parse(rawdata);
-  
-  const jsContent = `window.aeNotificationsData = ${JSON.stringify(notifications, null, 2)};`;
-  fs.writeFileSync(outputFile, jsContent, 'utf8');
-  console.log(`Successfully built notificationsData.js with ${notifications.length} notifications.`);
-} catch (err) {
-  console.error('Error building notifications:', err);
-}
+// Kept for old habits — everything is built by scripts/build.js now.
+const r = require('./build.js').buildAll();
+console.log(`Built: ${r.artists} artists, ${r.albums} albums, ${r.popups} pop-ups, ${r.media} gallery items.`);

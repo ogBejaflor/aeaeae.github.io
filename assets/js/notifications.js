@@ -9,8 +9,15 @@
   const VISIBLE_X = PADDING;
   const DRAG_DISMISS_PX = 80;
 
-  // Cadence (5–20s)
-  const nextDelay = () => 5000 + Math.random() * 15000;
+  // Editable in the admin (data/settings.json → siteSettings.js)
+  const CFG = (window.aeSiteSettings && window.aeSiteSettings.popups) || {};
+  const ENABLED = CFG.enabled !== false;
+  const MIN_S = Math.max(1, Number(CFG.minDelay) || 5);
+  const MAX_S = Math.max(MIN_S, Number(CFG.maxDelay) || 20);
+  const WELCOME = CFG.welcome || {};
+
+  // Cadence (between minDelay and maxDelay seconds)
+  const nextDelay = () => (MIN_S + Math.random() * (MAX_S - MIN_S)) * 1000;
 
   // --- Mascot (Clippy) support ---
   const MASCOT_ICON = 'assets/images/Clippy.png';
@@ -50,11 +57,11 @@
   }
 
   function pushMascotWelcome() {
-    if (__aeMascotShown) return;
+    if (__aeMascotShown || !ENABLED || WELCOME.enabled === false) return;
     __aeMascotShown = true;
     const payload = {
-      title: "Hi, I'm Clippy 👋",
-      body: "Welcome to æ. Double-click folders to explore — or open the Terminal and type “help”.",
+      title: WELCOME.title || "Hi, I'm Clippy 👋",
+      body: WELCOME.body || "Welcome to æ. Double-click folders to explore — or open the Terminal and type “help”.",
       icon: MASCOT_ICON,
       mascot: true
     };
@@ -68,8 +75,8 @@
   }
 
   // Read from the externally generated notificationsData
-  const DEMO = window.aeNotificationsData || [];
-  let queue = shuffle(DEMO.slice()); // mutable so we can reseed
+  const DEMO = ENABLED ? (window.aeNotificationsData || []) : [];
+  let queue = CFG.shuffle === false ? DEMO.slice() : shuffle(DEMO.slice()); // mutable so we can reseed
 
   // Root element
   let root = document.getElementById(ROOT_ID);
@@ -422,7 +429,7 @@
 
     // Watchdog: if truly nothing rendered, show a hello toast (helps diagnose)
     setTimeout(() => {
-      if (!cards.length) {
+      if (!cards.length && ENABLED && WELCOME.enabled !== false) {
         push({ title: 'Hello', body: 'Notifications are active.' });
         if (!timer && queue.length) schedule();
       }

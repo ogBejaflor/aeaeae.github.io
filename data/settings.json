@@ -1,0 +1,22 @@
+{
+  "siteTitle": "æ Label Website",
+  "background": {
+    "image": "assets/images/desktop-background.jpg",
+    "fit": "cover",
+    "color": "#000000"
+  },
+  "popups": {
+    "enabled": true,
+    "minDelay": 5,
+    "maxDelay": 20,
+    "shuffle": true,
+    "welcome": {
+      "enabled": true,
+      "title": "Hi, I'm Clippy 👋",
+      "body": "Welcome to æ. Double-click folders to explore — or open the Terminal and type “help”."
+    }
+  },
+  "gallery": {
+    "includeCatalog": true
+  }
+}
