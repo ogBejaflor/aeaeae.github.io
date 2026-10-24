@@ -1,0 +1,9 @@
+# dependencies (installed by the admin on first start)
+node_modules/
+
+# admin working folders: deleted items + upload staging (never published)
+admin/.trash/
+admin/.tmp/
+
+# macOS
+.DS_Store
