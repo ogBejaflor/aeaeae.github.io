@@ -29,5 +29,11 @@ window.aeGalleryData = [
     "type": "image",
     "filename": "cover.jpg",
     "directory": "Catalogo/Bejaflor/Bejaflor 3"
+  },
+  {
+    "src": "Catalogo/Miana/photo.jpg",
+    "type": "image",
+    "filename": "photo.jpg",
+    "directory": "Catalogo/Miana"
   }
 ];

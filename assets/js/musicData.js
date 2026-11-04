@@ -129,7 +129,7 @@ window.musicArtists = [
   {
     "id": "ar_8",
     "name": "Miana",
-    "photo": null,
+    "photo": "Catalogo/Miana/photo.jpg",
     "bio": "",
     "albums": []
   },
@@ -171,6 +171,20 @@ window.musicArtists = [
   {
     "id": "ar_14",
     "name": "Xaulaura",
+    "photo": null,
+    "bio": "",
+    "albums": []
+  },
+  {
+    "id": "ar_15",
+    "name": "Sssubrinha",
+    "photo": null,
+    "bio": "",
+    "albums": []
+  },
+  {
+    "id": "ar_16",
+    "name": "Levi",
     "photo": null,
     "bio": "",
     "albums": []
