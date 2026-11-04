@@ -264,12 +264,30 @@ function buildSettings(settings) {
   writeIfChanged(path.join(OUT, 'siteSettings.js'), js);
 }
 
+// Browsers (and GitHub Pages) keep script files for a while. Tag each data script in
+// index.html with a fingerprint of its content, so a published change loads straight away.
+const DATA_SCRIPTS = ['siteSettings.js', 'musicData.js', 'notificationsData.js', 'galleryData.js'];
+function stampIndex() {
+  const file = path.join(ROOT, 'index.html');
+  if (!fs.existsSync(file)) return;
+  let html = fs.readFileSync(file, 'utf8');
+  for (const name of DATA_SCRIPTS) {
+    const abs = path.join(OUT, name);
+    if (!fs.existsSync(abs)) continue;
+    const v = require('crypto').createHash('sha1').update(fs.readFileSync(abs)).digest('hex').slice(0, 10);
+    const re = new RegExp(`(src="assets/js/${name.replace('.', '\\.')})(\\?v=[^"]*)?"`, 'g');
+    html = html.replace(re, `$1?v=${v}"`);
+  }
+  writeIfChanged(file, html);
+}
+
 function buildAll() {
   const settings = loadSettings();
   buildSettings(settings);
   const music = buildMusic();
   const pop = buildNotifications();
   const gal = buildGallery(settings);
+  stampIndex();
   return { ...music, ...pop, ...gal };
 }
 
