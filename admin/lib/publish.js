@@ -63,9 +63,11 @@ const rebaseInProgress = () => exists('.git/rebase-merge') || exists('.git/rebas
 const mergeInProgress = () => exists('.git/MERGE_HEAD');
 
 // Stage everything except clutter, and stop tracking clutter that older versions committed.
+// .gitignore keeps clutter out; unstaging it afterwards also covers copies without one.
+// (Excluding ignored folders in the add itself makes git refuse — so don't.)
 async function stageAll() {
+  await git(['add', '-A', '--', '.']);
   await git(['rm', '-r', '--cached', '--ignore-unmatch', '-q', '--', ...JUNK]);
-  await git(['add', '-A', '--', '.', ...JUNK.map((p) => p.replace(':(glob)', ':(exclude,glob)'))]);
 }
 
 async function changedFiles() {
