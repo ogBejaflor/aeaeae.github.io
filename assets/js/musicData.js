@@ -77,20 +77,13 @@ window.musicCatalog = [
 window.musicArtists = [
   {
     "id": "ar_1",
-    "name": "Adler Jack",
-    "photo": null,
-    "bio": "",
-    "albums": []
-  },
-  {
-    "id": "ar_2",
     "name": "Athoms",
     "photo": null,
     "bio": "",
     "albums": []
   },
   {
-    "id": "ar_3",
+    "id": "ar_2",
     "name": "Bejaflor",
     "photo": null,
     "bio": "",
@@ -99,84 +92,84 @@ window.musicArtists = [
     ]
   },
   {
-    "id": "ar_4",
+    "id": "ar_3",
     "name": "Carolina Miragaia",
     "photo": null,
     "bio": "",
     "albums": []
   },
   {
-    "id": "ar_5",
+    "id": "ar_4",
     "name": "Clauthewitch",
     "photo": null,
     "bio": "",
     "albums": []
   },
   {
-    "id": "ar_6",
+    "id": "ar_5",
     "name": "Escada",
     "photo": null,
     "bio": "",
     "albums": []
   },
   {
-    "id": "ar_7",
+    "id": "ar_6",
     "name": "Fausto Lobo",
     "photo": null,
     "bio": "",
     "albums": []
   },
   {
-    "id": "ar_8",
+    "id": "ar_7",
     "name": "Lil Audio",
     "photo": null,
     "bio": "",
     "albums": []
   },
   {
-    "id": "ar_9",
+    "id": "ar_8",
     "name": "Miana",
     "photo": null,
     "bio": "",
     "albums": []
   },
   {
-    "id": "ar_10",
+    "id": "ar_9",
     "name": "Nicø",
     "photo": null,
     "bio": "",
     "albums": []
   },
   {
-    "id": "ar_11",
+    "id": "ar_10",
     "name": "PÉROLA",
     "photo": null,
     "bio": "",
     "albums": []
   },
   {
-    "id": "ar_12",
+    "id": "ar_11",
     "name": "Phaser",
     "photo": null,
     "bio": "",
     "albums": []
   },
   {
-    "id": "ar_13",
+    "id": "ar_12",
     "name": "Proxy Fae",
     "photo": null,
     "bio": "",
     "albums": []
   },
   {
-    "id": "ar_14",
+    "id": "ar_13",
     "name": "Tet3",
     "photo": null,
     "bio": "",
     "albums": []
   },
   {
-    "id": "ar_15",
+    "id": "ar_14",
     "name": "Xaulaura",
     "photo": null,
     "bio": "",
