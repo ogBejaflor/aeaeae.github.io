@@ -33,6 +33,15 @@ const GENERATED = new Set([
   'assets/js/siteSettings.js',
 ]);
 
+const SIGN_IN_HELP = `Saved on this computer, but GitHub needs you to sign in on this Mac first (one time only).
+
+1. Install GitHub CLI: https://cli.github.com (or: brew install gh)
+2. In Terminal, run:  gh auth login
+   Pick GitHub.com → HTTPS → Yes (authenticate Git) → Login with a web browser.
+3. Click Publish again.
+
+Until then, you can also send the changes from VS Code: Source Control → Sync Changes.`;
+
 function git(args, opts = {}) {
   return new Promise((resolve, reject) => {
     const { raw, ...rest } = opts;
@@ -198,7 +207,11 @@ async function publish(message) {
   try {
     log.push(await git(['push'], { timeout: 30 * 60 * 1000 }));
   } catch (e) {
-    throw Object.assign(new Error(`Saved on this computer, but sending to GitHub failed:\n\n${e.output || e.message}`), { status: 502 });
+    const out = e.output || e.message;
+    if (/could not read Username|Authentication failed|terminal prompts disabled|Permission denied|403/i.test(out)) {
+      throw Object.assign(new Error(SIGN_IN_HELP), { status: 401 });
+    }
+    throw Object.assign(new Error(`Saved on this computer, but sending to GitHub failed:\n\n${out}`), { status: 502 });
   }
   return { ok: true, branch: st.branch, log: log.filter(Boolean).join('\n') };
 }
