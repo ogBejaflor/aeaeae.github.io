@@ -5,10 +5,6 @@ window.aeNotificationsData = [
     "body": "Proxy Fae — “Soft Armor” is out now."
   },
   {
-    "title": "Tonight",
-    "body": "Miana live set at 21:00 — stream on the player."
-  },
-  {
     "title": "Merch Drop",
     "body": "Limited tees in the Resources folder."
   },
