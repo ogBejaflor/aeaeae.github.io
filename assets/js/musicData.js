@@ -72,6 +72,52 @@ window.musicCatalog = [
         "duration": "--"
       }
     ]
+  },
+  {
+    "id": "a_2",
+    "artist": "Carolina Miragaia",
+    "albumTitle": "exobiological",
+    "type": "ep",
+    "year": null,
+    "coverArt": "Catalogo/Carolina%20Miragaia/exobiological/cover.jpg",
+    "tracks": [
+      {
+        "id": "t_11",
+        "title": "item nº1 (exobiological) a tua mão ft. skurty master 2",
+        "file": "Catalogo/Carolina%20Miragaia/exobiological/item%20n%C2%BA1%20(exobiological)%20a%20tua%20m%C3%A3o%20ft.%20skurty%20master%202.wav",
+        "duration": "--"
+      },
+      {
+        "id": "t_12",
+        "title": "item nº1 (exobiological) master",
+        "file": "Catalogo/Carolina%20Miragaia/exobiological/item%20n%C2%BA1%20(exobiological)%20master.wav",
+        "duration": "--"
+      },
+      {
+        "id": "t_13",
+        "title": "micro.bio master",
+        "file": "Catalogo/Carolina%20Miragaia/exobiological/micro.bio%20master.wav",
+        "duration": "--"
+      },
+      {
+        "id": "t_14",
+        "title": "mineral master",
+        "file": "Catalogo/Carolina%20Miragaia/exobiological/mineral%20master.wav",
+        "duration": "--"
+      },
+      {
+        "id": "t_15",
+        "title": "sim)bio(se master",
+        "file": "Catalogo/Carolina%20Miragaia/exobiological/sim)bio(se%20master.wav",
+        "duration": "--"
+      },
+      {
+        "id": "t_16",
+        "title": "sistema $ master",
+        "file": "Catalogo/Carolina%20Miragaia/exobiological/sistema%20%24%20master.wav",
+        "duration": "--"
+      }
+    ]
   }
 ];
 
@@ -97,7 +143,9 @@ window.musicArtists = [
     "name": "Carolina Miragaia",
     "photo": null,
     "bio": "",
-    "albums": []
+    "albums": [
+      "a_2"
+    ]
   },
   {
     "id": "ar_4",

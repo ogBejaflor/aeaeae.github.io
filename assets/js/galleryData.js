@@ -31,6 +31,12 @@ window.aeGalleryData = [
     "directory": "Catalogo/Bejaflor/Bejaflor 3"
   },
   {
+    "src": "Catalogo/Carolina%20Miragaia/exobiological/cover.jpg",
+    "type": "image",
+    "filename": "cover.jpg",
+    "directory": "Catalogo/Carolina Miragaia/exobiological"
+  },
+  {
     "src": "Catalogo/Miana/photo.jpg",
     "type": "image",
     "filename": "photo.jpg",
