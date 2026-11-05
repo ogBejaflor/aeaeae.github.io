@@ -13,7 +13,8 @@
 //   Catalogo/<Artist>/photo.jpg              artist photo (or artist.jpg/.png/.webp)
 //   Catalogo/<Artist>/<Album>/cover.jpg      album cover
 //   Catalogo/<Artist>/<Album>/*.mp3|*.wav    tracks (.mp3 preferred when both exist)
-//   Catalogo/<Artist>/<Album>/album.json     optional: { year, hidden, tracks: [{ file, title }] }
+//   Catalogo/<Artist>/<Album>/album.json     optional: { type, year, hidden, tracks: [{ file, title }] }
+//                                            type: "album" (default) | "ep" | "single"
 //   Archive/**                               gallery pictures and videos
 //
 // Outputs (assets/js/)
@@ -51,6 +52,7 @@ const DEFAULT_SETTINGS = {
 };
 
 // ---------- helpers ----------
+const RELEASE_TYPES = ['album', 'ep', 'single'];
 const nfc = (s) => String(s).normalize('NFC');
 const same = (a, b) => nfc(a) === nfc(b);
 const isHidden = (name) => name.startsWith('.');
@@ -151,6 +153,7 @@ function readAlbum(artistFolder, albumFolder) {
   return {
     folder: albumFolder,
     title: nfc((meta.title || '').trim() || albumFolder),
+    type: RELEASE_TYPES.includes(meta.type) ? meta.type : 'album',
     year: meta.year || null,
     hidden: !!meta.hidden,
     cover: cover ? url('Catalogo', artistFolder, albumFolder, cover) : null,
@@ -193,6 +196,7 @@ function buildMusic() {
           id,
           artist: r.name,
           albumTitle: a.title,
+          type: a.type,
           year: a.year,
           coverArt: a.cover || 'assets/images/default-album-art.png',
           tracks: a.tracks.map((t) => ({ id: `t_${trackId++}`, title: t.title, file: t.file, duration: '--' })),
@@ -294,7 +298,7 @@ function buildAll() {
 module.exports = {
   buildAll, buildMusic, buildNotifications, buildGallery, buildSettings,
   loadSettings, loadRoster, readAlbum, orderAlbums, titleFromFile, readJSON,
-  DEFAULT_SETTINGS, ROOT, CATALOG, DATA, AUDIO_RE, COVER_RE, PHOTO_RE, IMAGE_EXT, VIDEO_EXT, nfc, same, naturalSort,
+  DEFAULT_SETTINGS, RELEASE_TYPES, ROOT, CATALOG, DATA, AUDIO_RE, COVER_RE, PHOTO_RE, IMAGE_EXT, VIDEO_EXT, nfc, same, naturalSort,
 };
 
 if (require.main === module) {

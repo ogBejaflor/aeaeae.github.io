@@ -59,7 +59,18 @@ function formatTime(secs) {
 const pad = (n, w = 2) => String(n).padStart(w, '0');
 const catNo = album => `æ${pad(catalog.indexOf(album) + 1, 3)}`;
 const photoFor = artist => artist.photo || (artist.albumList[0] && artist.albumList[0].coverArt) || null;
-const releasesLabel = n => (n ? `${n} release${n === 1 ? '' : 's'}` : 'No releases yet');
+const TYPE_LABEL = { album: ['Album', 'albums'], ep: ['EP', 'EPs'], single: ['Single', 'singles'] };
+const typeOf = album => (TYPE_LABEL[album.type] ? album.type : 'album');
+const typeLabel = album => TYPE_LABEL[typeOf(album)][0];
+// "2 albums, 1 EP" — counts by release type, in album / EP / single order
+const releasesLabel = list => {
+  if (!list.length) return 'No releases yet';
+  return Object.keys(TYPE_LABEL)
+    .map(t => [t, list.filter(a => typeOf(a) === t).length])
+    .filter(([, n]) => n)
+    .map(([t, n]) => `${n} ${n === 1 ? TYPE_LABEL[t][0].replace('Album', 'album').replace('Single', 'single') : TYPE_LABEL[t][1]}`)
+    .join(', ');
+};
 
 // ---------------------------------------------------------------------------
 // State
@@ -98,7 +109,7 @@ function showArtistInfo(i) {
   const a = artists[i];
   if (!a) return;
   els.artistName.textContent = a.name;
-  els.artistMeta.textContent = releasesLabel(a.albumList.length);
+  els.artistMeta.textContent = releasesLabel(a.albumList);
   els.count.textContent = `${pad(i + 1)} / ${pad(artists.length)}`;
   renderStrip(a, i);
 }
@@ -202,7 +213,7 @@ function showCaption() {
   const album = artist && artist.albumList[state.albumIdx];
   if (!album) return;
   els.capTitle.textContent = album.albumTitle;
-  els.capMeta.textContent = `${catNo(album)} · ${album.tracks.length} track${album.tracks.length === 1 ? '' : 's'}`;
+  els.capMeta.textContent = [typeLabel(album), album.year, `${album.tracks.length} track${album.tracks.length === 1 ? '' : 's'}`].filter(Boolean).join(' · ');
   els.count.textContent = `${pad(state.albumIdx + 1)} / ${pad(artist.albumList.length)}`;
   const many = artist.albumList.length > 1;
   els.arrowPrev.hidden = !many || state.albumIdx === 0;
@@ -231,7 +242,7 @@ function panelSide() {
 function openPanel(album) {
   if (!album) return;
   state.openAlbum = album;
-  els.catno.textContent = `${catNo(album)} / CD`;
+  els.catno.textContent = `${catNo(album)} / ${typeLabel(album)}${album.year ? ` / ${album.year}` : ''}`;
   els.album.textContent = album.albumTitle;
   els.artist.textContent = album.artist;
   renderTracks();

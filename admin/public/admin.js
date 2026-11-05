@@ -384,10 +384,33 @@
     );
   }
 
-  async function addAlbum(a) {
-    const title = prompt(`New release by ${a.name} — title`);
-    if (!title || !title.trim()) return;
-    await act('POST', `/api/artists/${enc(a.name)}/albums`, { title }, (r) => { ui.open.add(`${a.name}/${r.folder}`); });
+  const TYPES = [['album', 'Album'], ['ep', 'EP'], ['single', 'Single']];
+  const typeName = (t) => (TYPES.find(([v]) => v === t) || TYPES[0])[1];
+
+  // New release: title + type in one small dialog.
+  function addAlbum(a) {
+    let type = 'album';
+    const dlg = h('dialog', {});
+    const close = () => { dlg.close(); dlg.remove(); };
+    const title = h('input', { class: 'input', placeholder: 'Title', 'aria-label': 'Title', required: true });
+    const seg = h('div', { class: 'seg', role: 'group', 'aria-label': 'Type' },
+      TYPES.map(([v, l]) => h('button', { type: 'button', 'aria-pressed': v === type ? 'true' : 'false', onclick: (e) => {
+        type = v;
+        seg.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b === e.currentTarget ? 'true' : 'false'));
+      } }, l)));
+    dlg.append(h('form', { class: 'dlg', onsubmit: async (e) => {
+      e.preventDefault();
+      if (!title.value.trim()) return;
+      close();
+      await act('POST', `/api/artists/${enc(a.name)}/albums`, { title: title.value, type }, (r) => { ui.open.add(`${a.name}/${r.folder}`); toast(`${typeName(type)} added.`); });
+    } },
+    h('h2', {}, `New release by ${a.name}`),
+    h('label', { class: 'field' }, h('span', {}, 'Title'), title),
+    h('div', { class: 'field' }, h('span', {}, 'Type'), seg),
+    h('div', { class: 'row end' }, h('button', { class: 'btn quiet', type: 'button', onclick: close }, 'Cancel'), h('button', { class: 'btn primary', type: 'submit' }, 'Add release'))));
+    document.body.append(dlg);
+    dlg.showModal();
+    title.focus();
   }
 
   function albumCard(a, al, index) {
@@ -407,6 +430,7 @@
     };
 
     const status = [
+      typeName(al.type),
       al.year,
       plural(al.tracks.length, 'track'),
       total ? mb(total) : null,
@@ -479,6 +503,10 @@
           h('label', { class: 'field' }, h('span', {}, 'Year'),
             h('input', { class: 'input', value: al.year || '', inputmode: 'numeric', placeholder: 'e.g. 2026', 'data-k': k('year'),
               onchange: (e) => act('PATCH', B, { year: e.target.value }, () => toast('Year saved.')) })),
+          h('div', { class: 'field full' }, h('span', {}, 'Type'),
+            h('div', { class: 'seg', role: 'group', 'aria-label': 'Type' },
+              TYPES.map(([v, l]) => h('button', { type: 'button', 'aria-pressed': (al.type || 'album') === v ? 'true' : 'false',
+                onclick: () => act('PATCH', B, { type: v }, () => toast(`Now shown as ${l === 'EP' ? 'an EP' : `a${l === 'Album' ? 'n' : ''} ${l.toLowerCase()}`}.`)) }, l)))),
           h('div', { class: 'full split' },
             toggle('Show on the site', !al.hidden, (on) => act('PATCH', B, { hidden: !on }), k('hidden')),
             h('button', { class: 'btn danger small', onclick: () => {

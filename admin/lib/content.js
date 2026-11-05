@@ -128,6 +128,7 @@ function albumState(artistFolder, albumFolder) {
   return {
     folder: albumFolder,
     title: a.title,
+    type: a.type,
     year: a.year,
     hidden: a.hidden,
     cover: a.cover,
@@ -246,6 +247,7 @@ function readMeta(dir) { return readJSON(albumMetaFile(dir), {}); }
 function writeMeta(dir, meta) {
   const clean = {};
   if (meta.title) clean.title = meta.title;
+  if (meta.type && meta.type !== 'album') clean.type = meta.type;
   if (meta.year) clean.year = meta.year;
   if (meta.hidden) clean.hidden = true;
   if (meta.tracks && meta.tracks.length) clean.tracks = meta.tracks;
@@ -253,21 +255,21 @@ function writeMeta(dir, meta) {
   else fs.rmSync(albumMetaFile(dir), { force: true });
 }
 
-function createAlbum(artistName, { title }) {
+function createAlbum(artistName, { title, type }) {
   const { list, artist } = findArtist(artistName);
   const display = nfc(String(title || '').trim());
-  if (!display) throw new UserError("Album title can't be empty.");
+  if (!display) throw new UserError("Release title can't be empty.");
   const base = artistDir(artist);
   const folder = cleanName(display, 'Album title');
   const dir = inside(base, folder);
-  if (fs.existsSync(dir)) throw new UserError(`“${artist.name}” already has an album called “${folder}”.`);
+  if (fs.existsSync(dir)) throw new UserError(`“${artist.name}” already has a release called “${folder}”.`);
   fs.mkdirSync(dir, { recursive: true });
-  if (folder !== display) writeMeta(dir, { title: display });
+  writeMeta(dir, { title: folder !== display ? display : undefined, type: build.RELEASE_TYPES.includes(type) ? type : undefined });
   saveRoster(list);
   return folder;
 }
 
-function updateAlbum(artistName, albumFolder, { title, year, hidden }) {
+function updateAlbum(artistName, albumFolder, { title, type, year, hidden }) {
   const { list, i, artist } = findArtist(artistName);
   let { dir } = albumDir(artistName, albumFolder);
   const meta = readMeta(dir);
@@ -285,6 +287,10 @@ function updateAlbum(artistName, albumFolder, { title, year, hidden }) {
       saveRoster(list);
     }
     meta.title = folder === display ? undefined : display;
+  }
+  if (type !== undefined) {
+    if (!build.RELEASE_TYPES.includes(type)) throw new UserError('Type must be Album, EP or Single.');
+    meta.type = type;
   }
   if (year !== undefined) {
     const y = String(year).trim();

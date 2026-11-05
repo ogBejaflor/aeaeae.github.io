@@ -7,6 +7,7 @@ window.musicCatalog = [
     "id": "a_1",
     "artist": "Bejaflor",
     "albumTitle": "Bejaflor 3",
+    "type": "album",
     "year": null,
     "coverArt": "Catalogo/Bejaflor/Bejaflor%203/cover.jpg",
     "tracks": [
