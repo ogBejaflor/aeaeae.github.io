@@ -83,38 +83,38 @@ window.musicCatalog = [
     "tracks": [
       {
         "id": "t_11",
-        "title": "item nº1 (exobiological) a tua mão ft. skurty master 2",
-        "file": "Catalogo/Carolina%20Miragaia/exobiological/item%20n%C2%BA1%20(exobiological)%20a%20tua%20m%C3%A3o%20ft.%20skurty%20master%202.wav",
-        "duration": "--"
-      },
-      {
-        "id": "t_12",
-        "title": "item nº1 (exobiological) master",
+        "title": "item nº1",
         "file": "Catalogo/Carolina%20Miragaia/exobiological/item%20n%C2%BA1%20(exobiological)%20master.wav",
         "duration": "--"
       },
       {
-        "id": "t_13",
-        "title": "micro.bio master",
+        "id": "t_12",
+        "title": "micro.bio",
         "file": "Catalogo/Carolina%20Miragaia/exobiological/micro.bio%20master.wav",
         "duration": "--"
       },
       {
-        "id": "t_14",
-        "title": "mineral master",
+        "id": "t_13",
+        "title": "mineral",
         "file": "Catalogo/Carolina%20Miragaia/exobiological/mineral%20master.wav",
         "duration": "--"
       },
       {
-        "id": "t_15",
-        "title": "sim)bio(se master",
+        "id": "t_14",
+        "title": "sim)bio(se",
         "file": "Catalogo/Carolina%20Miragaia/exobiological/sim)bio(se%20master.wav",
         "duration": "--"
       },
       {
-        "id": "t_16",
-        "title": "sistema $ master",
+        "id": "t_15",
+        "title": "sistema $",
         "file": "Catalogo/Carolina%20Miragaia/exobiological/sistema%20%24%20master.wav",
+        "duration": "--"
+      },
+      {
+        "id": "t_16",
+        "title": "item nº1 (a tua mão) ft. skurty",
+        "file": "Catalogo/Carolina%20Miragaia/exobiological/item%20n%C2%BA1%20(exobiological)%20a%20tua%20m%C3%A3o%20ft.%20skurty%20master%202.wav",
         "duration": "--"
       }
     ]

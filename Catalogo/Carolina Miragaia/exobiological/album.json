@@ -1,3 +1,29 @@
 {
-  "type": "ep"
+  "type": "ep",
+  "tracks": [
+    {
+      "file": "item nº1 (exobiological) master.wav",
+      "title": "item nº1"
+    },
+    {
+      "file": "micro.bio master.wav",
+      "title": "micro.bio"
+    },
+    {
+      "file": "mineral master.wav",
+      "title": "mineral"
+    },
+    {
+      "file": "sim)bio(se master.wav",
+      "title": "sim)bio(se"
+    },
+    {
+      "file": "sistema $ master.wav",
+      "title": "sistema $"
+    },
+    {
+      "file": "item nº1 (exobiological) a tua mão ft. skurty master 2.wav",
+      "title": "item nº1 (a tua mão) ft. skurty"
+    }
+  ]
 }
