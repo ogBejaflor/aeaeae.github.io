@@ -301,6 +301,19 @@
     </div>
   </div>
 
+  <!-- Text window (for .txt files such as an artist's Bio.txt) -->
+  <div id="text-window" class="window" style="display:none; width:520px; height:420px;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close text window"></button>
+        <button class="minimize-button" aria-label="Minimize text window"></button>
+        <button class="fullscreen-button" aria-label="Maximize text window"></button>
+      </div>
+      <span class="window-title">Text</span>
+    </div>
+    <div class="window-content" id="text-content"><pre class="ae-text"></pre></div>
+  </div>
+
   <!-- Scripts (order matters) -->
   <!-- Content first: settings + catalog, then siteContent builds artist folders/windows
        before the desktop scripts below bind their events. -->

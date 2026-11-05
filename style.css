@@ -133,6 +133,26 @@ body {
   box-shadow: 0 4px 6px rgba(0,0,0,0.5);
   pointer-events: none;
 }
+/* files that sit in a folder's grid (artist folders) rather than where they were dropped */
+.file-item.in-grid { position: relative; width: 100px; padding-top: 15px; }
+.file-item .file-thumb.is-doc { object-fit: contain; background: none; box-shadow: none; border-radius: 0; }
+
+/* Text document window (Bio.txt) */
+#text-window .window-content {
+  display: block;
+  padding: 22px 26px;
+  background: #f4f4f2;
+  color: #1b1b1d;
+}
+#text-window .ae-text {
+  margin: 0;
+  max-width: 62ch;
+  white-space: pre-wrap;
+  font: 400 13px/1.65 'Geist Mono', ui-monospace, Menlo, monospace;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
 .file-item .folder-label {
   margin-top: 4px;
   max-width: 90px;

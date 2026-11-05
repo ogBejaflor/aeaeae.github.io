@@ -208,6 +208,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- API for Inter-App Drag and Drop ---
   window.aeGalleryAPI = {
+    // Open the Gallery at this picture (from a file in a folder). Returns false if it isn't in the gallery.
+    show: (item) => {
+      const same = (a) => a.src === item.src;
+      const dir = (galleryData.find(same) || item).directory || '';
+      let name = null;
+      if (dir.startsWith('Catalogo/')) name = dir.split('/')[1];
+      else if (dir.startsWith('Archive/')) name = dir.slice(8).split('/')[0];
+      const candidates = [name, 'All'].filter((n) => n && folders[n]);
+      for (const n of candidates) {
+        const i = folders[n].findIndex(same);
+        if (i < 0) continue;
+        currentFolderName = n;
+        renderGrid(n);
+        openLightbox(i);
+        if (typeof openWindowById === 'function') openWindowById('gallery-window');
+        else document.getElementById('gallery-window').style.display = 'block';
+        return true;
+      }
+      return false;
+    },
     isOpen: () => {
       // It's open if it's visible, but actually we can just check if currentFolderName is not null to drop into it
       return currentFolderName !== null;

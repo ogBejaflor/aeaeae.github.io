@@ -70,6 +70,8 @@ function beginSelection(event, scopeEl) {
 
   // Disable marquee inside the Galery app
   if (event.target.closest('#gallery-window')) return;
+  // …or the Audio Player (dragging there spins the CDs)
+  if (event.target.closest('#audio-player-window')) return;
 
   // If user clicked on a folder, folder mousedown handles behavior
   if (event.target.closest('.folder')) return;

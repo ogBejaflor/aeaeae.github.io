@@ -37,6 +37,34 @@
   const anchor = document.getElementById('terminal-window');
   if (!list || !anchor) return;
 
+  const albumsById = new Map((window.musicCatalog || []).map((a) => [a.id, a]));
+  const fileName = (src) => { try { return decodeURIComponent(src.split('/').pop()); } catch { return src.split('/').pop(); } };
+  const short = (s) => (s.length > 14 ? s.slice(0, 12) + '…' : s);
+
+  // A text document icon (page with a folded corner and lines)
+  const TXT_ICON = 'data:image/svg+xml,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80"><path d="M6 2h38l18 18v54a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4z" fill="#f4f4f2" stroke="#c9c9c4" stroke-width="2"/>' +
+    '<path d="M44 2v14a4 4 0 0 0 4 4h14" fill="#dcdcd6" stroke="#c9c9c4" stroke-width="2"/>' +
+    '<g stroke="#9a9a94" stroke-width="3" stroke-linecap="round"><path d="M14 32h36M14 41h36M14 50h36M14 59h24"/></g>' +
+    '<text x="32" y="74" font-family="Helvetica,Arial,sans-serif" font-size="9" font-weight="700" fill="#7a7a74" text-anchor="middle">TXT</text></svg>');
+
+  function textFile(label, title, text) {
+    return `
+      <div class="folder file-item in-grid" tabindex="0" title="${esc(label)}" data-text-title="${esc(title)}" data-text="${esc(text)}">
+        <img src="${TXT_ICON}" class="file-thumb is-doc" alt="" draggable="false" />
+        <span class="folder-label">${esc(label)}</span>
+      </div>`;
+  }
+
+  function imageFile(src, label) {
+    const data = { src, type: 'image', filename: fileName(src) };
+    return `
+      <div class="folder file-item in-grid" tabindex="0" title="${esc(label)}" data-media-data="${esc(JSON.stringify(data))}">
+        <img src="${esc(src)}" class="file-thumb" alt="" loading="lazy" draggable="false" />
+        <span class="folder-label">${esc(short(label))}</span>
+      </div>`;
+  }
+
   const used = new Set();
   const sorted = artists.slice().sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
 
@@ -52,12 +80,17 @@
         <span class="folder-label">${name}</span>
       </div>`);
 
-    const about = artist.photo || artist.bio
-      ? `<div class="ae-artist-about" style="display:flex;gap:16px;align-items:flex-start;padding:16px;line-height:1.5;">
-           ${artist.photo ? `<img src="${esc(artist.photo)}" alt="" style="width:140px;height:140px;object-fit:cover;border-radius:6px;flex:none;" />` : ''}
-           ${artist.bio ? `<p style="white-space:pre-line;margin:0;">${esc(artist.bio)}</p>` : ''}
-         </div>`
-      : '';
+    // Files inside the artist's folder: Bio.txt, their photo, and each release cover.
+    const files = [];
+    if (artist.bio) files.push(textFile('Bio.txt', `${artist.name} — Bio`, artist.bio));
+    if (artist.photo) files.push(imageFile(artist.photo, fileName(artist.photo)));
+    for (const id of artist.albums || []) {
+      const album = albumsById.get(id);
+      if (album && album.coverArt && !/default-album-art/.test(album.coverArt)) {
+        files.push(imageFile(album.coverArt, album.albumTitle));
+      }
+    }
+    const about = files.join('');
 
     anchor.insertAdjacentHTML('beforebegin', `
   <div id="${id}" class="window" style="display:none;">

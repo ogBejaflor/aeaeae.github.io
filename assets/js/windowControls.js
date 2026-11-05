@@ -82,14 +82,29 @@ window.openPreview = function(mediaData) {
   openWindowById('preview-window');
 };
 
+// Text documents (e.g. an artist's Bio.txt)
+window.openTextFile = function(title, text) {
+  const win = document.getElementById('text-window');
+  if (!win) return;
+  win.querySelector('.window-title').textContent = title;
+  win.querySelector('.ae-text').textContent = text;
+  win.querySelector('.window-content').scrollTop = 0;
+  openWindowById('text-window');
+};
+
 // Open selected folder or restore minimized window
 function openFolder(folder) {
   const windowId = folder.getAttribute('data-window');
   
   if (!windowId && folder.classList.contains('file-item')) {
+    if (folder.dataset.text !== undefined) {
+      window.openTextFile(folder.dataset.textTitle || 'Text', folder.dataset.text);
+      return;
+    }
     try {
       const mediaData = JSON.parse(folder.dataset.mediaData || "null");
-      if (mediaData) window.openPreview(mediaData);
+      // Pictures and videos open in the Gallery; Preview is the fallback.
+      if (mediaData && !(window.aeGalleryAPI && window.aeGalleryAPI.show(mediaData))) window.openPreview(mediaData);
     } catch(err) {
       console.error("Preview error:", err);
     }
