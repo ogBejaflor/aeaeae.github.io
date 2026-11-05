@@ -31,10 +31,34 @@ window.aeGalleryData = [
     "directory": "Catalogo/Bejaflor/Bejaflor 3"
   },
   {
+    "src": "Catalogo/Bejaflor/photo.png",
+    "type": "image",
+    "filename": "photo.png",
+    "directory": "Catalogo/Bejaflor"
+  },
+  {
+    "src": "Catalogo/Carolina%20Miragaia/beira%20da%20estrada/cover.jpg",
+    "type": "image",
+    "filename": "cover.jpg",
+    "directory": "Catalogo/Carolina Miragaia/beira da estrada"
+  },
+  {
     "src": "Catalogo/Carolina%20Miragaia/exobiological/cover.jpg",
     "type": "image",
     "filename": "cover.jpg",
     "directory": "Catalogo/Carolina Miragaia/exobiological"
+  },
+  {
+    "src": "Catalogo/Carolina%20Miragaia/honestamente%20nem%20eu/cover.jpg",
+    "type": "image",
+    "filename": "cover.jpg",
+    "directory": "Catalogo/Carolina Miragaia/honestamente nem eu"
+  },
+  {
+    "src": "Catalogo/Carolina%20Miragaia/K38Suh9FH98mBKR/cover.jpg",
+    "type": "image",
+    "filename": "cover.jpg",
+    "directory": "Catalogo/Carolina Miragaia/K38Suh9FH98mBKR"
   },
   {
     "src": "Catalogo/Miana/photo.jpg",

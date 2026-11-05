@@ -8,67 +8,67 @@ window.musicCatalog = [
     "artist": "Bejaflor",
     "albumTitle": "Bejaflor 3",
     "type": "album",
-    "year": null,
+    "year": 2026,
     "coverArt": "Catalogo/Bejaflor/Bejaflor%203/cover.jpg",
     "tracks": [
       {
         "id": "t_1",
-        "title": "Do Inicio Master Final : ins&outs",
-        "file": "Catalogo/Bejaflor/Bejaflor%203/1%20Do%20Inicio%20Master%20Final%20%3A%20ins%26outs.wav",
+        "title": "Do Inicio",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/1%20Do%20Inicio%20Master%20Final%20%3A%20ins%26outs.mp3",
         "duration": "--"
       },
       {
         "id": "t_2",
-        "title": "Dividir Master Final : ins&outs",
-        "file": "Catalogo/Bejaflor/Bejaflor%203/2%20Dividir%20Master%20Final%20%3A%20ins%26outs.wav",
+        "title": "Dividir",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/2%20Dividir%20Master%20Final%20%3A%20ins%26outs.mp3",
         "duration": "--"
       },
       {
         "id": "t_3",
-        "title": "DADA Master Final : ins&outs",
-        "file": "Catalogo/Bejaflor/Bejaflor%203/3%20DADA%20Master%20Final%20%3A%20ins%26outs.wav",
+        "title": "DADA",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/3%20DADA%20Master%20Final%20%3A%20ins%26outs.mp3",
         "duration": "--"
       },
       {
         "id": "t_4",
-        "title": "Perdão Master Final : ins&outs",
-        "file": "Catalogo/Bejaflor/Bejaflor%203/4%20Perd%C3%A3o%20Master%20Final%20%3A%20ins%26outs.wav",
+        "title": "Perdão",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/4%20Perd%C3%A3o%20Master%20Final%20%3A%20ins%26outs.mp3",
         "duration": "--"
       },
       {
         "id": "t_5",
-        "title": "E que? Master Final : ins&outs",
-        "file": "Catalogo/Bejaflor/Bejaflor%203/5%20E%20que%3F%20Master%20Final%20%3A%20ins%26outs.wav",
+        "title": "E que?",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/5%20E%20que%3F%20Master%20Final%20%3A%20ins%26outs.mp3",
         "duration": "--"
       },
       {
         "id": "t_6",
-        "title": "A Banda Master Final : ins&outs",
-        "file": "Catalogo/Bejaflor/Bejaflor%203/6%20A%20Banda%20Master%20Final%20%3A%20ins%26outs.wav",
+        "title": "A Banda",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/6%20A%20Banda%20Master%20Final%20%3A%20ins%26outs.mp3",
         "duration": "--"
       },
       {
         "id": "t_7",
-        "title": "Isolamento Master Final : ins&outs",
-        "file": "Catalogo/Bejaflor/Bejaflor%203/7%20Isolamento%20Master%20Final%20%3A%20ins%26outs.wav",
+        "title": "Isolamento",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/7%20Isolamento%20Master%20Final%20%3A%20ins%26outs.mp3",
         "duration": "--"
       },
       {
         "id": "t_8",
-        "title": "Casa Pt.2 Master Final : ins&outs",
-        "file": "Catalogo/Bejaflor/Bejaflor%203/8%20Casa%20Pt.2%20Master%20Final%20%3A%20ins%26outs.wav",
+        "title": "Casa Pt.2",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/8%20Casa%20Pt.2%20Master%20Final%20%3A%20ins%26outs.mp3",
         "duration": "--"
       },
       {
         "id": "t_9",
-        "title": "Lições Master Final : ins&outs",
-        "file": "Catalogo/Bejaflor/Bejaflor%203/9%20Li%C3%A7%C3%B5es%20Master%20Final%20%3A%20ins%26outs.wav",
+        "title": "Lições",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/9%20Li%C3%A7%C3%B5es%20Master%20Final%20%3A%20ins%26outs.mp3",
         "duration": "--"
       },
       {
         "id": "t_10",
-        "title": "Hinos Master Final : ins&outs",
-        "file": "Catalogo/Bejaflor/Bejaflor%203/10%20Hinos%20Master%20Final%20%3A%20ins%26outs.wav",
+        "title": "Hinos",
+        "file": "Catalogo/Bejaflor/Bejaflor%203/10%20Hinos%20Master%20Final%20%3A%20ins%26outs.mp3",
         "duration": "--"
       }
     ]
@@ -76,45 +76,135 @@ window.musicCatalog = [
   {
     "id": "a_2",
     "artist": "Carolina Miragaia",
+    "albumTitle": "honestamente nem eu",
+    "type": "single",
+    "year": 2026,
+    "coverArt": "Catalogo/Carolina%20Miragaia/honestamente%20nem%20eu/cover.jpg",
+    "tracks": [
+      {
+        "id": "t_11",
+        "title": "honestamente nem eu",
+        "file": "Catalogo/Carolina%20Miragaia/honestamente%20nem%20eu/honestamente%20nem%20eu%20master.mp3",
+        "duration": "--"
+      }
+    ]
+  },
+  {
+    "id": "a_3",
+    "artist": "Carolina Miragaia",
+    "albumTitle": "beira da estrada",
+    "type": "single",
+    "year": 2026,
+    "coverArt": "Catalogo/Carolina%20Miragaia/beira%20da%20estrada/cover.jpg",
+    "tracks": [
+      {
+        "id": "t_12",
+        "title": "beira da estrada",
+        "file": "Catalogo/Carolina%20Miragaia/beira%20da%20estrada/beira%20da%20estrada%20master.mp3",
+        "duration": "--"
+      }
+    ]
+  },
+  {
+    "id": "a_4",
+    "artist": "Carolina Miragaia",
     "albumTitle": "exobiological",
     "type": "ep",
     "year": null,
     "coverArt": "Catalogo/Carolina%20Miragaia/exobiological/cover.jpg",
     "tracks": [
       {
-        "id": "t_11",
-        "title": "item nº1",
-        "file": "Catalogo/Carolina%20Miragaia/exobiological/item%20n%C2%BA1%20(exobiological)%20master.wav",
-        "duration": "--"
-      },
-      {
-        "id": "t_12",
-        "title": "micro.bio",
-        "file": "Catalogo/Carolina%20Miragaia/exobiological/micro.bio%20master.wav",
-        "duration": "--"
-      },
-      {
         "id": "t_13",
-        "title": "mineral",
-        "file": "Catalogo/Carolina%20Miragaia/exobiological/mineral%20master.wav",
+        "title": "item nº1",
+        "file": "Catalogo/Carolina%20Miragaia/exobiological/item%20n%C2%BA1%20(exobiological)%20master.mp3",
         "duration": "--"
       },
       {
         "id": "t_14",
-        "title": "sim)bio(se",
-        "file": "Catalogo/Carolina%20Miragaia/exobiological/sim)bio(se%20master.wav",
+        "title": "micro.bio",
+        "file": "Catalogo/Carolina%20Miragaia/exobiological/micro.bio%20master.mp3",
         "duration": "--"
       },
       {
         "id": "t_15",
-        "title": "sistema $",
-        "file": "Catalogo/Carolina%20Miragaia/exobiological/sistema%20%24%20master.wav",
+        "title": "mineral",
+        "file": "Catalogo/Carolina%20Miragaia/exobiological/mineral%20master.mp3",
         "duration": "--"
       },
       {
         "id": "t_16",
+        "title": "sim)bio(se",
+        "file": "Catalogo/Carolina%20Miragaia/exobiological/sim)bio(se%20master.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_17",
+        "title": "sistema $",
+        "file": "Catalogo/Carolina%20Miragaia/exobiological/sistema%20%24%20master.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_18",
         "title": "item nº1 (a tua mão) ft. skurty",
-        "file": "Catalogo/Carolina%20Miragaia/exobiological/item%20n%C2%BA1%20(exobiological)%20a%20tua%20m%C3%A3o%20ft.%20skurty%20master%202.wav",
+        "file": "Catalogo/Carolina%20Miragaia/exobiological/item%20n%C2%BA1%20(exobiological)%20a%20tua%20m%C3%A3o%20ft.%20skurty%20master%202.mp3",
+        "duration": "--"
+      }
+    ]
+  },
+  {
+    "id": "a_5",
+    "artist": "Carolina Miragaia",
+    "albumTitle": "K38Suh9FH98mBKR",
+    "type": "album",
+    "year": 2023,
+    "coverArt": "Catalogo/Carolina%20Miragaia/K38Suh9FH98mBKR/cover.jpg",
+    "tracks": [
+      {
+        "id": "t_19",
+        "title": "0.7",
+        "file": "Catalogo/Carolina%20Miragaia/K38Suh9FH98mBKR/1.%200.7.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_20",
+        "title": "150 >∞_garD",
+        "file": "Catalogo/Carolina%20Miragaia/K38Suh9FH98mBKR/2.%20150inf%20garD.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_21",
+        "title": "ken0psia",
+        "file": "Catalogo/Carolina%20Miragaia/K38Suh9FH98mBKR/3.%20ken0psia.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_22",
+        "title": "after.party",
+        "file": "Catalogo/Carolina%20Miragaia/K38Suh9FH98mBKR/4.%20after.party.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_23",
+        "title": "404",
+        "file": "Catalogo/Carolina%20Miragaia/K38Suh9FH98mBKR/5.%20404.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_24",
+        "title": "pa_is#00?age*m",
+        "file": "Catalogo/Carolina%20Miragaia/K38Suh9FH98mBKR/6.%20paisagem.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_25",
+        "title": "HOLOGRAMA",
+        "file": "Catalogo/Carolina%20Miragaia/K38Suh9FH98mBKR/7.%20holograma.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_26",
+        "title": "!!!!!!!",
+        "file": "Catalogo/Carolina%20Miragaia/K38Suh9FH98mBKR/8.%20!.mp3",
         "duration": "--"
       }
     ]
@@ -132,7 +222,7 @@ window.musicArtists = [
   {
     "id": "ar_2",
     "name": "Bejaflor",
-    "photo": null,
+    "photo": "Catalogo/Bejaflor/photo.png",
     "bio": "",
     "albums": [
       "a_1"
@@ -142,9 +232,12 @@ window.musicArtists = [
     "id": "ar_3",
     "name": "Carolina Miragaia",
     "photo": null,
-    "bio": "",
+    "bio": "De raízes açorianas e baseada em Almada, Carolina Miragaia é uma artista\nmultidisciplinar tendo como a música a sua primeira e principal forma de expressão.\nDesde bases Indie e integração numa banda de indie-rock, até à criação de vídeos\nexperimentais em cassete, ou até mesmo à atuação em cinema - a produção e\ncomposição musical sempre acompanharam os diferentes interesses e meios de\nexpressão artísticos da artista. Tendo especial interesse na exploração sonora nas\nDAWs e a combinação eletrónica com instrumentos musicais, as suas composições\nexistem algures entre sonhos eufóricos eletrónicos com um toque pop e uma sensação\nemocional desconstruída, que por sua vez podem perpetuar nas cordas de uma\nguitarra, numa voz em metamorfose ou em bolhas de água ressonantes.",
     "albums": [
-      "a_2"
+      "a_2",
+      "a_3",
+      "a_4",
+      "a_5"
     ]
   },
   {
