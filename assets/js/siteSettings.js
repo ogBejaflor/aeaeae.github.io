@@ -8,8 +8,8 @@ window.aeSiteSettings = {
   },
   "popups": {
     "enabled": true,
-    "minDelay": 5,
-    "maxDelay": 20,
+    "minDelay": 10,
+    "maxDelay": 40,
     "shuffle": true,
     "welcome": {
       "enabled": true,

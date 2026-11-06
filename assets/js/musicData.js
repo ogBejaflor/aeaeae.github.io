@@ -320,7 +320,7 @@ window.musicArtists = [
     "id": "ar_8",
     "name": "Miana",
     "photo": "Catalogo/Miana/photo.jpg",
-    "bio": "",
+    "bio": "Miana leva as suas bases de conservatório ao PC para criar composições simples, mas\ninteressantes. No seu EP Miana Barroco Midi encontram-se vestígios contrapontísticos em\ninstrumentais eletrónicos, que, nos singles lançados no SoundCloud, são sobrepostos por\nvocals modernos mergulhados em reverb e autotune, sobre batidas que harmonizam o\nbedroom com o trap.",
     "albums": []
   },
   {
@@ -332,27 +332,20 @@ window.musicArtists = [
   },
   {
     "id": "ar_10",
-    "name": "PÉROLA",
-    "photo": null,
-    "bio": "",
-    "albums": []
-  },
-  {
-    "id": "ar_11",
     "name": "Phaser",
     "photo": null,
     "bio": "",
     "albums": []
   },
   {
-    "id": "ar_12",
+    "id": "ar_11",
     "name": "Proxy Fae",
     "photo": null,
     "bio": "",
     "albums": []
   },
   {
-    "id": "ar_13",
+    "id": "ar_12",
     "name": "Tet3",
     "photo": null,
     "bio": "",
@@ -363,21 +356,21 @@ window.musicArtists = [
     ]
   },
   {
-    "id": "ar_14",
+    "id": "ar_13",
     "name": "Xaulaura",
     "photo": null,
     "bio": "",
     "albums": []
   },
   {
-    "id": "ar_15",
+    "id": "ar_14",
     "name": "Sssubrinha",
     "photo": null,
     "bio": "",
     "albums": []
   },
   {
-    "id": "ar_16",
+    "id": "ar_15",
     "name": "Levi",
     "photo": null,
     "bio": "",

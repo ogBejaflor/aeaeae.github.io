@@ -28,13 +28,15 @@
     "name": "Lil Audio"
   },
   {
-    "name": "Miana"
+    "name": "Miana",
+    "bio": "Miana leva as suas bases de conservatório ao PC para criar composições simples, mas\ninteressantes. No seu EP Miana Barroco Midi encontram-se vestígios contrapontísticos em\ninstrumentais eletrónicos, que, nos singles lançados no SoundCloud, são sobrepostos por\nvocals modernos mergulhados em reverb e autotune, sobre batidas que harmonizam o\nbedroom com o trap."
   },
   {
     "name": "Nicø"
   },
   {
-    "name": "PÉROLA"
+    "name": "PÉROLA",
+    "hidden": true
   },
   {
     "name": "Phaser"
