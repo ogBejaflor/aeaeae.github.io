@@ -65,5 +65,23 @@ window.aeGalleryData = [
     "type": "image",
     "filename": "photo.jpg",
     "directory": "Catalogo/Miana"
+  },
+  {
+    "src": "Catalogo/Tet3/eu%20tou%20farto%20de%20Madrid%20%3B(/cover.jpg",
+    "type": "image",
+    "filename": "cover.jpg",
+    "directory": "Catalogo/Tet3/eu tou farto de Madrid ;("
+  },
+  {
+    "src": "Catalogo/Tet3/Morango%20Azul/cover.jpg",
+    "type": "image",
+    "filename": "cover.jpg",
+    "directory": "Catalogo/Tet3/Morango Azul"
+  },
+  {
+    "src": "Catalogo/Tet3/pintei%20um%20quadro%20para%20ti/cover.jpg",
+    "type": "image",
+    "filename": "cover.jpg",
+    "directory": "Catalogo/Tet3/pintei um quadro para ti"
   }
 ];

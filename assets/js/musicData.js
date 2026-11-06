@@ -208,6 +208,54 @@ window.musicCatalog = [
         "duration": "--"
       }
     ]
+  },
+  {
+    "id": "a_6",
+    "artist": "Tet3",
+    "albumTitle": "eu tou farto de Madrid ;(",
+    "type": "single",
+    "year": null,
+    "coverArt": "Catalogo/Tet3/eu%20tou%20farto%20de%20Madrid%20%3B(/cover.jpg",
+    "tracks": [
+      {
+        "id": "t_27",
+        "title": "eu tou farto de madrid ;(",
+        "file": "Catalogo/Tet3/eu%20tou%20farto%20de%20Madrid%20%3B(/eu%20tou%20farto%20de%20madrid%20%3B(%20(V2).mp3",
+        "duration": "--"
+      }
+    ]
+  },
+  {
+    "id": "a_7",
+    "artist": "Tet3",
+    "albumTitle": "Morango Azul",
+    "type": "single",
+    "year": null,
+    "coverArt": "Catalogo/Tet3/Morango%20Azul/cover.jpg",
+    "tracks": [
+      {
+        "id": "t_28",
+        "title": "Morango Azul",
+        "file": "Catalogo/Tet3/Morango%20Azul/Morango%20azul%20final.mp3",
+        "duration": "--"
+      }
+    ]
+  },
+  {
+    "id": "a_8",
+    "artist": "Tet3",
+    "albumTitle": "pintei um quadro para ti",
+    "type": "single",
+    "year": null,
+    "coverArt": "Catalogo/Tet3/pintei%20um%20quadro%20para%20ti/cover.jpg",
+    "tracks": [
+      {
+        "id": "t_29",
+        "title": "pintei um quadro para ti",
+        "file": "Catalogo/Tet3/pintei%20um%20quadro%20para%20ti/pintei%20um%20quadro%20para%20ti%20.mp3",
+        "duration": "--"
+      }
+    ]
   }
 ];
 
@@ -308,7 +356,11 @@ window.musicArtists = [
     "name": "Tet3",
     "photo": null,
     "bio": "",
-    "albums": []
+    "albums": [
+      "a_6",
+      "a_7",
+      "a_8"
+    ]
   },
   {
     "id": "ar_14",
