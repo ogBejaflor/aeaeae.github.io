@@ -256,6 +256,160 @@ window.musicCatalog = [
         "duration": "--"
       }
     ]
+  },
+  {
+    "id": "a_9",
+    "artist": "Sssubrinha",
+    "albumTitle": "Eu <3 Gatinho",
+    "type": "single",
+    "year": 2026,
+    "coverArt": "Catalogo/Sssubrinha/Eu%203%20Gatinho/cover.png",
+    "tracks": [
+      {
+        "id": "t_30",
+        "title": "Eu <3 Gatinho (feat. Seracidico)",
+        "file": "Catalogo/Sssubrinha/Eu%203%20Gatinho/gatinho_feat_sera.mp3",
+        "duration": "--"
+      }
+    ]
+  },
+  {
+    "id": "a_10",
+    "artist": "Sssubrinha",
+    "albumTitle": "Rainbow Gummies :P",
+    "type": "single",
+    "year": 2026,
+    "coverArt": "Catalogo/Sssubrinha/Rainbow%20Gummies%20P/cover.png",
+    "tracks": [
+      {
+        "id": "t_31",
+        "title": "Rainbow Gummies :P",
+        "file": "Catalogo/Sssubrinha/Rainbow%20Gummies%20P/RainbowGummies.mp3",
+        "duration": "--"
+      }
+    ]
+  },
+  {
+    "id": "a_11",
+    "artist": "Sssubrinha",
+    "albumTitle": "Disk Full :C",
+    "type": "single",
+    "year": 2026,
+    "coverArt": "Catalogo/Sssubrinha/Disk%20Full%20C/cover.png",
+    "tracks": [
+      {
+        "id": "t_32",
+        "title": "Disk Full :C",
+        "file": "Catalogo/Sssubrinha/Disk%20Full%20C/Full_Disk_%20(1).mp3",
+        "duration": "--"
+      }
+    ]
+  },
+  {
+    "id": "a_12",
+    "artist": "Sssubrinha",
+    "albumTitle": "STICKY NOTES",
+    "type": "ep",
+    "year": 2026,
+    "coverArt": "Catalogo/Sssubrinha/STICKY%20NOTES/cover.png",
+    "tracks": [
+      {
+        "id": "t_33",
+        "title": "que calooor",
+        "file": "Catalogo/Sssubrinha/STICKY%20NOTES/1_quecalooor.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_34",
+        "title": "paz e amor",
+        "file": "Catalogo/Sssubrinha/STICKY%20NOTES/3_Paz_e_amor.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_35",
+        "title": "hair holds memories",
+        "file": "Catalogo/Sssubrinha/STICKY%20NOTES/2_hair_holds_memories.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_36",
+        "title": "pendrive / same feeling",
+        "file": "Catalogo/Sssubrinha/STICKY%20NOTES/4_pendrive_samefeeling.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_37",
+        "title": "diz ai (feat. UGLYBOYY)",
+        "file": "Catalogo/Sssubrinha/STICKY%20NOTES/diz_ai.mp3",
+        "duration": "--"
+      }
+    ]
+  },
+  {
+    "id": "a_13",
+    "artist": "Sssubrinha",
+    "albumTitle": "player2",
+    "type": "single",
+    "year": 2026,
+    "coverArt": "Catalogo/Sssubrinha/player2/cover.png",
+    "tracks": [
+      {
+        "id": "t_38",
+        "title": "player2",
+        "file": "Catalogo/Sssubrinha/player2/PLayer_2.mp3",
+        "duration": "--"
+      }
+    ]
+  },
+  {
+    "id": "a_14",
+    "artist": "Sssubrinha",
+    "albumTitle": "come closer to me ><",
+    "type": "single",
+    "year": 2026,
+    "coverArt": "Catalogo/Sssubrinha/come%20closer%20to%20me/cover.png",
+    "tracks": [
+      {
+        "id": "t_39",
+        "title": "come closer to me",
+        "file": "Catalogo/Sssubrinha/come%20closer%20to%20me/Come_closer_to_me_.mp3",
+        "duration": "--"
+      }
+    ]
+  },
+  {
+    "id": "a_15",
+    "artist": "Sssubrinha",
+    "albumTitle": "HYPERSHIT",
+    "type": "ep",
+    "year": 2026,
+    "coverArt": "Catalogo/Sssubrinha/HYPERSHIT/cover.png",
+    "tracks": [
+      {
+        "id": "t_40",
+        "title": "cheeseburbur",
+        "file": "Catalogo/Sssubrinha/HYPERSHIT/cheeseburbur.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_41",
+        "title": "mexe te krlh",
+        "file": "Catalogo/Sssubrinha/HYPERSHIT/mexe_te_krlh%20(1).mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_42",
+        "title": "tentem inovar plz",
+        "file": "Catalogo/Sssubrinha/HYPERSHIT/Tentem_inovar_plz_FINAL.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_43",
+        "title": "eu n vou entrar",
+        "file": "Catalogo/Sssubrinha/HYPERSHIT/Eu_n_vou_entrar.mp3",
+        "duration": "--"
+      }
+    ]
   }
 ];
 
@@ -367,7 +521,15 @@ window.musicArtists = [
     "name": "Sssubrinha",
     "photo": null,
     "bio": "",
-    "albums": []
+    "albums": [
+      "a_9",
+      "a_10",
+      "a_11",
+      "a_12",
+      "a_13",
+      "a_14",
+      "a_15"
+    ]
   },
   {
     "id": "ar_15",

@@ -67,6 +67,48 @@ window.aeGalleryData = [
     "directory": "Catalogo/Miana"
   },
   {
+    "src": "Catalogo/Sssubrinha/come%20closer%20to%20me/cover.png",
+    "type": "image",
+    "filename": "cover.png",
+    "directory": "Catalogo/Sssubrinha/come closer to me"
+  },
+  {
+    "src": "Catalogo/Sssubrinha/Disk%20Full%20C/cover.png",
+    "type": "image",
+    "filename": "cover.png",
+    "directory": "Catalogo/Sssubrinha/Disk Full C"
+  },
+  {
+    "src": "Catalogo/Sssubrinha/Eu%203%20Gatinho/cover.png",
+    "type": "image",
+    "filename": "cover.png",
+    "directory": "Catalogo/Sssubrinha/Eu 3 Gatinho"
+  },
+  {
+    "src": "Catalogo/Sssubrinha/HYPERSHIT/cover.png",
+    "type": "image",
+    "filename": "cover.png",
+    "directory": "Catalogo/Sssubrinha/HYPERSHIT"
+  },
+  {
+    "src": "Catalogo/Sssubrinha/player2/cover.png",
+    "type": "image",
+    "filename": "cover.png",
+    "directory": "Catalogo/Sssubrinha/player2"
+  },
+  {
+    "src": "Catalogo/Sssubrinha/Rainbow%20Gummies%20P/cover.png",
+    "type": "image",
+    "filename": "cover.png",
+    "directory": "Catalogo/Sssubrinha/Rainbow Gummies P"
+  },
+  {
+    "src": "Catalogo/Sssubrinha/STICKY%20NOTES/cover.png",
+    "type": "image",
+    "filename": "cover.png",
+    "directory": "Catalogo/Sssubrinha/STICKY NOTES"
+  },
+  {
     "src": "Catalogo/Tet3/eu%20tou%20farto%20de%20Madrid%20%3B(/cover.jpg",
     "type": "image",
     "filename": "cover.jpg",

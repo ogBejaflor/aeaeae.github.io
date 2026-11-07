@@ -1,0 +1,21 @@
+{
+  "type": "ep",
+  "year": 2026,
+  "tracks": [
+    {
+      "file": "cheeseburbur.mp3"
+    },
+    {
+      "file": "mexe_te_krlh (1).mp3",
+      "title": "mexe te krlh"
+    },
+    {
+      "file": "Tentem_inovar_plz_FINAL.mp3",
+      "title": "tentem inovar plz"
+    },
+    {
+      "file": "Eu_n_vou_entrar.mp3",
+      "title": "eu n vou entrar"
+    }
+  ]
+}
