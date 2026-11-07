@@ -121,6 +121,12 @@ window.aeGalleryData = [
     "directory": "Catalogo/Tet3/Morango Azul"
   },
   {
+    "src": "Catalogo/Tet3/photo.jpg",
+    "type": "image",
+    "filename": "photo.jpg",
+    "directory": "Catalogo/Tet3"
+  },
+  {
     "src": "Catalogo/Tet3/pintei%20um%20quadro%20para%20ti/cover.jpg",
     "type": "image",
     "filename": "cover.jpg",
