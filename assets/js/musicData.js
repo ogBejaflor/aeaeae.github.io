@@ -502,7 +502,7 @@ window.musicArtists = [
     "id": "ar_12",
     "name": "Tet3",
     "photo": "Catalogo/Tet3/photo.jpg",
-    "bio": "Tét3 é um artista multifacetado, baseado em Lisboa, dedicado a criar um universo sonoro dinâmico, caótico, disfuncional, swaggy, imersivo e monstruoso onde a autoexpressão é a chave para a sobrevivência. 💯✮⋆˙💯 Com a motivação para desconstruir as banalidades humanas e as nossas perceções das mesmas, Tét3 cruza Tét3 é um artista multifacetado, baseado em Lisboa, dedicado a criar um universo sonoro dinâmico, caótico, disfuncional, swaggy, imersivo e monstruoso onde a autoexpressão é a chave para a sobrevivência. Com a motivação para desconstruir as banalidades humanas e as nossas perceções das mesmas, Tét3 cruza as formas dos mais variadas abordagens do pop contemporâneo numa paisagem eletrónica sintetizada por alguém que quer estragar com basses pesados e amigues ⋆˚˖𓍢ִ໋🌷͙֒✧˚.🎀༘⋆˚ :p",
+    "bio": "Tét3 é um artista multifacetado, baseado em Lisboa, dedicado a criar um universo sonoro dinâmico, caótico, disfuncional, swaggy, imersivo e monstruoso onde a autoexpressão é a chave para a sobrevivência 💯✮⋆˙💯. Com a motivação para desconstruir as banalidades humanas e as nossas perceções das mesmas, Tét3 cruza as formas das mais variadas abordagens do pop contemporâneo numa paisagem eletrónica sintetizada por alguém que quer estragar com basses pesados e amigues ⋆˚˖𓍢ִ໋🌷͙֒✧˚.🎀༘⋆˚ :p",
     "albums": [
       "a_6",
       "a_7",
