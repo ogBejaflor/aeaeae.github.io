@@ -67,6 +67,66 @@ window.aeGalleryData = [
     "directory": "Catalogo/Miana"
   },
   {
+    "src": "Catalogo/Proxy%20Fae/anemone/cover.jpg",
+    "type": "image",
+    "filename": "cover.jpg",
+    "directory": "Catalogo/Proxy Fae/anemone"
+  },
+  {
+    "src": "Catalogo/Proxy%20Fae/D894AD74-3208-4605-8C03-8DC75CFDDAC0_1_102_o.jpeg",
+    "type": "image",
+    "filename": "D894AD74-3208-4605-8C03-8DC75CFDDAC0_1_102_o.jpeg",
+    "directory": "Catalogo/Proxy Fae"
+  },
+  {
+    "src": "Catalogo/Proxy%20Fae/DFFAA24E-C67A-41CA-A906-D392E982795F_1_102_o.jpeg",
+    "type": "image",
+    "filename": "DFFAA24E-C67A-41CA-A906-D392E982795F_1_102_o.jpeg",
+    "directory": "Catalogo/Proxy Fae"
+  },
+  {
+    "src": "Catalogo/Proxy%20Fae/Don't%20Be%20So%20Hard%20On%20Your%20Own%20Beauty/cover.jpg",
+    "type": "image",
+    "filename": "cover.jpg",
+    "directory": "Catalogo/Proxy Fae/Don't Be So Hard On Your Own Beauty"
+  },
+  {
+    "src": "Catalogo/Proxy%20Fae/F927E21F-C31C-454D-BE2D-AC200028EC93.jpg",
+    "type": "image",
+    "filename": "F927E21F-C31C-454D-BE2D-AC200028EC93.jpg",
+    "directory": "Catalogo/Proxy Fae"
+  },
+  {
+    "src": "Catalogo/Proxy%20Fae/Last%20Night/cover.png",
+    "type": "image",
+    "filename": "cover.png",
+    "directory": "Catalogo/Proxy Fae/Last Night"
+  },
+  {
+    "src": "Catalogo/Proxy%20Fae/photo.jpg",
+    "type": "image",
+    "filename": "photo.jpg",
+    "directory": "Catalogo/Proxy Fae"
+  },
+  {
+    "src": "Catalogo/Proxy%20Fae/proxy_fae3.JPEG",
+    "type": "image",
+    "filename": "proxy_fae3.JPEG",
+    "directory": "Catalogo/Proxy Fae"
+  },
+  {
+    "src": "Catalogo/Proxy%20Fae/proxy_fae4.JPG",
+    "type": "image",
+    "filename": "proxy_fae4.JPG",
+    "directory": "Catalogo/Proxy Fae"
+  },
+  {
+    "src": "Catalogo/Proxy%20Fae/Sempre%20Assim/cover.jpg",
+    "type": "image",
+    "filename": "cover.jpg",
+    "directory": "Catalogo/Proxy Fae/Sempre Assim"
+  },
+  {
     "src": "Catalogo/Sssubrinha/come%20closer%20to%20me/cover.png",
     "type": "image",
     "filename": "cover.png",

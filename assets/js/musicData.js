@@ -211,6 +211,94 @@ window.musicCatalog = [
   },
   {
     "id": "a_6",
+    "artist": "Proxy Fae",
+    "albumTitle": "anemone",
+    "type": "ep",
+    "year": 2025,
+    "coverArt": "Catalogo/Proxy%20Fae/anemone/cover.jpg",
+    "tracks": [
+      {
+        "id": "t_27",
+        "title": "God's Offline",
+        "file": "Catalogo/Proxy%20Fae/anemone/1.%20GOD_S%20OFFLINE.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_28",
+        "title": "Blinded",
+        "file": "Catalogo/Proxy%20Fae/anemone/2.%20BLINDED-1.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_29",
+        "title": "Lembra-me um sonho lindo",
+        "file": "Catalogo/Proxy%20Fae/anemone/3.%20LEMBRA-ME%20UM%20SONHO%20LINDO.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_30",
+        "title": "Machine",
+        "file": "Catalogo/Proxy%20Fae/anemone/4.%20MACHINE.mp3",
+        "duration": "--"
+      },
+      {
+        "id": "t_31",
+        "title": "Rain Drop",
+        "file": "Catalogo/Proxy%20Fae/anemone/5.%20RAIN%20DROP-1.mp3",
+        "duration": "--"
+      }
+    ]
+  },
+  {
+    "id": "a_7",
+    "artist": "Proxy Fae",
+    "albumTitle": "Sempre Assim",
+    "type": "ep",
+    "year": 2025,
+    "coverArt": "Catalogo/Proxy%20Fae/Sempre%20Assim/cover.jpg",
+    "tracks": [
+      {
+        "id": "t_32",
+        "title": "Sempre Assim",
+        "file": "Catalogo/Proxy%20Fae/Sempre%20Assim/Sempre%20Assim.mp3",
+        "duration": "--"
+      }
+    ]
+  },
+  {
+    "id": "a_8",
+    "artist": "Proxy Fae",
+    "albumTitle": "Last Night",
+    "type": "single",
+    "year": 2024,
+    "coverArt": "Catalogo/Proxy%20Fae/Last%20Night/cover.png",
+    "tracks": [
+      {
+        "id": "t_33",
+        "title": "Last Night",
+        "file": "Catalogo/Proxy%20Fae/Last%20Night/LAST%20NIGHT%20MASTER%2001.mp3",
+        "duration": "--"
+      }
+    ]
+  },
+  {
+    "id": "a_9",
+    "artist": "Proxy Fae",
+    "albumTitle": "Don't Be So Hard On Your Own Beauty",
+    "type": "single",
+    "year": 2024,
+    "coverArt": "Catalogo/Proxy%20Fae/Don't%20Be%20So%20Hard%20On%20Your%20Own%20Beauty/cover.jpg",
+    "tracks": [
+      {
+        "id": "t_34",
+        "title": "Don't Be So Hard On Your Own Beauty",
+        "file": "Catalogo/Proxy%20Fae/Don't%20Be%20So%20Hard%20On%20Your%20Own%20Beauty/dont%20be%20so%20hard%20on%20your%20beauty%20cover%20master%20final.mp3",
+        "duration": "--"
+      }
+    ]
+  },
+  {
+    "id": "a_10",
     "artist": "Tet3",
     "albumTitle": "eu tou farto de Madrid ;(",
     "type": "single",
@@ -218,7 +306,7 @@ window.musicCatalog = [
     "coverArt": "Catalogo/Tet3/eu%20tou%20farto%20de%20Madrid%20%3B(/cover.jpg",
     "tracks": [
       {
-        "id": "t_27",
+        "id": "t_35",
         "title": "eu tou farto de madrid ;(",
         "file": "Catalogo/Tet3/eu%20tou%20farto%20de%20Madrid%20%3B(/eu%20tou%20farto%20de%20madrid%20%3B(%20(V2).mp3",
         "duration": "--"
@@ -226,7 +314,7 @@ window.musicCatalog = [
     ]
   },
   {
-    "id": "a_7",
+    "id": "a_11",
     "artist": "Tet3",
     "albumTitle": "Morango Azul",
     "type": "single",
@@ -234,7 +322,7 @@ window.musicCatalog = [
     "coverArt": "Catalogo/Tet3/Morango%20Azul/cover.jpg",
     "tracks": [
       {
-        "id": "t_28",
+        "id": "t_36",
         "title": "Morango Azul",
         "file": "Catalogo/Tet3/Morango%20Azul/Morango%20azul%20final.mp3",
         "duration": "--"
@@ -242,7 +330,7 @@ window.musicCatalog = [
     ]
   },
   {
-    "id": "a_8",
+    "id": "a_12",
     "artist": "Tet3",
     "albumTitle": "pintei um quadro para ti",
     "type": "single",
@@ -250,7 +338,7 @@ window.musicCatalog = [
     "coverArt": "Catalogo/Tet3/pintei%20um%20quadro%20para%20ti/cover.jpg",
     "tracks": [
       {
-        "id": "t_29",
+        "id": "t_37",
         "title": "pintei um quadro para ti",
         "file": "Catalogo/Tet3/pintei%20um%20quadro%20para%20ti/pintei%20um%20quadro%20para%20ti%20.mp3",
         "duration": "--"
@@ -258,7 +346,7 @@ window.musicCatalog = [
     ]
   },
   {
-    "id": "a_9",
+    "id": "a_13",
     "artist": "Sssubrinha",
     "albumTitle": "Eu <3 Gatinho",
     "type": "single",
@@ -266,7 +354,7 @@ window.musicCatalog = [
     "coverArt": "Catalogo/Sssubrinha/Eu%203%20Gatinho/cover.png",
     "tracks": [
       {
-        "id": "t_30",
+        "id": "t_38",
         "title": "Eu <3 Gatinho (feat. Seracidico)",
         "file": "Catalogo/Sssubrinha/Eu%203%20Gatinho/gatinho_feat_sera.mp3",
         "duration": "--"
@@ -274,7 +362,7 @@ window.musicCatalog = [
     ]
   },
   {
-    "id": "a_10",
+    "id": "a_14",
     "artist": "Sssubrinha",
     "albumTitle": "Rainbow Gummies :P",
     "type": "single",
@@ -282,7 +370,7 @@ window.musicCatalog = [
     "coverArt": "Catalogo/Sssubrinha/Rainbow%20Gummies%20P/cover.png",
     "tracks": [
       {
-        "id": "t_31",
+        "id": "t_39",
         "title": "Rainbow Gummies :P",
         "file": "Catalogo/Sssubrinha/Rainbow%20Gummies%20P/RainbowGummies.mp3",
         "duration": "--"
@@ -290,7 +378,7 @@ window.musicCatalog = [
     ]
   },
   {
-    "id": "a_11",
+    "id": "a_15",
     "artist": "Sssubrinha",
     "albumTitle": "Disk Full :C",
     "type": "single",
@@ -298,7 +386,7 @@ window.musicCatalog = [
     "coverArt": "Catalogo/Sssubrinha/Disk%20Full%20C/cover.png",
     "tracks": [
       {
-        "id": "t_32",
+        "id": "t_40",
         "title": "Disk Full :C",
         "file": "Catalogo/Sssubrinha/Disk%20Full%20C/Full_Disk_%20(1).mp3",
         "duration": "--"
@@ -306,7 +394,7 @@ window.musicCatalog = [
     ]
   },
   {
-    "id": "a_12",
+    "id": "a_16",
     "artist": "Sssubrinha",
     "albumTitle": "STICKY NOTES",
     "type": "ep",
@@ -314,31 +402,31 @@ window.musicCatalog = [
     "coverArt": "Catalogo/Sssubrinha/STICKY%20NOTES/cover.png",
     "tracks": [
       {
-        "id": "t_33",
+        "id": "t_41",
         "title": "que calooor",
         "file": "Catalogo/Sssubrinha/STICKY%20NOTES/1_quecalooor.mp3",
         "duration": "--"
       },
       {
-        "id": "t_34",
+        "id": "t_42",
         "title": "paz e amor",
         "file": "Catalogo/Sssubrinha/STICKY%20NOTES/3_Paz_e_amor.mp3",
         "duration": "--"
       },
       {
-        "id": "t_35",
+        "id": "t_43",
         "title": "hair holds memories",
         "file": "Catalogo/Sssubrinha/STICKY%20NOTES/2_hair_holds_memories.mp3",
         "duration": "--"
       },
       {
-        "id": "t_36",
+        "id": "t_44",
         "title": "pendrive / same feeling",
         "file": "Catalogo/Sssubrinha/STICKY%20NOTES/4_pendrive_samefeeling.mp3",
         "duration": "--"
       },
       {
-        "id": "t_37",
+        "id": "t_45",
         "title": "diz ai (feat. UGLYBOYY)",
         "file": "Catalogo/Sssubrinha/STICKY%20NOTES/diz_ai.mp3",
         "duration": "--"
@@ -346,7 +434,7 @@ window.musicCatalog = [
     ]
   },
   {
-    "id": "a_13",
+    "id": "a_17",
     "artist": "Sssubrinha",
     "albumTitle": "player2",
     "type": "single",
@@ -354,7 +442,7 @@ window.musicCatalog = [
     "coverArt": "Catalogo/Sssubrinha/player2/cover.png",
     "tracks": [
       {
-        "id": "t_38",
+        "id": "t_46",
         "title": "player2",
         "file": "Catalogo/Sssubrinha/player2/PLayer_2.mp3",
         "duration": "--"
@@ -362,7 +450,7 @@ window.musicCatalog = [
     ]
   },
   {
-    "id": "a_14",
+    "id": "a_18",
     "artist": "Sssubrinha",
     "albumTitle": "come closer to me ><",
     "type": "single",
@@ -370,7 +458,7 @@ window.musicCatalog = [
     "coverArt": "Catalogo/Sssubrinha/come%20closer%20to%20me/cover.png",
     "tracks": [
       {
-        "id": "t_39",
+        "id": "t_47",
         "title": "come closer to me",
         "file": "Catalogo/Sssubrinha/come%20closer%20to%20me/Come_closer_to_me_.mp3",
         "duration": "--"
@@ -378,7 +466,7 @@ window.musicCatalog = [
     ]
   },
   {
-    "id": "a_15",
+    "id": "a_19",
     "artist": "Sssubrinha",
     "albumTitle": "HYPERSHIT",
     "type": "ep",
@@ -386,25 +474,25 @@ window.musicCatalog = [
     "coverArt": "Catalogo/Sssubrinha/HYPERSHIT/cover.png",
     "tracks": [
       {
-        "id": "t_40",
+        "id": "t_48",
         "title": "cheeseburbur",
         "file": "Catalogo/Sssubrinha/HYPERSHIT/cheeseburbur.mp3",
         "duration": "--"
       },
       {
-        "id": "t_41",
+        "id": "t_49",
         "title": "mexe te krlh",
         "file": "Catalogo/Sssubrinha/HYPERSHIT/mexe_te_krlh%20(1).mp3",
         "duration": "--"
       },
       {
-        "id": "t_42",
+        "id": "t_50",
         "title": "tentem inovar plz",
         "file": "Catalogo/Sssubrinha/HYPERSHIT/Tentem_inovar_plz_FINAL.mp3",
         "duration": "--"
       },
       {
-        "id": "t_43",
+        "id": "t_51",
         "title": "eu n vou entrar",
         "file": "Catalogo/Sssubrinha/HYPERSHIT/Eu_n_vou_entrar.mp3",
         "duration": "--"
@@ -504,10 +592,52 @@ window.musicArtists = [
   {
     "id": "ar_11",
     "name": "Proxy Fae",
-    "photo": null,
+    "photo": "Catalogo/Proxy%20Fae/photo.jpg",
     "bio": "",
-    "files": [],
-    "albums": []
+    "files": [
+      {
+        "name": "D894AD74-3208-4605-8C03-8DC75CFDDAC0_1_102_o.jpeg",
+        "kind": "image",
+        "ext": "jpeg",
+        "src": "Catalogo/Proxy%20Fae/D894AD74-3208-4605-8C03-8DC75CFDDAC0_1_102_o.jpeg"
+      },
+      {
+        "name": "DFFAA24E-C67A-41CA-A906-D392E982795F_1_102_o.jpeg",
+        "kind": "image",
+        "ext": "jpeg",
+        "src": "Catalogo/Proxy%20Fae/DFFAA24E-C67A-41CA-A906-D392E982795F_1_102_o.jpeg"
+      },
+      {
+        "name": "F927E21F-C31C-454D-BE2D-AC200028EC93.jpg",
+        "kind": "image",
+        "ext": "jpg",
+        "src": "Catalogo/Proxy%20Fae/F927E21F-C31C-454D-BE2D-AC200028EC93.jpg"
+      },
+      {
+        "name": "Proxy Fae Biografia 2026.pdf",
+        "kind": "doc",
+        "ext": "pdf",
+        "src": "Catalogo/Proxy%20Fae/Proxy%20Fae%20Biografia%202026.pdf"
+      },
+      {
+        "name": "proxy_fae3.JPEG",
+        "kind": "image",
+        "ext": "jpeg",
+        "src": "Catalogo/Proxy%20Fae/proxy_fae3.JPEG"
+      },
+      {
+        "name": "proxy_fae4.JPG",
+        "kind": "image",
+        "ext": "jpg",
+        "src": "Catalogo/Proxy%20Fae/proxy_fae4.JPG"
+      }
+    ],
+    "albums": [
+      "a_6",
+      "a_7",
+      "a_8",
+      "a_9"
+    ]
   },
   {
     "id": "ar_12",
@@ -516,9 +646,9 @@ window.musicArtists = [
     "bio": "Tét3 é um artista multifacetado, baseado em Lisboa, dedicado a criar um universo sonoro dinâmico, caótico, disfuncional, swaggy, imersivo e monstruoso onde a autoexpressão é a chave para a sobrevivência 💯✮⋆˙💯. Com a motivação para desconstruir as banalidades humanas e as nossas perceções das mesmas, Tét3 cruza as formas das mais variadas abordagens do pop contemporâneo numa paisagem eletrónica sintetizada por alguém que quer estragar com basses pesados e amigues ⋆˚˖𓍢ִ໋🌷͙֒✧˚.🎀༘⋆˚ :p",
     "files": [],
     "albums": [
-      "a_6",
-      "a_7",
-      "a_8"
+      "a_10",
+      "a_11",
+      "a_12"
     ]
   },
   {
@@ -536,13 +666,13 @@ window.musicArtists = [
     "bio": "",
     "files": [],
     "albums": [
-      "a_9",
-      "a_10",
-      "a_11",
-      "a_12",
       "a_13",
       "a_14",
-      "a_15"
+      "a_15",
+      "a_16",
+      "a_17",
+      "a_18",
+      "a_19"
     ]
   },
   {

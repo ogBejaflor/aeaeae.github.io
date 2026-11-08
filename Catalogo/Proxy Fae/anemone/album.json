@@ -1,0 +1,26 @@
+{
+  "type": "ep",
+  "year": 2025,
+  "tracks": [
+    {
+      "file": "1. GOD_S OFFLINE.mp3",
+      "title": "God's Offline"
+    },
+    {
+      "file": "2. BLINDED-1.mp3",
+      "title": "Blinded"
+    },
+    {
+      "file": "3. LEMBRA-ME UM SONHO LINDO.mp3",
+      "title": "Lembra-me um sonho lindo"
+    },
+    {
+      "file": "4. MACHINE.mp3",
+      "title": "Machine"
+    },
+    {
+      "file": "5. RAIN DROP-1.mp3",
+      "title": "Rain Drop"
+    }
+  ]
+}
