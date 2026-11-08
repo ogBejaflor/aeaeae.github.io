@@ -33,6 +33,22 @@ const COVER_RE = /^cover\.(jpe?g|png|webp)$/i;
 const PHOTO_RE = /^(photo|artist)\.(jpe?g|png|webp)$/i;
 const IMAGE_EXT = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp']);
 const VIDEO_EXT = new Set(['.mp4', '.mov', '.webm']);
+// documents an artist can have in their folder (bio PDFs, press kits, riders…)
+const DOC_EXT = new Set(['.pdf', '.txt', '.md', '.rtf', '.doc', '.docx', '.odt', '.pages']);
+
+// Extra files sitting in an artist's folder (not the photo): pictures and documents.
+// Shown inside the artist's folder on the desktop; pictures also appear in the Gallery.
+function artistExtras(artistFolder) {
+  const dir = path.join(CATALOG, artistFolder);
+  const out = [];
+  for (const f of listFiles(dir).sort(naturalSort)) {
+    if (PHOTO_RE.test(f)) continue;
+    const ext = path.extname(f).toLowerCase();
+    const kind = IMAGE_EXT.has(ext) ? 'image' : VIDEO_EXT.has(ext) ? 'video' : DOC_EXT.has(ext) ? 'doc' : null;
+    if (kind) out.push({ name: f, kind, ext: ext.slice(1), src: url('Catalogo', artistFolder, f) });
+  }
+  return out;
+}
 
 const DEFAULT_SETTINGS = {
   siteTitle: 'æ Label Website',
@@ -182,10 +198,12 @@ function buildMusic() {
   roster.forEach((r, i) => {
     const albumIds = [];
     let photo = null;
+    let files = [];
     if (r.folder) {
       const artistDir = path.join(CATALOG, r.folder);
       const p = listFiles(artistDir).find((f) => PHOTO_RE.test(f));
       if (p) photo = url('Catalogo', r.folder, p);
+      files = artistExtras(r.folder);
 
       for (const albumFolder of orderAlbums(listDirs(artistDir), r.albums)) {
         const a = readAlbum(r.folder, albumFolder);
@@ -203,7 +221,7 @@ function buildMusic() {
         });
       }
     }
-    artists.push({ id: `ar_${i + 1}`, name: r.name, photo, bio: r.bio || '', albums: albumIds });
+    artists.push({ id: `ar_${i + 1}`, name: r.name, photo, bio: r.bio || '', files, albums: albumIds });
   });
 
   const js = `// assets/js/musicData.js
@@ -298,7 +316,7 @@ function buildAll() {
 module.exports = {
   buildAll, buildMusic, buildNotifications, buildGallery, buildSettings,
   loadSettings, loadRoster, readAlbum, orderAlbums, titleFromFile, readJSON,
-  DEFAULT_SETTINGS, RELEASE_TYPES, ROOT, CATALOG, DATA, AUDIO_RE, COVER_RE, PHOTO_RE, IMAGE_EXT, VIDEO_EXT, nfc, same, naturalSort,
+  DEFAULT_SETTINGS, RELEASE_TYPES, DOC_EXT, artistExtras, ROOT, CATALOG, DATA, AUDIO_RE, COVER_RE, PHOTO_RE, IMAGE_EXT, VIDEO_EXT, nfc, same, naturalSort,
 };
 
 if (require.main === module) {

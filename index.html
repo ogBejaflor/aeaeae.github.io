@@ -314,11 +314,27 @@
     <div class="window-content" id="text-content"><pre class="ae-text"></pre></div>
   </div>
 
+  <!-- Document window (PDFs in an artist's folder) -->
+  <div id="doc-window" class="window" style="display:none; width:640px; height:760px;">
+    <div class="window-header">
+      <div class="window-controls">
+        <button class="close-button" aria-label="Close document window"></button>
+        <button class="minimize-button" aria-label="Minimize document window"></button>
+        <button class="fullscreen-button" aria-label="Maximize document window"></button>
+      </div>
+      <span class="window-title">Document</span>
+    </div>
+    <div class="window-content" id="doc-content">
+      <iframe title="Document" src="about:blank"></iframe>
+      <a class="ae-doc-open" href="#" target="_blank" rel="noopener">Open in a new tab ↗</a>
+    </div>
+  </div>
+
   <!-- Scripts (order matters) -->
   <!-- Content first: settings + catalog, then siteContent builds artist folders/windows
        before the desktop scripts below bind their events. -->
   <script src="assets/js/siteSettings.js?v=48f8a1e471"></script>
-  <script src="assets/js/musicData.js?v=cf582d6e7d"></script>
+  <script src="assets/js/musicData.js?v=f4aad90bc5"></script>
   <script src="assets/js/siteContent.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/matter-js@0.19.0/build/matter.min.js"></script>

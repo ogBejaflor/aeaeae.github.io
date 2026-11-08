@@ -56,11 +56,29 @@
       </div>`;
   }
 
-  function imageFile(src, label) {
-    const data = { src, type: 'image', filename: fileName(src) };
+  // Document icon: a page with a coloured band naming the format (PDF, DOC, TXT…)
+  const docIcon = (ext) => 'data:image/svg+xml,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 80"><path d="M6 2h38l18 18v54a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4z" fill="#f4f4f2" stroke="#c9c9c4" stroke-width="2"/>' +
+    '<path d="M44 2v14a4 4 0 0 0 4 4h14" fill="#dcdcd6" stroke="#c9c9c4" stroke-width="2"/>' +
+    '<g stroke="#b3b3ad" stroke-width="3" stroke-linecap="round"><path d="M14 30h36M14 38h36M14 46h24"/></g>' +
+    `<rect x="8" y="54" width="48" height="16" rx="3" fill="${ext === 'pdf' ? '#d4382c' : /^(doc|docx|odt|pages|rtf)$/.test(ext) ? '#2f63d6' : '#7a7a74'}"/>` +
+    `<text x="32" y="66.5" font-family="Helvetica,Arial,sans-serif" font-size="10" font-weight="700" fill="#fff" text-anchor="middle">${ext.toUpperCase().slice(0, 4)}</text></svg>`);
+
+  function docFile(f) {
+    return `
+      <div class="folder file-item in-grid" tabindex="0" title="${esc(f.name)}" data-doc-src="${esc(f.src)}" data-doc-ext="${esc(f.ext)}" data-doc-name="${esc(f.name)}">
+        <img src="${docIcon(f.ext)}" class="file-thumb is-doc" alt="" draggable="false" />
+        <span class="folder-label">${esc(short(f.name))}</span>
+      </div>`;
+  }
+
+  function imageFile(src, label, type = 'image') {
+    const data = { src, type, filename: fileName(src) };
     return `
       <div class="folder file-item in-grid" tabindex="0" title="${esc(label)}" data-media-data="${esc(JSON.stringify(data))}">
-        <img src="${esc(src)}" class="file-thumb" alt="" loading="lazy" draggable="false" />
+        ${type === 'video'
+          ? `<video src="${esc(src)}" class="file-thumb" muted preload="metadata"></video>`
+          : `<img src="${esc(src)}" class="file-thumb" alt="" loading="lazy" draggable="false" />`}
         <span class="folder-label">${esc(short(label))}</span>
       </div>`;
   }
@@ -80,9 +98,11 @@
         <span class="folder-label">${name}</span>
       </div>`);
 
-    // Files inside the artist's folder: Bio.txt, their photo, and each release cover.
+    // Files inside the artist's folder: Bio.txt, documents, their photo, release covers, added pictures.
     const files = [];
     if (artist.bio) files.push(textFile('Bio.txt', `${artist.name} — Bio`, artist.bio));
+    const extras = artist.files || [];
+    for (const f of extras.filter((x) => x.kind === 'doc')) files.push(docFile(f));
     if (artist.photo) files.push(imageFile(artist.photo, fileName(artist.photo)));
     for (const id of artist.albums || []) {
       const album = albumsById.get(id);
@@ -90,6 +110,8 @@
         files.push(imageFile(album.coverArt, album.albumTitle));
       }
     }
+    // pictures added to the artist's folder (also in the Gallery)
+    for (const f of extras.filter((x) => x.kind !== 'doc')) files.push(imageFile(f.src, f.name, f.kind));
     const about = files.join('');
 
     anchor.insertAdjacentHTML('beforebegin', `

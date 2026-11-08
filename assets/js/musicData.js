@@ -419,6 +419,7 @@ window.musicArtists = [
     "name": "Athoms",
     "photo": null,
     "bio": "",
+    "files": [],
     "albums": []
   },
   {
@@ -426,6 +427,7 @@ window.musicArtists = [
     "name": "Bejaflor",
     "photo": "Catalogo/Bejaflor/photo.png",
     "bio": "",
+    "files": [],
     "albums": [
       "a_1"
     ]
@@ -435,6 +437,7 @@ window.musicArtists = [
     "name": "Carolina Miragaia",
     "photo": null,
     "bio": "De raízes açorianas e baseada em Almada, Carolina Miragaia é uma artista\nmultidisciplinar tendo como a música a sua primeira e principal forma de expressão.\nDesde bases Indie e integração numa banda de indie-rock, até à criação de vídeos\nexperimentais em cassete, ou até mesmo à atuação em cinema - a produção e\ncomposição musical sempre acompanharam os diferentes interesses e meios de\nexpressão artísticos da artista. Tendo especial interesse na exploração sonora nas\nDAWs e a combinação eletrónica com instrumentos musicais, as suas composições\nexistem algures entre sonhos eufóricos eletrónicos com um toque pop e uma sensação\nemocional desconstruída, que por sua vez podem perpetuar nas cordas de uma\nguitarra, numa voz em metamorfose ou em bolhas de água ressonantes.",
+    "files": [],
     "albums": [
       "a_2",
       "a_3",
@@ -447,6 +450,7 @@ window.musicArtists = [
     "name": "Clauthewitch",
     "photo": null,
     "bio": "",
+    "files": [],
     "albums": []
   },
   {
@@ -454,6 +458,7 @@ window.musicArtists = [
     "name": "Escada",
     "photo": null,
     "bio": "",
+    "files": [],
     "albums": []
   },
   {
@@ -461,6 +466,7 @@ window.musicArtists = [
     "name": "Fausto Lobo",
     "photo": null,
     "bio": "",
+    "files": [],
     "albums": []
   },
   {
@@ -468,6 +474,7 @@ window.musicArtists = [
     "name": "Lil Audio",
     "photo": null,
     "bio": "",
+    "files": [],
     "albums": []
   },
   {
@@ -475,6 +482,7 @@ window.musicArtists = [
     "name": "Miana",
     "photo": "Catalogo/Miana/photo.jpg",
     "bio": "Miana leva as suas bases de conservatório ao PC para criar composições simples, mas\ninteressantes. No seu EP Miana Barroco Midi encontram-se vestígios contrapontísticos em\ninstrumentais eletrónicos, que, nos singles lançados no SoundCloud, são sobrepostos por\nvocals modernos mergulhados em reverb e autotune, sobre batidas que harmonizam o\nbedroom com o trap.",
+    "files": [],
     "albums": []
   },
   {
@@ -482,6 +490,7 @@ window.musicArtists = [
     "name": "Nicø",
     "photo": null,
     "bio": "",
+    "files": [],
     "albums": []
   },
   {
@@ -489,6 +498,7 @@ window.musicArtists = [
     "name": "Phaser",
     "photo": null,
     "bio": "",
+    "files": [],
     "albums": []
   },
   {
@@ -496,6 +506,7 @@ window.musicArtists = [
     "name": "Proxy Fae",
     "photo": null,
     "bio": "",
+    "files": [],
     "albums": []
   },
   {
@@ -503,6 +514,7 @@ window.musicArtists = [
     "name": "Tet3",
     "photo": "Catalogo/Tet3/photo.jpg",
     "bio": "Tét3 é um artista multifacetado, baseado em Lisboa, dedicado a criar um universo sonoro dinâmico, caótico, disfuncional, swaggy, imersivo e monstruoso onde a autoexpressão é a chave para a sobrevivência 💯✮⋆˙💯. Com a motivação para desconstruir as banalidades humanas e as nossas perceções das mesmas, Tét3 cruza as formas das mais variadas abordagens do pop contemporâneo numa paisagem eletrónica sintetizada por alguém que quer estragar com basses pesados e amigues ⋆˚˖𓍢ִ໋🌷͙֒✧˚.🎀༘⋆˚ :p",
+    "files": [],
     "albums": [
       "a_6",
       "a_7",
@@ -514,6 +526,7 @@ window.musicArtists = [
     "name": "Xaulaura",
     "photo": null,
     "bio": "",
+    "files": [],
     "albums": []
   },
   {
@@ -521,6 +534,7 @@ window.musicArtists = [
     "name": "Sssubrinha",
     "photo": null,
     "bio": "",
+    "files": [],
     "albums": [
       "a_9",
       "a_10",
@@ -536,6 +550,7 @@ window.musicArtists = [
     "name": "Levi",
     "photo": null,
     "bio": "",
+    "files": [],
     "albums": []
   }
 ];

@@ -158,8 +158,18 @@ function artistsState() {
       const folders = fs.readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory() && !d.name.startsWith('.')).map((d) => d.name);
       albums = build.orderAlbums(folders, r.albums).map((f) => albumState(r.folder, f));
     }
-    return { name: r.name, folder: r.folder, bio: r.bio || '', hidden: !!r.hidden, photo, albums };
+    const files = r.folder ? extrasOf(r.folder) : [];
+    return { name: r.name, folder: r.folder, bio: r.bio || '', hidden: !!r.hidden, photo, albums, files };
   });
+}
+
+// Extra files in an artist's folder (pictures + documents), for the admin.
+function extrasOf(artistFolder) {
+  const dir = inside(CATALOG, artistFolder);
+  return build.artistExtras(artistFolder).map((f) => ({
+    name: f.name, kind: f.kind, ext: f.ext, url: f.src,
+    path: rel(path.join(dir, f.name)), size: sizeOf(path.join(dir, f.name)),
+  }));
 }
 
 // ---------------------------------------------------------------- artists
@@ -231,6 +241,44 @@ function removeArtistPhoto(name) {
   const dir = inside(CATALOG, artist.folder);
   const files = fs.readdirSync(dir).filter((f) => PHOTO_RE.test(f)).map((f) => path.join(dir, f));
   if (files.length) toTrash(files, { label: `Photo of “${artist.name}”` });
+}
+
+// Pictures and documents added to an artist's folder (kind: 'image' | 'doc' | undefined = either)
+function addArtistFiles(name, files, kind) {
+  const { list, artist } = findArtist(name);
+  const dir = artistDir(artist);
+  const added = [];
+  for (const f of files) {
+    const ext = path.extname(f.originalname).toLowerCase();
+    const isImage = IMAGE_EXT.has(ext) || VIDEO_EXT.has(ext);
+    const isDoc = build.DOC_EXT.has(ext);
+    if ((kind === 'image' && !isImage) || (kind === 'doc' && !isDoc) || (!isImage && !isDoc)) {
+      for (const x of files) fs.rmSync(x.path, { force: true });
+      throw new UserError(kind === 'doc'
+        ? `“${f.originalname}” isn't a document (PDF, TXT, Word, RTF, Pages…).`
+        : `“${f.originalname}” isn't a picture or video.`);
+    }
+  }
+  for (const f of files) {
+    let fname = cleanFileName(f.originalname);
+    // never let an upload replace the artist photo by accident
+    if (PHOTO_RE.test(fname)) fname = `${artist.name} ${fname}`;
+    const to = uniquePath(path.join(dir, fname));
+    moveFile(f.path, to);
+    added.push(path.basename(to));
+  }
+  saveRoster(list);
+  return added;
+}
+
+function deleteArtistFile(name, file) {
+  const { artist } = findArtist(name);
+  if (!artist.folder) throw new UserError('File not found.', 404);
+  const fname = cleanFileName(file);
+  if (PHOTO_RE.test(fname)) throw new UserError('Use “Remove photo” on the Artists page for the artist photo.');
+  const abs = inside(CATALOG, artist.folder, fname);
+  if (path.dirname(abs) !== inside(CATALOG, artist.folder) || !fs.existsSync(abs) || !fs.statSync(abs).isFile()) throw new UserError('File not found.', 404);
+  toTrash([abs], { label: `“${fname}” from ${artist.name}'s folder` });
 }
 
 // ---------------------------------------------------------------- albums
@@ -455,7 +503,27 @@ function galleryState() {
     }
   };
   walk(ARCHIVE);
-  return { items, folders };
+
+  // Each artist's pictures: photo, release covers, and anything added to their folder.
+  const artists = roster().filter((r) => r.folder).map((r) => {
+    const dir = inside(CATALOG, r.folder);
+    const pics = [];
+    const p = fs.readdirSync(dir).find((f) => PHOTO_RE.test(f));
+    if (p) pics.push({ path: rel(path.join(dir, p)), url: webPath(path.join(dir, p)), name: p, type: 'image', role: 'photo', size: sizeOf(path.join(dir, p)) });
+    const albumFolders = fs.readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory() && !d.name.startsWith('.')).map((d) => d.name);
+    for (const f of build.orderAlbums(albumFolders, r.albums)) {
+      const a = build.readAlbum(r.folder, f);
+      if (!a.cover) continue;
+      const abs = path.join(dir, f, decodeURIComponent(a.cover.split('/').pop()));
+      pics.push({ path: rel(abs), url: a.cover, name: path.basename(abs), type: 'image', role: 'cover', release: a.title, size: sizeOf(abs) });
+    }
+    for (const x of extrasOf(r.folder).filter((x) => x.kind !== 'doc')) {
+      pics.push({ path: x.path, url: x.url, name: x.name, type: x.kind, role: 'extra', size: x.size });
+    }
+    return { name: r.name, items: pics };
+  });
+
+  return { items, folders, artists };
 }
 
 function addGalleryFiles(folder, files) {
@@ -553,6 +621,7 @@ function state() {
 module.exports = {
   UserError, TMP, state,
   createArtist, updateArtist, deleteArtist, orderArtists, setArtistPhoto, removeArtistPhoto,
+  addArtistFiles, deleteArtistFile,
   createAlbum, updateAlbum, deleteAlbum, orderAlbums, setAlbumCover, addTracks, saveTracks, deleteTrack, albumDir,
   getSettings, saveSettings, getPopups, savePopups, saveUpload, deleteUpload,
   addGalleryFiles, createGalleryFolder, deleteGalleryItem,

@@ -99,7 +99,7 @@
     const fd = new FormData();
     for (const [k, v] of Object.entries(fields || {})) fd.append(k, v);
     const list = [...files];
-    const field = url.endsWith('/tracks') || url.endsWith('/gallery') ? 'files' : 'file';
+    const field = /\/(tracks|gallery|files)(\?|$)/.test(url) ? 'files' : 'file';
     for (const f of field === 'files' ? list : list.slice(0, 1)) fd.append(field, f, f.name);
     const xhr = new XMLHttpRequest();
     xhr.open('POST', url);
@@ -375,6 +375,7 @@
           ),
         ),
       ),
+      artistDocs(a),
       h('div', { class: 'section-title' },
         h('h2', {}, 'Releases'),
         h('button', { class: 'btn small', onclick: () => addAlbum(a) }, 'Add release')),
@@ -382,6 +383,29 @@
         ? a.albums.map((al, i) => albumCard(a, al, i))
         : h('div', { class: 'panel empty' }, h('b', {}, 'No releases yet'), 'Add a release, then drop its cover and audio files in.'),
     );
+  }
+
+  // Documents in the artist's folder (bio PDFs, press kits…). Shown as files in their desktop folder.
+  function artistDocs(a) {
+    const docs = (a.files || []).filter((f) => f.kind === 'doc');
+    const pics = (a.files || []).filter((f) => f.kind !== 'doc').length;
+    const key = `${a.name}:docs`;
+    return h('div', {},
+      h('div', { class: 'section-title' },
+        h('h2', {}, 'Documents'),
+        h('span', { class: 'muted' }, 'Bio PDFs, press kits, riders — they appear as files in the artist’s folder on the site.')),
+      h('div', { class: 'panel docs' },
+        docs.map((d) => h('div', { class: 'doc-row' },
+          h('span', { class: 'doc-ext' }, d.ext.toUpperCase()),
+          h('a', { href: site(d.url), target: '_blank', rel: 'noopener', class: 'doc-name', title: 'Open' }, d.name),
+          h('span', { class: 'muted' }, mb(d.size)),
+          h('button', { class: 'btn quiet icon', 'aria-label': `Delete ${d.name}`, title: 'Delete', onclick: () => {
+            if (confirm(`Delete “${d.name}”?`)) act('DELETE', `/api/artists/${enc(a.name)}/files/${enc(d.name)}`, null, () => toast('Document deleted. You can restore it from Deleted.'));
+          } }, '✕'))),
+        dropZone({ key, accept: '.pdf,.txt,.md,.rtf,.doc,.docx,.odt,.pages', multiple: true, cls: 'docs-drop',
+          label: docs.length ? 'Add another document' : 'Add a document', sub: 'PDF, Word, TXT…',
+          onFiles: (f) => upload(`/api/artists/${enc(a.name)}/files?kind=doc`, f, null, key, (r) => toast(`Added ${plural((r.added || []).length, 'document')}.`)) }),
+        pics ? h('p', { class: 'muted docs-note' }, `${plural(pics, 'picture')} added in `, h('a', { href: '#gallery', onclick: (e) => { e.preventDefault(); ui.folder = `artist:${a.name}`; go('gallery'); } }, 'Gallery'), '.') : null));
   }
 
   const TYPES = [['album', 'Album'], ['ep', 'EP'], ['single', 'Single']];
@@ -671,39 +695,78 @@
   }
 
   // ------------------------------------------------------------ gallery
+  // Folders: '*' = everything, an Archive folder path ('' = Archive itself), or 'artist:<name>'.
   function galleryPage() {
     const { items, folders } = S.gallery;
-    if (ui.folder !== '*' && !folders.includes(ui.folder)) ui.folder = '*';
-    const shown = ui.folder === '*' ? items : items.filter((i) => i.folder === ui.folder);
-    const uploadTo = ui.folder === '*' ? '' : ui.folder;
+    const artists = S.gallery.artists || [];
+    const isArtist = ui.folder.startsWith('artist:');
+    const artist = isArtist ? artists.find((x) => same(x.name, ui.folder.slice(7))) : null;
+    if ((isArtist && !artist) || (!isArtist && ui.folder !== '*' && !folders.includes(ui.folder))) ui.folder = '*';
     const count = (f) => items.filter((i) => i.folder === f).length;
+    const chip = (key, label, n) => h('button', { class: 'chip', 'aria-pressed': ui.folder === key ? 'true' : 'false', onclick: () => { ui.folder = key; render(); } },
+      label, h('span', { class: 'n' }, n));
+
+    const archiveTile = (m) => h('figure', { class: 'media', style: { margin: 0 } },
+      thumb(m),
+      h('figcaption', { class: 'cap' }, h('span', { title: m.name }, m.name), h('span', { class: 'muted' }, mb(m.size))),
+      h('button', { class: 'btn small del', onclick: () => act('DELETE', `/api/gallery?path=${enc(m.path)}`, null, () => toast('Removed from the gallery.')) }, 'Delete'));
+
+    const artistTile = (a, m) => h('figure', { class: 'media', style: { margin: 0 } },
+      thumb(m),
+      h('figcaption', { class: 'cap' },
+        h('span', { title: m.role === 'cover' ? `Cover of ${m.release}` : m.name }, m.role === 'cover' ? m.release : m.role === 'photo' ? 'Artist photo' : m.name),
+        h('span', { class: 'muted' }, m.role === 'cover' ? 'cover' : m.role === 'photo' ? 'photo' : mb(m.size))),
+      m.role === 'extra'
+        ? h('button', { class: 'btn small del', onclick: () => act('DELETE', `/api/artists/${enc(a.name)}/files/${enc(m.name)}`, null, () => toast('Removed. You can restore it from Deleted.')) }, 'Delete')
+        : h('button', { class: 'btn small del', title: 'Change covers and the photo on the Artists page', onclick: () => { ui.artist = a.name; if (m.role === 'cover') ui.open.add(`${a.name}/${m.path.split('/').slice(-2, -1)[0]}`); go('artists'); } }, 'Change'));
+
+    let grid;
+    let text;
+    if (artist) {
+      text = `${artist.name}'s folder. Covers and the photo come from the Artists page; pictures you add here also show in their folder on the desktop.`;
+      grid = [
+        dropZone({ key: 'gal-a', accept: 'image/*,video/mp4,video/webm,video/quicktime', multiple: true, label: 'Add pictures', sub: `to ${artist.name}`,
+          onFiles: (f) => upload(`/api/artists/${enc(artist.name)}/files?kind=image`, f, null, 'gal-a', () => toast(`Added ${plural(f.length, 'picture')} to ${artist.name}.`)) }),
+        artist.items.map((m) => artistTile(artist, m)),
+      ];
+    } else {
+      const uploadTo = ui.folder === '*' ? '' : ui.folder;
+      const shown = ui.folder === '*' ? items : items.filter((i) => i.folder === ui.folder);
+      text = 'Pictures and videos in the Gallery app. Archive folders are for anything not tied to one artist.';
+      grid = [
+        dropZone({ key: 'gal', accept: 'image/*,video/mp4,video/webm,video/quicktime', multiple: true,
+          label: 'Add pictures', sub: uploadTo ? `to ${uploadTo}` : 'to Archive',
+          onFiles: (f) => upload('/api/gallery', f, { folder: uploadTo }, 'gal', () => toast(`Added ${plural(f.length, 'file')}.`)) }),
+        shown.map(archiveTile),
+      ];
+    }
 
     return h('div', {},
-      head('Gallery', 'Pictures and videos in the Gallery app. They live in the Archive folder.',
+      head('Gallery', text,
         h('button', { class: 'btn', onclick: async () => {
-          const name = prompt('New folder name');
+          const name = prompt('New Archive folder name');
           if (name && name.trim()) act('POST', '/api/gallery/folders', { name }, () => { ui.folder = name.trim(); toast('Folder created.'); });
         } }, 'New folder')),
       h('div', { class: 'folders-bar' },
-        h('button', { class: 'chip', 'aria-pressed': ui.folder === '*' ? 'true' : 'false', onclick: () => { ui.folder = '*'; render(); } }, 'Everything', h('span', { class: 'n' }, items.length)),
-        folders.map((f) => h('button', { class: 'chip', 'aria-pressed': ui.folder === f ? 'true' : 'false', onclick: () => { ui.folder = f; render(); } },
-          f || 'Archive', h('span', { class: 'n' }, count(f)))),
-        ui.folder !== '*' && ui.folder !== '' ? h('button', { class: 'btn quiet small', onclick: () => {
+        h('span', { class: 'bar-label' }, 'Archive'),
+        chip('*', 'All', items.length),
+        folders.filter((f) => f).map((f) => chip(f, f, count(f))),
+        ui.folder !== '*' && ui.folder !== '' && !isArtist ? h('button', { class: 'btn quiet small', onclick: () => {
           if (confirm(`Delete the folder “${ui.folder}” and everything in it?`)) act('DELETE', `/api/gallery?path=${enc('Archive/' + ui.folder)}`, null, () => toast('Folder deleted.'));
         } }, 'Delete folder') : null),
-      h('div', { class: 'media-grid' },
-        dropZone({ key: 'gal', accept: 'image/*,video/mp4,video/webm,video/quicktime', multiple: true,
-          label: 'Add pictures', sub: uploadTo ? `to ${uploadTo}` : 'JPG, PNG, GIF, MP4…',
-          onFiles: (f) => upload('/api/gallery', f, { folder: uploadTo }, 'gal', () => toast(`Added ${plural(f.length, 'file')}.`)) }),
-        shown.map((m) => h('figure', { class: 'media', style: { margin: 0 } },
-          h('div', { class: 'thumb' }, m.type === 'image'
-            ? h('img', { src: site(m.url), alt: m.name, loading: 'lazy' })
-            : h('video', { src: site(m.url), muted: true, preload: 'metadata' })),
-          h('figcaption', { class: 'cap' }, h('span', { title: m.name }, m.name), h('span', { class: 'muted' }, mb(m.size))),
-          h('button', { class: 'btn small del', onclick: () => act('DELETE', `/api/gallery?path=${enc(m.path)}`, null, () => toast('Removed from the gallery.')) }, 'Delete')))),
+      artists.length ? h('div', { class: 'folders-bar' },
+        h('span', { class: 'bar-label' }, 'Artists'),
+        artists.map((a) => chip(`artist:${a.name}`, a.name, a.items.length))) : null,
+      h('div', { class: 'media-grid' }, grid),
       h('div', { style: { marginTop: '22px' } },
-        toggle('Also show album covers and artist photos in the gallery', S.settings.gallery.includeCatalog,
+        toggle('Show artist folders (covers, photos and their pictures) in the Gallery app', S.settings.gallery.includeCatalog,
           (on) => act('PUT', '/api/settings', { settings: { gallery: { includeCatalog: on } } }), 'g-cat')));
+  }
+
+  function thumb(m) {
+    return h('div', { class: 'thumb' }, m.type === 'image'
+      ? h('img', { src: site(m.url), alt: m.name, loading: 'lazy' })
+      : h('video', { src: site(m.url), muted: true, preload: 'metadata' }));
   }
 
   // ------------------------------------------------------------ deleted

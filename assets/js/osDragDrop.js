@@ -115,7 +115,7 @@
     if (dragPayload.source === 'gallery') {
       const galleryWindow = dropTarget ? dropTarget.closest('#gallery-window') : null;
       if (!galleryWindow) {
-        const folderWin = dropTarget ? dropTarget.closest('.window:not(#gallery-window):not(#preview-window):not(#trash-window):not(#terminal-window)') : null;
+        const folderWin = dropTarget ? dropTarget.closest('.window:not(#gallery-window):not(#preview-window):not(#doc-window):not(#text-window):not(#trash-window):not(#terminal-window)') : null;
         
         if (folderWin) {
           const contentEl = folderWin.querySelector('.window-content');
@@ -199,7 +199,7 @@
        desktopFileDragging.style.display = ''; // restore
        
        const galleryWin = dropTarget ? dropTarget.closest('#gallery-window') : null;
-       const folderWin = dropTarget ? dropTarget.closest('.window:not(#gallery-window):not(#preview-window):not(#trash-window):not(#terminal-window)') : null;
+       const folderWin = dropTarget ? dropTarget.closest('.window:not(#gallery-window):not(#preview-window):not(#doc-window):not(#text-window):not(#trash-window):not(#terminal-window)') : null;
        const trashWin = dropTarget ? dropTarget.closest('#trash-window') : null;
        
        if (galleryWin && window.aeGalleryAPI && window.aeGalleryAPI.isOpen()) {

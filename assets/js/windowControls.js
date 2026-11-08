@@ -92,6 +92,32 @@ window.openTextFile = function(title, text) {
   openWindowById('text-window');
 };
 
+// Documents: PDFs open in a document window, text files in the text window,
+// anything else (Word, Pages…) downloads.
+window.openDocument = function(name, src, ext) {
+  ext = String(ext || '').toLowerCase();
+  if (ext === 'pdf') {
+    const win = document.getElementById('doc-window');
+    if (!win) return window.open(src, '_blank', 'noopener');
+    win.querySelector('.window-title').textContent = name;
+    const frame = win.querySelector('iframe');
+    if (frame.getAttribute('src') !== src) frame.setAttribute('src', src);
+    win.querySelector('.ae-doc-open').href = src;
+    openWindowById('doc-window');
+    return;
+  }
+  if (ext === 'txt' || ext === 'md') {
+    fetch(src).then((r) => r.text()).then((t) => window.openTextFile(name, t)).catch(() => window.open(src, '_blank', 'noopener'));
+    return;
+  }
+  const a = document.createElement('a');
+  a.href = src;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+};
+
 // Open selected folder or restore minimized window
 function openFolder(folder) {
   const windowId = folder.getAttribute('data-window');
@@ -99,6 +125,10 @@ function openFolder(folder) {
   if (!windowId && folder.classList.contains('file-item')) {
     if (folder.dataset.text !== undefined) {
       window.openTextFile(folder.dataset.textTitle || 'Text', folder.dataset.text);
+      return;
+    }
+    if (folder.dataset.docSrc) {
+      window.openDocument(folder.dataset.docName, folder.dataset.docSrc, folder.dataset.docExt);
       return;
     }
     try {

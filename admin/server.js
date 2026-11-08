@@ -130,6 +130,10 @@ app.delete('/api/artists/:artist', change((req) => content.deleteArtist(req.para
 app.post('/api/artists/:artist/photo', upload.single('file'), fixNames,
   change((req) => content.setArtistPhoto(req.params.artist, needFile(req))));
 app.delete('/api/artists/:artist/photo', change((req) => content.removeArtistPhoto(req.params.artist)));
+// pictures (?kind=image, from the Gallery) and documents (?kind=doc, e.g. bio PDFs) in the artist's folder
+app.post('/api/artists/:artist/files', upload.array('files'), fixNames,
+  change((req) => ({ added: content.addArtistFiles(req.params.artist, needFiles(req), req.query.kind) })));
+app.delete('/api/artists/:artist/files/:file', change((req) => content.deleteArtistFile(req.params.artist, req.params.file)));
 
 // ------------------------------------------------------------------ albums
 app.post('/api/artists/:artist/albums', change((req) => ({ folder: content.createAlbum(req.params.artist, req.body) })));
