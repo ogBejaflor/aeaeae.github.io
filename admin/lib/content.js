@@ -422,6 +422,13 @@ function saveSettings(next) {
   s.popups = { ...cur.popups, ...(next.popups || {}) };
   s.popups.welcome = { ...cur.popups.welcome, ...((next.popups || {}).welcome || {}) };
   s.gallery = { ...cur.gallery, ...(next.gallery || {}) };
+  s.startup = { ...cur.startup, ...(next.startup || {}) };
+  for (const k of ['volume', 'stringVolume', 'effectsVolume']) {
+    const v = Number(s.startup[k]);
+    s.startup[k] = Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 0.8;
+  }
+  s.startup.ambient = s.startup.ambient !== false;
+  if (!(s.startup.targetKey === 'auto' || (Number.isInteger(s.startup.targetKey) && s.startup.targetKey >= 0 && s.startup.targetKey < 12))) s.startup.targetKey = 'auto';
   const min = Number(s.popups.minDelay);
   const max = Number(s.popups.maxDelay);
   if (!(min >= 1) || !(max >= min)) throw new UserError('Pop-up timing: “from” must be at least 1 second and not more than “to”.');

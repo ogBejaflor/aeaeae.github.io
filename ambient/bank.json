@@ -1,0 +1,575 @@
+{
+ "version": 1,
+ "targetKey": 8,
+ "targetName": "Ab major / F minor",
+ "settings": {
+  "ambient": true,
+  "volume": 0.8,
+  "stringVolume": 0.6,
+  "effectsVolume": 0.9
+ },
+ "sounds": {},
+ "items": [
+  {
+   "id": "40e7bc1819f3",
+   "artist": "Bejaflor",
+   "title": "Do Inicio",
+   "files": [
+    "ambient/40e7bc1819f3-1.mp3",
+    "ambient/40e7bc1819f3-2.mp3",
+    "ambient/40e7bc1819f3-3.mp3"
+   ],
+   "shift": 0
+  },
+  {
+   "id": "4513ca622527",
+   "artist": "Bejaflor",
+   "title": "Hinos",
+   "files": [
+    "ambient/4513ca622527-1.mp3",
+    "ambient/4513ca622527-2.mp3",
+    "ambient/4513ca622527-3.mp3"
+   ],
+   "shift": -4
+  },
+  {
+   "id": "00a73dd0feeb",
+   "artist": "Bejaflor",
+   "title": "Dividir",
+   "files": [
+    "ambient/00a73dd0feeb-1.mp3",
+    "ambient/00a73dd0feeb-2.mp3",
+    "ambient/00a73dd0feeb-3.mp3"
+   ],
+   "shift": 3
+  },
+  {
+   "id": "f4256fb068af",
+   "artist": "Bejaflor",
+   "title": "DADA",
+   "files": [
+    "ambient/f4256fb068af-1.mp3",
+    "ambient/f4256fb068af-2.mp3",
+    "ambient/f4256fb068af-3.mp3"
+   ],
+   "shift": 0
+  },
+  {
+   "id": "57b24cee1063",
+   "artist": "Bejaflor",
+   "title": "Perdão",
+   "files": [
+    "ambient/57b24cee1063-1.mp3",
+    "ambient/57b24cee1063-2.mp3",
+    "ambient/57b24cee1063-3.mp3"
+   ],
+   "shift": 0
+  },
+  {
+   "id": "147c8d8420d8",
+   "artist": "Bejaflor",
+   "title": "E que?",
+   "files": [
+    "ambient/147c8d8420d8-1.mp3",
+    "ambient/147c8d8420d8-2.mp3",
+    "ambient/147c8d8420d8-3.mp3"
+   ],
+   "shift": 0
+  },
+  {
+   "id": "cd08d1379d78",
+   "artist": "Bejaflor",
+   "title": "A Banda",
+   "files": [
+    "ambient/cd08d1379d78-1.mp3",
+    "ambient/cd08d1379d78-2.mp3",
+    "ambient/cd08d1379d78-3.mp3"
+   ],
+   "shift": -5
+  },
+  {
+   "id": "a6fabb677ba2",
+   "artist": "Bejaflor",
+   "title": "Isolamento",
+   "files": [
+    "ambient/a6fabb677ba2-1.mp3",
+    "ambient/a6fabb677ba2-2.mp3",
+    "ambient/a6fabb677ba2-3.mp3"
+   ],
+   "shift": 1
+  },
+  {
+   "id": "bf260d0b1a78",
+   "artist": "Bejaflor",
+   "title": "Casa Pt.2",
+   "files": [
+    "ambient/bf260d0b1a78-1.mp3",
+    "ambient/bf260d0b1a78-2.mp3",
+    "ambient/bf260d0b1a78-3.mp3"
+   ],
+   "shift": 0
+  },
+  {
+   "id": "18a0dad817fe",
+   "artist": "Bejaflor",
+   "title": "Lições",
+   "files": [
+    "ambient/18a0dad817fe-1.mp3",
+    "ambient/18a0dad817fe-2.mp3",
+    "ambient/18a0dad817fe-3.mp3"
+   ],
+   "shift": -4
+  },
+  {
+   "id": "b97e1dffebad",
+   "artist": "Carolina Miragaia",
+   "title": "beira da estrada",
+   "files": [
+    "ambient/b97e1dffebad-1.mp3",
+    "ambient/b97e1dffebad-2.mp3",
+    "ambient/b97e1dffebad-3.mp3"
+   ],
+   "shift": 1
+  },
+  {
+   "id": "c8e26523a825",
+   "artist": "Carolina Miragaia",
+   "title": "item nº1 (a tua mão) ft. skurty",
+   "files": [
+    "ambient/c8e26523a825-1.mp3",
+    "ambient/c8e26523a825-2.mp3",
+    "ambient/c8e26523a825-3.mp3"
+   ],
+   "shift": -5
+  },
+  {
+   "id": "dcdb7d529e42",
+   "artist": "Carolina Miragaia",
+   "title": "item nº1",
+   "files": [
+    "ambient/dcdb7d529e42-1.mp3",
+    "ambient/dcdb7d529e42-2.mp3",
+    "ambient/dcdb7d529e42-3.mp3"
+   ],
+   "shift": 0
+  },
+  {
+   "id": "6dd52e96ccbb",
+   "artist": "Carolina Miragaia",
+   "title": "micro.bio",
+   "files": [
+    "ambient/6dd52e96ccbb-1.mp3",
+    "ambient/6dd52e96ccbb-2.mp3",
+    "ambient/6dd52e96ccbb-3.mp3"
+   ],
+   "shift": -6
+  },
+  {
+   "id": "d8c5ee061a3c",
+   "artist": "Carolina Miragaia",
+   "title": "mineral",
+   "files": [
+    "ambient/d8c5ee061a3c-1.mp3",
+    "ambient/d8c5ee061a3c-2.mp3",
+    "ambient/d8c5ee061a3c-3.mp3"
+   ],
+   "shift": -4
+  },
+  {
+   "id": "fe3fe1decaca",
+   "artist": "Carolina Miragaia",
+   "title": "sim)bio(se",
+   "files": [
+    "ambient/fe3fe1decaca-1.mp3",
+    "ambient/fe3fe1decaca-2.mp3",
+    "ambient/fe3fe1decaca-3.mp3"
+   ],
+   "shift": -5
+  },
+  {
+   "id": "04950748894e",
+   "artist": "Carolina Miragaia",
+   "title": "sistema $",
+   "files": [
+    "ambient/04950748894e-1.mp3",
+    "ambient/04950748894e-2.mp3",
+    "ambient/04950748894e-3.mp3"
+   ],
+   "shift": -6
+  },
+  {
+   "id": "f6de86ce68ba",
+   "artist": "Carolina Miragaia",
+   "title": "honestamente nem eu",
+   "files": [
+    "ambient/f6de86ce68ba-1.mp3",
+    "ambient/f6de86ce68ba-2.mp3",
+    "ambient/f6de86ce68ba-3.mp3"
+   ],
+   "shift": -3
+  },
+  {
+   "id": "5c870bdf9dfe",
+   "artist": "Carolina Miragaia",
+   "title": "0.7",
+   "files": [
+    "ambient/5c870bdf9dfe-1.mp3",
+    "ambient/5c870bdf9dfe-2.mp3",
+    "ambient/5c870bdf9dfe-3.mp3"
+   ],
+   "shift": -6
+  },
+  {
+   "id": "2bc1a7e03981",
+   "artist": "Carolina Miragaia",
+   "title": "150 >∞_garD",
+   "files": [
+    "ambient/2bc1a7e03981-1.mp3",
+    "ambient/2bc1a7e03981-2.mp3",
+    "ambient/2bc1a7e03981-3.mp3"
+   ],
+   "shift": 1
+  },
+  {
+   "id": "e70457f644b3",
+   "artist": "Carolina Miragaia",
+   "title": "ken0psia",
+   "files": [
+    "ambient/e70457f644b3-1.mp3",
+    "ambient/e70457f644b3-2.mp3",
+    "ambient/e70457f644b3-3.mp3"
+   ],
+   "shift": 1
+  },
+  {
+   "id": "ae39b84a3de7",
+   "artist": "Carolina Miragaia",
+   "title": "after.party",
+   "files": [
+    "ambient/ae39b84a3de7-1.mp3",
+    "ambient/ae39b84a3de7-2.mp3",
+    "ambient/ae39b84a3de7-3.mp3"
+   ],
+   "shift": 1
+  },
+  {
+   "id": "2715e8a3deab",
+   "artist": "Carolina Miragaia",
+   "title": "404",
+   "files": [
+    "ambient/2715e8a3deab-1.mp3",
+    "ambient/2715e8a3deab-2.mp3",
+    "ambient/2715e8a3deab-3.mp3"
+   ],
+   "shift": 1
+  },
+  {
+   "id": "a09510a27b88",
+   "artist": "Carolina Miragaia",
+   "title": "pa_is#00?age*m",
+   "files": [
+    "ambient/a09510a27b88-1.mp3",
+    "ambient/a09510a27b88-2.mp3",
+    "ambient/a09510a27b88-3.mp3"
+   ],
+   "shift": 1
+  },
+  {
+   "id": "3b144169a911",
+   "artist": "Carolina Miragaia",
+   "title": "HOLOGRAMA",
+   "files": [
+    "ambient/3b144169a911-1.mp3",
+    "ambient/3b144169a911-2.mp3",
+    "ambient/3b144169a911-3.mp3"
+   ],
+   "shift": 1
+  },
+  {
+   "id": "7bee8f7b0779",
+   "artist": "Carolina Miragaia",
+   "title": "!!!!!!!",
+   "files": [
+    "ambient/7bee8f7b0779-1.mp3",
+    "ambient/7bee8f7b0779-2.mp3",
+    "ambient/7bee8f7b0779-3.mp3"
+   ],
+   "shift": 0
+  },
+  {
+   "id": "3192eba3fe1d",
+   "artist": "Proxy Fae",
+   "title": "God's Offline",
+   "files": [
+    "ambient/3192eba3fe1d-1.mp3",
+    "ambient/3192eba3fe1d-2.mp3",
+    "ambient/3192eba3fe1d-3.mp3"
+   ],
+   "shift": 0
+  },
+  {
+   "id": "09127d4d37b2",
+   "artist": "Proxy Fae",
+   "title": "Blinded",
+   "files": [
+    "ambient/09127d4d37b2-1.mp3",
+    "ambient/09127d4d37b2-2.mp3",
+    "ambient/09127d4d37b2-3.mp3"
+   ],
+   "shift": 0
+  },
+  {
+   "id": "4af500ec7641",
+   "artist": "Proxy Fae",
+   "title": "Lembra-me um sonho lindo",
+   "files": [
+    "ambient/4af500ec7641-1.mp3",
+    "ambient/4af500ec7641-2.mp3",
+    "ambient/4af500ec7641-3.mp3"
+   ],
+   "shift": 0
+  },
+  {
+   "id": "0a3b281f7a46",
+   "artist": "Proxy Fae",
+   "title": "Machine",
+   "files": [
+    "ambient/0a3b281f7a46-1.mp3",
+    "ambient/0a3b281f7a46-2.mp3",
+    "ambient/0a3b281f7a46-3.mp3"
+   ],
+   "shift": -2
+  },
+  {
+   "id": "a881f8ee6ca1",
+   "artist": "Proxy Fae",
+   "title": "Rain Drop",
+   "files": [
+    "ambient/a881f8ee6ca1-1.mp3",
+    "ambient/a881f8ee6ca1-2.mp3",
+    "ambient/a881f8ee6ca1-3.mp3"
+   ],
+   "shift": 0
+  },
+  {
+   "id": "56fe3b848b92",
+   "artist": "Proxy Fae",
+   "title": "Don't Be So Hard On Your Own Beauty",
+   "files": [
+    "ambient/56fe3b848b92-1.mp3",
+    "ambient/56fe3b848b92-2.mp3",
+    "ambient/56fe3b848b92-3.mp3"
+   ],
+   "shift": -2
+  },
+  {
+   "id": "a5393b2d486e",
+   "artist": "Proxy Fae",
+   "title": "Last Night",
+   "files": [
+    "ambient/a5393b2d486e-1.mp3",
+    "ambient/a5393b2d486e-2.mp3",
+    "ambient/a5393b2d486e-3.mp3"
+   ],
+   "shift": -2
+  },
+  {
+   "id": "e7e0f99fcba9",
+   "artist": "Proxy Fae",
+   "title": "Sempre Assim",
+   "files": [
+    "ambient/e7e0f99fcba9-1.mp3",
+    "ambient/e7e0f99fcba9-2.mp3",
+    "ambient/e7e0f99fcba9-3.mp3"
+   ],
+   "shift": 1
+  },
+  {
+   "id": "8efec4530c03",
+   "artist": "Sssubrinha",
+   "title": "come closer to me",
+   "files": [
+    "ambient/8efec4530c03-1.mp3",
+    "ambient/8efec4530c03-2.mp3",
+    "ambient/8efec4530c03-3.mp3"
+   ],
+   "shift": -6
+  },
+  {
+   "id": "c87809f3c7de",
+   "artist": "Sssubrinha",
+   "title": "Disk Full :C",
+   "files": [
+    "ambient/c87809f3c7de-1.mp3",
+    "ambient/c87809f3c7de-2.mp3",
+    "ambient/c87809f3c7de-3.mp3"
+   ],
+   "shift": 0
+  },
+  {
+   "id": "48f6c26fe619",
+   "artist": "Sssubrinha",
+   "title": "Eu <3 Gatinho (feat. Seracidico)",
+   "files": [
+    "ambient/48f6c26fe619-1.mp3",
+    "ambient/48f6c26fe619-2.mp3",
+    "ambient/48f6c26fe619-3.mp3"
+   ],
+   "shift": -4
+  },
+  {
+   "id": "b780aaf8f295",
+   "artist": "Sssubrinha",
+   "title": "cheeseburbur",
+   "files": [
+    "ambient/b780aaf8f295-1.mp3",
+    "ambient/b780aaf8f295-2.mp3",
+    "ambient/b780aaf8f295-3.mp3"
+   ],
+   "shift": 0
+  },
+  {
+   "id": "feed73f922af",
+   "artist": "Sssubrinha",
+   "title": "eu n vou entrar",
+   "files": [
+    "ambient/feed73f922af-1.mp3",
+    "ambient/feed73f922af-2.mp3",
+    "ambient/feed73f922af-3.mp3"
+   ],
+   "shift": 0
+  },
+  {
+   "id": "0e4ffdca5354",
+   "artist": "Sssubrinha",
+   "title": "mexe te krlh",
+   "files": [
+    "ambient/0e4ffdca5354-1.mp3",
+    "ambient/0e4ffdca5354-2.mp3",
+    "ambient/0e4ffdca5354-3.mp3"
+   ],
+   "shift": -3
+  },
+  {
+   "id": "21ed78fd9663",
+   "artist": "Sssubrinha",
+   "title": "tentem inovar plz",
+   "files": [
+    "ambient/21ed78fd9663-1.mp3",
+    "ambient/21ed78fd9663-2.mp3",
+    "ambient/21ed78fd9663-3.mp3"
+   ],
+   "shift": 4
+  },
+  {
+   "id": "2e9b77a21599",
+   "artist": "Sssubrinha",
+   "title": "player2",
+   "files": [
+    "ambient/2e9b77a21599-1.mp3",
+    "ambient/2e9b77a21599-2.mp3",
+    "ambient/2e9b77a21599-3.mp3"
+   ],
+   "shift": 0
+  },
+  {
+   "id": "3bb5bf125acb",
+   "artist": "Sssubrinha",
+   "title": "Rainbow Gummies :P",
+   "files": [
+    "ambient/3bb5bf125acb-1.mp3",
+    "ambient/3bb5bf125acb-2.mp3",
+    "ambient/3bb5bf125acb-3.mp3"
+   ],
+   "shift": -2
+  },
+  {
+   "id": "a6cebc2eb8f9",
+   "artist": "Sssubrinha",
+   "title": "que calooor",
+   "files": [
+    "ambient/a6cebc2eb8f9-1.mp3",
+    "ambient/a6cebc2eb8f9-2.mp3",
+    "ambient/a6cebc2eb8f9-3.mp3"
+   ],
+   "shift": -3
+  },
+  {
+   "id": "4d31d534f5b5",
+   "artist": "Sssubrinha",
+   "title": "hair holds memories",
+   "files": [
+    "ambient/4d31d534f5b5-1.mp3",
+    "ambient/4d31d534f5b5-2.mp3",
+    "ambient/4d31d534f5b5-3.mp3"
+   ],
+   "shift": 4
+  },
+  {
+   "id": "83c8deb6757d",
+   "artist": "Sssubrinha",
+   "title": "paz e amor",
+   "files": [
+    "ambient/83c8deb6757d-1.mp3",
+    "ambient/83c8deb6757d-2.mp3",
+    "ambient/83c8deb6757d-3.mp3"
+   ],
+   "shift": -3
+  },
+  {
+   "id": "20a5bdf84177",
+   "artist": "Sssubrinha",
+   "title": "pendrive / same feeling",
+   "files": [
+    "ambient/20a5bdf84177-1.mp3",
+    "ambient/20a5bdf84177-2.mp3",
+    "ambient/20a5bdf84177-3.mp3"
+   ],
+   "shift": 0
+  },
+  {
+   "id": "cc907e5aa903",
+   "artist": "Sssubrinha",
+   "title": "diz ai (feat. UGLYBOYY)",
+   "files": [
+    "ambient/cc907e5aa903-1.mp3",
+    "ambient/cc907e5aa903-2.mp3",
+    "ambient/cc907e5aa903-3.mp3"
+   ],
+   "shift": -2
+  },
+  {
+   "id": "d61d3ec2a184",
+   "artist": "Tet3",
+   "title": "eu tou farto de madrid ;(",
+   "files": [
+    "ambient/d61d3ec2a184-1.mp3",
+    "ambient/d61d3ec2a184-2.mp3",
+    "ambient/d61d3ec2a184-3.mp3"
+   ],
+   "shift": 4
+  },
+  {
+   "id": "e53cedcbc38d",
+   "artist": "Tet3",
+   "title": "Morango Azul",
+   "files": [
+    "ambient/e53cedcbc38d-1.mp3",
+    "ambient/e53cedcbc38d-2.mp3",
+    "ambient/e53cedcbc38d-3.mp3"
+   ],
+   "shift": 1
+  },
+  {
+   "id": "567ad7765176",
+   "artist": "Tet3",
+   "title": "pintei um quadro para ti",
+   "files": [
+    "ambient/567ad7765176-1.mp3",
+    "ambient/567ad7765176-2.mp3",
+    "ambient/567ad7765176-3.mp3"
+   ],
+   "shift": 4
+  }
+ ]
+}

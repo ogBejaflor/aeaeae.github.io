@@ -19,6 +19,7 @@ const build = require('../scripts/build.js');
 const content = require('./lib/content.js');
 const publish = require('./lib/publish.js');
 const auth = require('./lib/auth.js');
+const ambient = require('./lib/ambient.js');
 
 const MODE = process.env.SITE_MODE === 'hosted' ? 'hosted' : 'local';
 const PORT = Number(process.env.PORT) || 3000;
@@ -93,7 +94,7 @@ const change = (fn) => async (req, res) => {
     const extra = (await fn(req)) || {};
     build.buildAll();
     announceChange();
-    res.json({ ok: true, ...extra, state: content.state() });
+    res.json({ ok: true, ...extra, state: { ...content.state(), ambient: ambient.state(await ffmpegPath()) } });
   } catch (e) {
     cleanupUploads(req);
     sendError(res, e);
@@ -118,7 +119,8 @@ const needFiles = (req) => {
 // ------------------------------------------------------------------ state
 app.get('/api/state', async (req, res) => {
   try {
-    res.json({ ...content.state(), env: { mode: MODE, ffmpeg: !!(await ffmpegPath()) } });
+    const ff = await ffmpegPath();
+    res.json({ ...content.state(), ambient: ambient.state(ff), env: { mode: MODE, ffmpeg: !!ff } });
   } catch (e) { sendError(res, e); }
 });
 
@@ -160,6 +162,29 @@ app.post('/api/gallery', upload.array('files'), fixNames,
   change((req) => content.addGalleryFiles(req.body.folder || '', needFiles(req))));
 app.post('/api/gallery/folders', change((req) => content.createGalleryFolder(req.body.name)));
 app.delete('/api/gallery', change((req) => content.deleteGalleryItem(req.query.path)));
+
+// ------------------------------------------------------------------ startup sound cloud
+// Prepared songs (excerpts analysed in the admin page) and the startup sound effects.
+const ambientChange = (fn) => async (req, res) => {
+  try {
+    const extra = (await fn(req)) || {};
+    build.buildAll();
+    announceChange();
+    const ff = await ffmpegPath();
+    res.json({ ok: true, ...extra, state: { ...content.state(), ambient: ambient.state(ff) } });
+  } catch (e) {
+    cleanupUploads(req);
+    sendError(res, e);
+  }
+};
+app.post('/api/ambient/items', upload.array('files', 6), fixNames, ambientChange(async (req) => {
+  let meta;
+  try { meta = JSON.parse(req.body.meta || '{}'); } catch { throw new content.UserError('Bad song details.'); }
+  await ambient.saveItem(meta, needFiles(req), await ffmpegPath());
+}));
+app.patch('/api/ambient/items/:id', ambientChange((req) => ambient.updateItem(req.params.id, req.body)));
+app.post('/api/ambient/sounds/:name', upload.single('file'), fixNames, ambientChange((req) => ambient.saveSound(req.params.name, needFile(req))));
+app.delete('/api/ambient/sounds/:name', ambientChange((req) => ambient.deleteSound(req.params.name)));
 
 // ------------------------------------------------------------------ trash
 app.post('/api/trash/:id/restore', change((req) => content.restoreTrash(req.params.id)));

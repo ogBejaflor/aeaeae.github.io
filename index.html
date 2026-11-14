@@ -51,6 +51,29 @@
       font: inherit;
     }
     #ae-boot-skip[hidden] { display: none; }
+
+    /* sound toggle on the startup screen (ae-boot/ambient.js) */
+    .ae-sound-toggle {
+      position: absolute;
+      left: 20px;
+      bottom: 20px;
+      z-index: 5;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: rgba(226, 232, 242, 0.42);
+      font: 400 12px/1 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      letter-spacing: .02em;
+      cursor: pointer;
+      transition: color .2s ease;
+    }
+    .ae-sound-toggle:hover { color: rgba(226, 232, 242, 0.85); }
+    .ae-sound-toggle:focus-visible { outline: 2px solid rgba(222, 237, 255, .8); outline-offset: 3px; }
+    .ae-sound-toggle svg { width: 16px; height: 16px; flex: none; }
   </style>
   <script>
     // Skip the intro for one load when asked: ?boot=off, or after the admin
@@ -493,10 +516,16 @@
     Promise.all([
       import('./ae-boot/computer-boot.js'),
       import('./ae-boot/site-options.js').catch(() => ({ options: {} })),
+      // the sound cloud is a bonus: if it can't load, the startup works silently
+      import('./ae-boot/ambient.js').catch(() => ({})),
       waitForStylesheet(stylesheet)
-    ]).then(([{ AEComputerBoot }, { options }]) => {
+    ]).then(([{ AEComputerBoot }, { options }, { AEAmbient }]) => {
       if (exited) return;
       computer = new AEComputerBoot(overlay, { desktop, skipButton: skip, focusTarget, options: options || {} });
+      if (AEAmbient) {
+        try { window.aeAmbient = new AEAmbient({ overlay, computer, base: './' }); }
+        catch (error) { console.warn('æ sound unavailable:', error); }
+      }
       computer.addEventListener('enter', (event) => {
         exited = true;
         clearTimeout(loadingWatchdog);

@@ -65,6 +65,14 @@ const DEFAULT_SETTINGS = {
     },
   },
   gallery: { includeCatalog: true },
+  // Startup screen sound: the granular cloud of the label's songs + sound effects
+  startup: {
+    ambient: true,        // play the sound cloud while waiting
+    volume: 0.8,          // sound cloud
+    stringVolume: 0.6,    // tension sound, louder near the button
+    effectsVolume: 0.9,   // bubble on click + boot sound
+    targetKey: 'auto',    // 'auto' or 0–11 (C … B): the major key every song is tuned to
+  },
 };
 
 // ---------- helpers ----------
@@ -288,6 +296,88 @@ function buildSettings(settings) {
 
 // Browsers (and GitHub Pages) keep script files for a while. Tag each data script in
 // index.html with a fingerprint of its content, so a published change loads straight away.
+// ---------- startup sound cloud ----------
+// Every visible track (what the site plays), for the admin to prepare excerpts from.
+function visibleTracks() {
+  const out = [];
+  for (const r of loadRoster().filter((x) => !x.hidden && x.folder)) {
+    const artistDir = path.join(CATALOG, r.folder);
+    for (const albumFolder of orderAlbums(listDirs(artistDir), r.albums)) {
+      const a = readAlbum(r.folder, albumFolder);
+      if (a.hidden) continue;
+      for (const t of a.tracks) {
+        const rel = t.file.split('/').map(decodeURIComponent).join('/');
+        let size = 0;
+        try { size = fs.statSync(path.join(ROOT, rel)).size; } catch { /* missing */ }
+        out.push({ track: nfc(rel), url: t.file, artist: r.name, album: a.title, title: t.title, size });
+      }
+    }
+  }
+  return out;
+}
+
+const RELATIVE_MAJOR = (tonic, mode) => (mode === 'minor' ? (tonic + 3) % 12 : tonic);
+const SHIFT = (from, to) => { let d = ((to - from) % 12 + 12) % 12; return d > 5 ? d - 12 : d; };
+const NOTE = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+const SOUND_NAMES = ['bubble', 'string', 'boot'];
+
+// ambient/bank.json: what the startup screen loads. Built from data/ambient.json
+// (prepared by the admin) for the songs currently on the site.
+function buildAmbient(settings) {
+  const dir = path.join(ROOT, 'ambient');
+  const data = readJSON(path.join(DATA, 'ambient.json'), { items: [] });
+  const tracks = new Map(visibleTracks().map((t) => [t.track, t]));
+  const items = (data.items || [])
+    .filter((it) => it.enabled !== false && tracks.has(nfc(it.track)) && tracks.get(nfc(it.track)).size === it.size)
+    .filter((it) => (it.files || []).every((f) => fs.existsSync(path.join(ROOT, f))) && (it.files || []).length)
+    .map((it) => ({ ...it, key: it.keyOverride || it.key }));
+
+  // Target: the major key most songs already share (fewest/smallest shifts), unless set.
+  const s = settings.startup || {};
+  let target = Number.isInteger(s.targetKey) ? s.targetKey : null;
+  if (target === null) {
+    let best = 0, bestCost = Infinity;
+    for (let k = 0; k < 12; k++) {
+      const cost = items.reduce((c, it) => c + Math.abs(SHIFT(RELATIVE_MAJOR(it.key.tonic, it.key.mode), k)), 0);
+      if (cost < bestCost) { bestCost = cost; best = k; }
+    }
+    target = best;
+  }
+
+  const sounds = {};
+  for (const name of SOUND_NAMES) {
+    const f = listFiles(path.join(dir, 'sounds')).find((x) => x.replace(/\.[^.]+$/, '') === name);
+    if (f) {
+      const abs = path.join(dir, 'sounds', f);
+      // ?v= changes when the file does, so a replaced sound isn't served from cache
+      sounds[name] = `${url('ambient', 'sounds', f)}?v=${fs.statSync(abs).size.toString(36)}`;
+    }
+  }
+
+  const bank = {
+    version: 1,
+    targetKey: target,
+    targetName: `${NOTE[target]} major / ${NOTE[(target + 9) % 12]} minor`,
+    settings: {
+      ambient: s.ambient !== false,
+      volume: s.volume ?? 0.8,
+      stringVolume: s.stringVolume ?? 0.6,
+      effectsVolume: s.effectsVolume ?? 0.9,
+    },
+    sounds,
+    items: items.map((it) => ({
+      id: it.id,
+      artist: it.artist,
+      title: it.title,
+      files: it.files.map((f) => f.split('/').map(encodeURIComponent).join('/')),
+      shift: SHIFT(RELATIVE_MAJOR(it.key.tonic, it.key.mode), target),
+    })),
+  };
+  fs.mkdirSync(dir, { recursive: true });
+  writeIfChanged(path.join(dir, 'bank.json'), JSON.stringify(bank, null, 1) + '\n');
+  return { ambient: bank.items.length };
+}
+
 const DATA_SCRIPTS = ['siteSettings.js', 'musicData.js', 'notificationsData.js', 'galleryData.js'];
 function stampIndex() {
   const file = path.join(ROOT, 'index.html');
@@ -309,13 +399,15 @@ function buildAll() {
   const music = buildMusic();
   const pop = buildNotifications();
   const gal = buildGallery(settings);
+  const amb = buildAmbient(settings);
   stampIndex();
-  return { ...music, ...pop, ...gal };
+  return { ...amb, ...music, ...pop, ...gal };
 }
 
 module.exports = {
   buildAll, buildMusic, buildNotifications, buildGallery, buildSettings,
   loadSettings, loadRoster, readAlbum, orderAlbums, titleFromFile, readJSON,
+  visibleTracks, buildAmbient, SOUND_NAMES,
   DEFAULT_SETTINGS, RELEASE_TYPES, DOC_EXT, artistExtras, ROOT, CATALOG, DATA, AUDIO_RE, COVER_RE, PHOTO_RE, IMAGE_EXT, VIDEO_EXT, nfc, same, naturalSort,
 };
 

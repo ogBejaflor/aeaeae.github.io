@@ -19,6 +19,7 @@
     ['popups', 'Pop-ups'],
     ['desktop', 'Desktop'],
     ['gallery', 'Gallery'],
+    ['startup', 'Startup'],
     ['deleted', 'Deleted'],
   ];
 
@@ -237,6 +238,7 @@
       popups: S.popups.length,
       gallery: S.gallery.items.length,
       deleted: S.trash.length || null,
+      startup: prep.running && prep.total ? `${prep.index}/${prep.total}` : null,
     };
   }
 
@@ -292,6 +294,7 @@
       case 'desktop': return desktopPage();
       case 'gallery': return galleryPage();
       case 'deleted': return deletedPage();
+      case 'startup': return startupPage();
       default: return artistsPage();
     }
   }
@@ -767,6 +770,154 @@
     return h('div', { class: 'thumb' }, m.type === 'image'
       ? h('img', { src: site(m.url), alt: m.name, loading: 'lazy' })
       : h('video', { src: site(m.url), muted: true, preload: 'metadata' }));
+  }
+
+
+  // ------------------------------------------------------------ startup screen (sound)
+  // Songs are prepared in this page, one at a time, whenever the admin is open:
+  // new or changed songs get their key found and 3 excerpts cut for the sound cloud.
+  const KEY_NAMES = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+  const prep = { running: false, current: null, failed: {}, index: 0, total: 0 };
+
+  const needsPrep = (s) => s.status !== 'ready' && !prep.failed[s.id];
+
+  async function runPrepQueue() {
+    if (prep.running || !S || !S.ambient) return;
+    if (!S.ambient.songs.some(needsPrep)) return;
+    prep.running = true;
+    try {
+      const { prepareSong } = await import('./ambient-prep.js');
+      prep.total = S.ambient.songs.filter(needsPrep).length;
+      prep.index = 0;
+      for (;;) {
+        const song = S.ambient.songs.find(needsPrep);
+        if (!song) break;
+        prep.current = song;
+        prep.index++;
+        refreshStartup();
+        try {
+          const r = await prepareSong(site(song.url), S.ambient.format);
+          const fd = new FormData();
+          fd.append('meta', JSON.stringify({ track: song.track, key: r.key, duration: r.duration, starts: r.starts }));
+          r.files.forEach((b, i) => fd.append('files', b, `excerpt-${i + 1}.wav`));
+          const res = await fetch('/api/ambient/items', { method: 'POST', headers: { 'X-AE-Admin': '1' }, body: fd });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || `Saving failed (${res.status}).`);
+          if (data.state) S = { ...S, ...data.state };
+        } catch (e) {
+          prep.failed[song.id] = e.message || String(e);
+          // the song may have changed on the server meanwhile — stop looping on stale data
+          if (!S.ambient.songs.find((x) => x.id === song.id)) break;
+        }
+      }
+    } finally {
+      const total = prep.total;
+      prep.running = false;
+      prep.current = null;
+      refreshStartup();
+      refreshPublish();
+      if (total) toast(`Sound cloud: ${plural(total - Object.keys(prep.failed).length, 'song')} prepared.`);
+    }
+  }
+  setInterval(runPrepQueue, 4000);
+
+  function refreshStartup() {
+    if (ui.page === 'startup') render();
+    else renderSide();
+  }
+
+  function startupPage() {
+    const A = S.ambient || { songs: [], sounds: {} };
+    const st = S.settings.startup || {};
+    const ready = A.songs.filter((s) => s.status === 'ready').length;
+    const saveSet = (patch, msg) => act('PUT', '/api/settings', { settings: { startup: patch } }, () => msg && toast(msg));
+
+    const statusLine = prep.current
+      ? h('div', {},
+        h('p', { class: 'prep-line' }, `Preparing “${prep.current.title}” — ${prep.index} of ${prep.total}`),
+        h('div', { class: 'progress' }, h('i', { style: { width: `${Math.round(((prep.index - 1) / Math.max(1, prep.total)) * 100)}%` } })))
+      : h('p', { class: 'prep-line' },
+        `${ready} of ${plural(A.songs.length, 'song')} ready`,
+        A.targetName ? ` · everything is tuned to ${A.targetName}` : '');
+
+    const keyOptions = (s) => {
+      const det = s.key ? `Found: ${s.key.name}` : 'Not analysed yet';
+      const opts = [h('option', { value: '' }, det)];
+      for (const mode of ['major', 'minor']) for (let t = 0; t < 12; t++) {
+        const v = `${t}:${mode}`;
+        opts.push(h('option', { value: v, selected: s.keyOverride && s.keyOverride.tonic === t && s.keyOverride.mode === mode ? true : null }, `${KEY_NAMES[t]} ${mode}`));
+      }
+      return opts;
+    };
+    const statusTag = (s) => {
+      if (prep.current && prep.current.id === s.id) return h('span', { class: 'tag' }, 'preparing…');
+      if (prep.failed[s.id]) return h('span', { class: 'tag warn', title: prep.failed[s.id] }, 'failed');
+      return { ready: null, missing: h('span', { class: 'tag' }, 'waiting'), stale: h('span', { class: 'tag' }, 'changed — waiting'), upgrade: h('span', { class: 'tag' }, 'to MP3 — waiting') }[s.status];
+    };
+
+    const songs = h('div', { class: 'panel' },
+      h('div', { class: 'panel-pad', style: { paddingBottom: '8px' } },
+        statusLine,
+        A.format === 'wav' ? h('p', { class: 'muted', style: { margin: '6px 0 0', fontSize: '13px' } },
+          'Without ffmpeg the excerpts are saved as mono WAV (bigger). Install it (brew install ffmpeg) and restart the admin to switch to small MP3s automatically.') : null,
+        Object.keys(prep.failed).length && !prep.running ? h('div', { class: 'row', style: { marginTop: '8px' } },
+          h('span', { class: 'muted' }, `${plural(Object.keys(prep.failed).length, 'song')} couldn’t be prepared.`),
+          h('button', { class: 'btn small', onclick: () => { prep.failed = {}; runPrepQueue(); } }, 'Try again')) : null),
+      h('div', { class: 'songs' }, A.songs.map((s) => h('div', { class: `song-row ${s.enabled ? '' : 'is-off'}` },
+        h('div', { class: 'who' }, h('b', { title: s.title }, s.title), h('span', { class: 'muted' }, `${s.artist} · ${s.album}`)),
+        statusTag(s),
+        h('select', { class: 'select key-select', 'aria-label': `Key of ${s.title}`, disabled: !s.key, 'data-k': `key:${s.id}`,
+          onchange: (e) => {
+            const [t, m] = e.target.value.split(':');
+            act('PATCH', `/api/ambient/items/${s.id}`, { keyOverride: e.target.value ? { tonic: +t, mode: m } : null }, () => toast('Key saved.'));
+          } }, keyOptions(s)),
+        h('label', { class: 'switch', title: 'Use in the sound cloud' },
+          h('input', { type: 'checkbox', role: 'switch', checked: s.enabled, disabled: !s.key, 'aria-label': `Use ${s.title}`, 'data-k': `on:${s.id}`,
+            onchange: (e) => act('PATCH', `/api/ambient/items/${s.id}`, { enabled: e.target.checked }) }))))));
+
+    const slider = (label, k, hint) => h('label', { class: 'field' },
+      h('span', {}, label),
+      h('input', { type: 'range', class: 'range', min: 0, max: 1, step: 0.05, value: st[k] ?? 0.8, 'data-k': `st:${k}`,
+        onchange: (e) => saveSet({ [k]: Number(e.target.value) }) }),
+      hint ? h('small', {}, hint) : null);
+
+    const SOUND_INFO = {
+      bubble: ['Bubble', 'Plays when the button is clicked.'],
+      string: ['String', 'Loops while waiting; louder the closer the pointer is to the button.'],
+      boot: ['Boot', 'Starts with the animation (after the ripple) and plays in sync with it.'],
+    };
+    const soundRow = (name) => {
+      const [label, info] = SOUND_INFO[name];
+      const f = (A.sounds || {})[name];
+      const key = `snd:${name}`;
+      return h('div', { class: 'sound-row' },
+        h('div', {}, h('b', {}, label), h('span', { class: 'muted' }, f ? `${info} (${mb(f.size)})` : `${info} Not added yet — a soft built-in stand-in plays.`)),
+        h('div', { class: 'row' },
+          f ? h('button', { class: 'btn small', onclick: () => preview(f.url) }, 'Play') : null,
+          dropZone({ key, accept: 'audio/*,.mp3,.wav,.m4a,.ogg', label: f ? 'Replace' : 'Add file', cls: 'sound-drop',
+            onFiles: (files) => upload(`/api/ambient/sounds/${name}`, files, null, key, () => toast(`${label} sound saved.`)) }),
+          f ? h('button', { class: 'btn quiet small', onclick: () => { if (confirm(`Remove the ${label.toLowerCase()} sound?`)) act('DELETE', `/api/ambient/sounds/${name}`, null, () => toast('Removed.')); } }, 'Remove') : null));
+    };
+
+    return h('div', {},
+      head('Startup', 'What visitors hear on the “turn on computer” screen: a sound cloud made from the label’s songs while they wait, a bubble when they click, and the boot sound with the animation.',
+        h('a', { class: 'btn', href: '/', target: '_blank', rel: 'noopener' }, 'Open preview ↗')),
+      h('div', { class: 'two startup' },
+        h('div', {}, h('div', { class: 'section-title', style: { marginTop: 0 } }, h('h2', {}, 'Songs in the cloud')), songs),
+        h('div', { style: { display: 'grid', gap: '16px', alignContent: 'start' } },
+          h('div', { class: 'panel panel-pad timing' },
+            toggle('Play the sound cloud while waiting', st.ambient !== false, (on) => saveSet({ ambient: on }, on ? 'Sound cloud on.' : 'Sound cloud off.'), 'st:on'),
+            slider('Sound cloud volume', 'volume'),
+            slider('String volume', 'stringVolume', 'At its loudest right next to the button.'),
+            slider('Bubble + boot volume', 'effectsVolume'),
+            h('label', { class: 'field' }, h('span', {}, 'Tune every song to'),
+              h('select', { class: 'select', 'data-k': 'st:key', onchange: (e) => saveSet({ targetKey: e.target.value === 'auto' ? 'auto' : Number(e.target.value) }, 'Key saved.') },
+                h('option', { value: 'auto', selected: st.targetKey === 'auto' || st.targetKey === undefined ? true : null }, `Automatic${A.targetName && (st.targetKey === 'auto' || st.targetKey === undefined) ? ` (${A.targetName})` : ''}`),
+                KEY_NAMES.map((n, i) => h('option', { value: i, selected: st.targetKey === i ? true : null }, `${n} major / ${KEY_NAMES[(i + 9) % 12]} minor`))),
+              h('small', {}, 'Automatic picks the key that needs the least retuning.'))),
+          h('div', { class: 'panel panel-pad' },
+            h('h2', { style: { margin: '0 0 10px', fontSize: '16px' } }, 'Sounds'),
+            ['bubble', 'string', 'boot'].map(soundRow)))));
   }
 
   // ------------------------------------------------------------ deleted

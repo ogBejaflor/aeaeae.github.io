@@ -326,3 +326,25 @@ dialog::backdrop { background: rgba(22, 23, 26, 0.35); }
 .docs-note a { color: var(--blue); }
 .section-title .muted { font-size: 13px; }
 .bar-label { font-size: 12.5px; color: var(--muted); width: 56px; }
+
+/* ---------- startup ---------- */
+.startup { grid-template-columns: minmax(0, 1fr) 360px; }
+.prep-line { margin: 0 0 6px; font-weight: 500; }
+.songs { border-top: 1px solid var(--line-soft); max-height: 70vh; overflow: auto; padding: 4px 8px 8px; }
+.song-row { display: grid; grid-template-columns: minmax(0, 1fr) auto 150px 40px; gap: 10px; align-items: center; padding: 6px 8px; border-radius: var(--radius-s); }
+.song-row:hover { background: var(--sunken); }
+.song-row.is-off .who b { color: var(--faint); }
+.song-row .who { min-width: 0; }
+.song-row .who b { display: block; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.song-row .who span { display: block; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.key-select { padding: 4px 6px; font-size: 13px; }
+.range { width: 100%; accent-color: var(--blue); }
+.sound-row { display: grid; gap: 6px; padding: 10px 0; border-top: 1px solid var(--line-soft); }
+.sound-row:first-of-type { border-top: 0; padding-top: 0; }
+.sound-row b { display: block; }
+.sound-row .muted { font-size: 13px; }
+.sound-row .sound-drop { padding: 4px 12px; min-height: 28px; border-radius: var(--radius-s); font-size: 13px; }
+.sound-row .sound-drop strong { font-size: 13px; }
+@media (max-width: 1100px) { .startup { grid-template-columns: 1fr; } }
+
+a.btn { text-decoration: none; }

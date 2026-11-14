@@ -1,0 +1,1381 @@
+{
+  "items": [
+    {
+      "id": "40e7bc1819f3",
+      "track": "Catalogo/Bejaflor/Bejaflor 3/1 Do Inicio Master Final : ins&outs.mp3",
+      "size": 2460986,
+      "artist": "Bejaflor",
+      "title": "Do Inicio",
+      "key": {
+        "tonic": 5,
+        "mode": "minor",
+        "name": "F minor",
+        "confidence": 0.034
+      },
+      "enabled": true,
+      "duration": 76.85,
+      "starts": [
+        16,
+        33.5,
+        44
+      ],
+      "files": [
+        "ambient/40e7bc1819f3-1.mp3",
+        "ambient/40e7bc1819f3-2.mp3",
+        "ambient/40e7bc1819f3-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:03.976Z"
+    },
+    {
+      "id": "4513ca622527",
+      "track": "Catalogo/Bejaflor/Bejaflor 3/10 Hinos Master Final : ins&outs.mp3",
+      "size": 11653581,
+      "artist": "Bejaflor",
+      "title": "Hinos",
+      "key": {
+        "tonic": 0,
+        "mode": "major",
+        "name": "C major",
+        "confidence": 0.049
+      },
+      "enabled": true,
+      "duration": 364.1,
+      "starts": [
+        87.01,
+        125.51,
+        306.53
+      ],
+      "files": [
+        "ambient/4513ca622527-1.mp3",
+        "ambient/4513ca622527-2.mp3",
+        "ambient/4513ca622527-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:20.478Z"
+    },
+    {
+      "id": "00a73dd0feeb",
+      "track": "Catalogo/Bejaflor/Bejaflor 3/2 Dividir Master Final : ins&outs.mp3",
+      "size": 4862580,
+      "artist": "Bejaflor",
+      "title": "Dividir",
+      "key": {
+        "tonic": 2,
+        "mode": "minor",
+        "name": "D minor",
+        "confidence": 0.017
+      },
+      "enabled": true,
+      "duration": 151.9,
+      "starts": [
+        28,
+        76.01,
+        107.01
+      ],
+      "files": [
+        "ambient/00a73dd0feeb-1.mp3",
+        "ambient/00a73dd0feeb-2.mp3",
+        "ambient/00a73dd0feeb-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:05.643Z"
+    },
+    {
+      "id": "f4256fb068af",
+      "track": "Catalogo/Bejaflor/Bejaflor 3/3 DADA Master Final : ins&outs.mp3",
+      "size": 8324954,
+      "artist": "Bejaflor",
+      "title": "DADA",
+      "key": {
+        "tonic": 8,
+        "mode": "major",
+        "name": "Ab major",
+        "confidence": 0.027
+      },
+      "enabled": true,
+      "duration": 260.1,
+      "starts": [
+        50,
+        92.51,
+        209.52
+      ],
+      "files": [
+        "ambient/f4256fb068af-1.mp3",
+        "ambient/f4256fb068af-2.mp3",
+        "ambient/f4256fb068af-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:07.771Z"
+    },
+    {
+      "id": "57b24cee1063",
+      "track": "Catalogo/Bejaflor/Bejaflor 3/4 Perdão Master Final : ins&outs.mp3",
+      "size": 4302514,
+      "artist": "Bejaflor",
+      "title": "Perdão",
+      "key": {
+        "tonic": 5,
+        "mode": "minor",
+        "name": "F minor",
+        "confidence": 0.099
+      },
+      "enabled": true,
+      "duration": 134.38,
+      "starts": [
+        16,
+        52,
+        110.51
+      ],
+      "files": [
+        "ambient/57b24cee1063-1.mp3",
+        "ambient/57b24cee1063-2.mp3",
+        "ambient/57b24cee1063-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:09.400Z"
+    },
+    {
+      "id": "147c8d8420d8",
+      "track": "Catalogo/Bejaflor/Bejaflor 3/5 E que? Master Final : ins&outs.mp3",
+      "size": 4584219,
+      "artist": "Bejaflor",
+      "title": "E que?",
+      "key": {
+        "tonic": 8,
+        "mode": "major",
+        "name": "Ab major",
+        "confidence": 0.034
+      },
+      "enabled": true,
+      "duration": 143.2,
+      "starts": [
+        38,
+        47.5,
+        98.51
+      ],
+      "files": [
+        "ambient/147c8d8420d8-1.mp3",
+        "ambient/147c8d8420d8-2.mp3",
+        "ambient/147c8d8420d8-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:11.133Z"
+    },
+    {
+      "id": "cd08d1379d78",
+      "track": "Catalogo/Bejaflor/Bejaflor 3/6 A Banda Master Final : ins&outs.mp3",
+      "size": 5174377,
+      "artist": "Bejaflor",
+      "title": "A Banda",
+      "key": {
+        "tonic": 1,
+        "mode": "major",
+        "name": "C# major",
+        "confidence": 0.093
+      },
+      "enabled": true,
+      "duration": 161.63,
+      "starts": [
+        35.5,
+        63.51,
+        129.51
+      ],
+      "files": [
+        "ambient/cd08d1379d78-1.mp3",
+        "ambient/cd08d1379d78-2.mp3",
+        "ambient/cd08d1379d78-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:12.595Z"
+    },
+    {
+      "id": "a6fabb677ba2",
+      "track": "Catalogo/Bejaflor/Bejaflor 3/7 Isolamento Master Final : ins&outs.mp3",
+      "size": 4498119,
+      "artist": "Bejaflor",
+      "title": "Isolamento",
+      "key": {
+        "tonic": 4,
+        "mode": "minor",
+        "name": "E minor",
+        "confidence": 0.16
+      },
+      "enabled": true,
+      "duration": 140.5,
+      "starts": [
+        26,
+        74.51,
+        85.51
+      ],
+      "files": [
+        "ambient/a6fabb677ba2-1.mp3",
+        "ambient/a6fabb677ba2-2.mp3",
+        "ambient/a6fabb677ba2-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:13.934Z"
+    },
+    {
+      "id": "bf260d0b1a78",
+      "track": "Catalogo/Bejaflor/Bejaflor 3/8 Casa Pt.2 Master Final : ins&outs.mp3",
+      "size": 8306563,
+      "artist": "Bejaflor",
+      "title": "Casa Pt.2",
+      "key": {
+        "tonic": 8,
+        "mode": "major",
+        "name": "Ab major",
+        "confidence": 0.127
+      },
+      "enabled": true,
+      "duration": 259.5,
+      "starts": [
+        25,
+        122.01,
+        208.02
+      ],
+      "files": [
+        "ambient/bf260d0b1a78-1.mp3",
+        "ambient/bf260d0b1a78-2.mp3",
+        "ambient/bf260d0b1a78-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:15.862Z"
+    },
+    {
+      "id": "18a0dad817fe",
+      "track": "Catalogo/Bejaflor/Bejaflor 3/9 Lições Master Final : ins&outs.mp3",
+      "size": 3505884,
+      "artist": "Bejaflor",
+      "title": "Lições",
+      "key": {
+        "tonic": 0,
+        "mode": "major",
+        "name": "C major",
+        "confidence": 0.023
+      },
+      "enabled": true,
+      "duration": 109.5,
+      "starts": [
+        27.5,
+        56.51,
+        72.01
+      ],
+      "files": [
+        "ambient/18a0dad817fe-1.mp3",
+        "ambient/18a0dad817fe-2.mp3",
+        "ambient/18a0dad817fe-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:17.391Z"
+    },
+    {
+      "id": "b97e1dffebad",
+      "track": "Catalogo/Carolina Miragaia/beira da estrada/beira da estrada master.mp3",
+      "size": 4171052,
+      "artist": "Carolina Miragaia",
+      "title": "beira da estrada",
+      "key": {
+        "tonic": 7,
+        "mode": "major",
+        "name": "G major",
+        "confidence": 0.045
+      },
+      "enabled": true,
+      "duration": 130.29,
+      "starts": [
+        16,
+        70.01,
+        79.01
+      ],
+      "files": [
+        "ambient/b97e1dffebad-1.mp3",
+        "ambient/b97e1dffebad-2.mp3",
+        "ambient/b97e1dffebad-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:23.983Z"
+    },
+    {
+      "id": "c8e26523a825",
+      "track": "Catalogo/Carolina Miragaia/exobiological/item nº1 (exobiological) a tua mão ft. skurty master 2.mp3",
+      "size": 4916914,
+      "artist": "Carolina Miragaia",
+      "title": "item nº1 (a tua mão) ft. skurty",
+      "key": {
+        "tonic": 1,
+        "mode": "major",
+        "name": "C# major",
+        "confidence": 0.036
+      },
+      "enabled": true,
+      "duration": 153.59,
+      "starts": [
+        41.5,
+        86.01,
+        99.51
+      ],
+      "files": [
+        "ambient/c8e26523a825-1.mp3",
+        "ambient/c8e26523a825-2.mp3",
+        "ambient/c8e26523a825-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:33.654Z"
+    },
+    {
+      "id": "dcdb7d529e42",
+      "track": "Catalogo/Carolina Miragaia/exobiological/item nº1 (exobiological) master.mp3",
+      "size": 6145714,
+      "artist": "Carolina Miragaia",
+      "title": "item nº1",
+      "key": {
+        "tonic": 5,
+        "mode": "minor",
+        "name": "F minor",
+        "confidence": 0.053
+      },
+      "enabled": true,
+      "duration": 192,
+      "starts": [
+        16,
+        86.51,
+        137.51
+      ],
+      "files": [
+        "ambient/dcdb7d529e42-1.mp3",
+        "ambient/dcdb7d529e42-2.mp3",
+        "ambient/dcdb7d529e42-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:25.703Z"
+    },
+    {
+      "id": "6dd52e96ccbb",
+      "track": "Catalogo/Carolina Miragaia/exobiological/micro.bio master.mp3",
+      "size": 4310038,
+      "artist": "Carolina Miragaia",
+      "title": "micro.bio",
+      "key": {
+        "tonic": 2,
+        "mode": "major",
+        "name": "D major",
+        "confidence": 0.077
+      },
+      "enabled": true,
+      "duration": 134.62,
+      "starts": [
+        19.5,
+        62.01,
+        105.01
+      ],
+      "files": [
+        "ambient/6dd52e96ccbb-1.mp3",
+        "ambient/6dd52e96ccbb-2.mp3",
+        "ambient/6dd52e96ccbb-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:27.192Z"
+    },
+    {
+      "id": "d8c5ee061a3c",
+      "track": "Catalogo/Carolina Miragaia/exobiological/mineral master.mp3",
+      "size": 7284235,
+      "artist": "Carolina Miragaia",
+      "title": "mineral",
+      "key": {
+        "tonic": 9,
+        "mode": "minor",
+        "name": "A minor",
+        "confidence": 0.086
+      },
+      "enabled": true,
+      "duration": 227.56,
+      "starts": [
+        40.5,
+        77.51,
+        176.02
+      ],
+      "files": [
+        "ambient/d8c5ee061a3c-1.mp3",
+        "ambient/d8c5ee061a3c-2.mp3",
+        "ambient/d8c5ee061a3c-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:29.099Z"
+    },
+    {
+      "id": "fe3fe1decaca",
+      "track": "Catalogo/Carolina Miragaia/exobiological/sim)bio(se master.mp3",
+      "size": 6080513,
+      "artist": "Carolina Miragaia",
+      "title": "sim)bio(se",
+      "key": {
+        "tonic": 1,
+        "mode": "major",
+        "name": "C# major",
+        "confidence": 0.012
+      },
+      "enabled": true,
+      "duration": 189.95,
+      "starts": [
+        51.5,
+        103.01,
+        117.51
+      ],
+      "files": [
+        "ambient/fe3fe1decaca-1.mp3",
+        "ambient/fe3fe1decaca-2.mp3",
+        "ambient/fe3fe1decaca-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:30.992Z"
+    },
+    {
+      "id": "04950748894e",
+      "track": "Catalogo/Carolina Miragaia/exobiological/sistema $ master.mp3",
+      "size": 2401636,
+      "artist": "Carolina Miragaia",
+      "title": "sistema $",
+      "key": {
+        "tonic": 2,
+        "mode": "major",
+        "name": "D major",
+        "confidence": 0.013
+      },
+      "enabled": true,
+      "duration": 74.98,
+      "starts": [
+        6,
+        23,
+        44
+      ],
+      "files": [
+        "ambient/04950748894e-1.mp3",
+        "ambient/04950748894e-2.mp3",
+        "ambient/04950748894e-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:32.119Z"
+    },
+    {
+      "id": "f6de86ce68ba",
+      "track": "Catalogo/Carolina Miragaia/honestamente nem eu/honestamente nem eu master.mp3",
+      "size": 3716396,
+      "artist": "Carolina Miragaia",
+      "title": "honestamente nem eu",
+      "key": {
+        "tonic": 8,
+        "mode": "minor",
+        "name": "Ab minor",
+        "confidence": 0.113
+      },
+      "enabled": true,
+      "duration": 116.08,
+      "starts": [
+        21.5,
+        61.51,
+        93.01
+      ],
+      "files": [
+        "ambient/f6de86ce68ba-1.mp3",
+        "ambient/f6de86ce68ba-2.mp3",
+        "ambient/f6de86ce68ba-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:22.029Z"
+    },
+    {
+      "id": "5c870bdf9dfe",
+      "track": "Catalogo/Carolina Miragaia/K38Suh9FH98mBKR/1. 0.7.mp3",
+      "size": 10080000,
+      "artist": "Carolina Miragaia",
+      "title": "0.7",
+      "key": {
+        "tonic": 2,
+        "mode": "major",
+        "name": "D major",
+        "confidence": 0.081
+      },
+      "enabled": true,
+      "duration": 252,
+      "starts": [
+        78.01,
+        94.51,
+        173.52
+      ],
+      "files": [
+        "ambient/5c870bdf9dfe-1.mp3",
+        "ambient/5c870bdf9dfe-2.mp3",
+        "ambient/5c870bdf9dfe-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:36.123Z"
+    },
+    {
+      "id": "2bc1a7e03981",
+      "track": "Catalogo/Carolina Miragaia/K38Suh9FH98mBKR/2. 150inf garD.mp3",
+      "size": 5000640,
+      "artist": "Carolina Miragaia",
+      "title": "150 >∞_garD",
+      "key": {
+        "tonic": 7,
+        "mode": "major",
+        "name": "G major",
+        "confidence": 0.011
+      },
+      "enabled": true,
+      "duration": 125.02,
+      "starts": [
+        32,
+        41,
+        78.51
+      ],
+      "files": [
+        "ambient/2bc1a7e03981-1.mp3",
+        "ambient/2bc1a7e03981-2.mp3",
+        "ambient/2bc1a7e03981-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:38.122Z"
+    },
+    {
+      "id": "e70457f644b3",
+      "track": "Catalogo/Carolina Miragaia/K38Suh9FH98mBKR/3. ken0psia.mp3",
+      "size": 3760320,
+      "artist": "Carolina Miragaia",
+      "title": "ken0psia",
+      "key": {
+        "tonic": 7,
+        "mode": "major",
+        "name": "G major",
+        "confidence": 0.142
+      },
+      "enabled": true,
+      "duration": 94.01,
+      "starts": [
+        18,
+        39.5,
+        72.51
+      ],
+      "files": [
+        "ambient/e70457f644b3-1.mp3",
+        "ambient/e70457f644b3-2.mp3",
+        "ambient/e70457f644b3-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:39.539Z"
+    },
+    {
+      "id": "ae39b84a3de7",
+      "track": "Catalogo/Carolina Miragaia/K38Suh9FH98mBKR/4. after.party.mp3",
+      "size": 8270400,
+      "artist": "Carolina Miragaia",
+      "title": "after.party",
+      "key": {
+        "tonic": 4,
+        "mode": "minor",
+        "name": "E minor",
+        "confidence": 0.075
+      },
+      "enabled": true,
+      "duration": 206.76,
+      "starts": [
+        21.5,
+        87.51,
+        179.02
+      ],
+      "files": [
+        "ambient/ae39b84a3de7-1.mp3",
+        "ambient/ae39b84a3de7-2.mp3",
+        "ambient/ae39b84a3de7-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:41.581Z"
+    },
+    {
+      "id": "2715e8a3deab",
+      "track": "Catalogo/Carolina Miragaia/K38Suh9FH98mBKR/5. 404.mp3",
+      "size": 8650560,
+      "artist": "Carolina Miragaia",
+      "title": "404",
+      "key": {
+        "tonic": 7,
+        "mode": "major",
+        "name": "G major",
+        "confidence": 0.001
+      },
+      "enabled": true,
+      "duration": 216.26,
+      "starts": [
+        15.5,
+        90.51,
+        135.01
+      ],
+      "files": [
+        "ambient/2715e8a3deab-1.mp3",
+        "ambient/2715e8a3deab-2.mp3",
+        "ambient/2715e8a3deab-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:43.827Z"
+    },
+    {
+      "id": "a09510a27b88",
+      "track": "Catalogo/Carolina Miragaia/K38Suh9FH98mBKR/6. paisagem.mp3",
+      "size": 2887680,
+      "artist": "Carolina Miragaia",
+      "title": "pa_is#00?age*m",
+      "key": {
+        "tonic": 7,
+        "mode": "major",
+        "name": "G major",
+        "confidence": 0.155
+      },
+      "enabled": true,
+      "duration": 72.19,
+      "starts": [
+        14.5,
+        33.5,
+        44
+      ],
+      "files": [
+        "ambient/a09510a27b88-1.mp3",
+        "ambient/a09510a27b88-2.mp3",
+        "ambient/a09510a27b88-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:45.085Z"
+    },
+    {
+      "id": "3b144169a911",
+      "track": "Catalogo/Carolina Miragaia/K38Suh9FH98mBKR/7. holograma.mp3",
+      "size": 7080000,
+      "artist": "Carolina Miragaia",
+      "title": "HOLOGRAMA",
+      "key": {
+        "tonic": 4,
+        "mode": "minor",
+        "name": "E minor",
+        "confidence": 0.041
+      },
+      "enabled": true,
+      "duration": 177,
+      "starts": [
+        41,
+        89.01,
+        125.01
+      ],
+      "files": [
+        "ambient/3b144169a911-1.mp3",
+        "ambient/3b144169a911-2.mp3",
+        "ambient/3b144169a911-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:46.965Z"
+    },
+    {
+      "id": "7bee8f7b0779",
+      "track": "Catalogo/Carolina Miragaia/K38Suh9FH98mBKR/8. !.mp3",
+      "size": 8720640,
+      "artist": "Carolina Miragaia",
+      "title": "!!!!!!!",
+      "key": {
+        "tonic": 5,
+        "mode": "minor",
+        "name": "F minor",
+        "confidence": 0.013
+      },
+      "enabled": true,
+      "duration": 218.02,
+      "starts": [
+        35,
+        90.51,
+        140.01
+      ],
+      "files": [
+        "ambient/7bee8f7b0779-1.mp3",
+        "ambient/7bee8f7b0779-2.mp3",
+        "ambient/7bee8f7b0779-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:49.029Z"
+    },
+    {
+      "id": "3192eba3fe1d",
+      "track": "Catalogo/Proxy Fae/anemone/1. GOD_S OFFLINE.mp3",
+      "size": 7522472,
+      "artist": "Proxy Fae",
+      "title": "God's Offline",
+      "key": {
+        "tonic": 5,
+        "mode": "minor",
+        "name": "F minor",
+        "confidence": 0.068
+      },
+      "enabled": true,
+      "duration": 235,
+      "starts": [
+        71.01,
+        88.01,
+        201.52
+      ],
+      "files": [
+        "ambient/3192eba3fe1d-1.mp3",
+        "ambient/3192eba3fe1d-2.mp3",
+        "ambient/3192eba3fe1d-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:50.907Z"
+    },
+    {
+      "id": "09127d4d37b2",
+      "track": "Catalogo/Proxy Fae/anemone/2. BLINDED-1.mp3",
+      "size": 7523372,
+      "artist": "Proxy Fae",
+      "title": "Blinded",
+      "key": {
+        "tonic": 5,
+        "mode": "minor",
+        "name": "F minor",
+        "confidence": 0.141
+      },
+      "enabled": true,
+      "duration": 235.05,
+      "starts": [
+        58.51,
+        130.51,
+        152.51
+      ],
+      "files": [
+        "ambient/09127d4d37b2-1.mp3",
+        "ambient/09127d4d37b2-2.mp3",
+        "ambient/09127d4d37b2-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:53.255Z"
+    },
+    {
+      "id": "4af500ec7641",
+      "track": "Catalogo/Proxy Fae/anemone/3. LEMBRA-ME UM SONHO LINDO.mp3",
+      "size": 6577964,
+      "artist": "Proxy Fae",
+      "title": "Lembra-me um sonho lindo",
+      "key": {
+        "tonic": 5,
+        "mode": "minor",
+        "name": "F minor",
+        "confidence": 0.069
+      },
+      "enabled": true,
+      "duration": 205.5,
+      "starts": [
+        23.5,
+        73.01,
+        129.01
+      ],
+      "files": [
+        "ambient/4af500ec7641-1.mp3",
+        "ambient/4af500ec7641-2.mp3",
+        "ambient/4af500ec7641-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:55.243Z"
+    },
+    {
+      "id": "0a3b281f7a46",
+      "track": "Catalogo/Proxy Fae/anemone/4. MACHINE.mp3",
+      "size": 6529580,
+      "artist": "Proxy Fae",
+      "title": "Machine",
+      "key": {
+        "tonic": 7,
+        "mode": "minor",
+        "name": "G minor",
+        "confidence": 0.048
+      },
+      "enabled": true,
+      "duration": 204,
+      "starts": [
+        17,
+        102.51,
+        158.01
+      ],
+      "files": [
+        "ambient/0a3b281f7a46-1.mp3",
+        "ambient/0a3b281f7a46-2.mp3",
+        "ambient/0a3b281f7a46-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:57.487Z"
+    },
+    {
+      "id": "a881f8ee6ca1",
+      "track": "Catalogo/Proxy Fae/anemone/5. RAIN DROP-1.mp3",
+      "size": 5290028,
+      "artist": "Proxy Fae",
+      "title": "Rain Drop",
+      "key": {
+        "tonic": 5,
+        "mode": "minor",
+        "name": "F minor",
+        "confidence": 0.022
+      },
+      "enabled": true,
+      "duration": 165.25,
+      "starts": [
+        11.5,
+        93.01,
+        140.01
+      ],
+      "files": [
+        "ambient/a881f8ee6ca1-1.mp3",
+        "ambient/a881f8ee6ca1-2.mp3",
+        "ambient/a881f8ee6ca1-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:28:59.547Z"
+    },
+    {
+      "id": "56fe3b848b92",
+      "track": "Catalogo/Proxy Fae/Don't Be So Hard On Your Own Beauty/dont be so hard on your beauty cover master final.mp3",
+      "size": 7359609,
+      "artist": "Proxy Fae",
+      "title": "Don't Be So Hard On Your Own Beauty",
+      "key": {
+        "tonic": 7,
+        "mode": "minor",
+        "name": "G minor",
+        "confidence": 0.046
+      },
+      "enabled": true,
+      "duration": 229.93,
+      "starts": [
+        59.51,
+        109.01,
+        157.01
+      ],
+      "files": [
+        "ambient/56fe3b848b92-1.mp3",
+        "ambient/56fe3b848b92-2.mp3",
+        "ambient/56fe3b848b92-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:04.904Z"
+    },
+    {
+      "id": "a5393b2d486e",
+      "track": "Catalogo/Proxy Fae/Last Night/LAST NIGHT MASTER 01.mp3",
+      "size": 4158278,
+      "artist": "Proxy Fae",
+      "title": "Last Night",
+      "key": {
+        "tonic": 7,
+        "mode": "minor",
+        "name": "G minor",
+        "confidence": 0.054
+      },
+      "enabled": true,
+      "duration": 129.88,
+      "starts": [
+        13,
+        44,
+        106.01
+      ],
+      "files": [
+        "ambient/a5393b2d486e-1.mp3",
+        "ambient/a5393b2d486e-2.mp3",
+        "ambient/a5393b2d486e-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:03.056Z"
+    },
+    {
+      "id": "e7e0f99fcba9",
+      "track": "Catalogo/Proxy Fae/Sempre Assim/Sempre Assim.mp3",
+      "size": 8931741,
+      "artist": "Proxy Fae",
+      "title": "Sempre Assim",
+      "key": {
+        "tonic": 4,
+        "mode": "minor",
+        "name": "E minor",
+        "confidence": 0.025
+      },
+      "enabled": true,
+      "duration": 219.64,
+      "starts": [
+        66.51,
+        125.01,
+        183.52
+      ],
+      "files": [
+        "ambient/e7e0f99fcba9-1.mp3",
+        "ambient/e7e0f99fcba9-2.mp3",
+        "ambient/e7e0f99fcba9-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:01.481Z"
+    },
+    {
+      "id": "8efec4530c03",
+      "track": "Catalogo/Sssubrinha/come closer to me/Come_closer_to_me_.mp3",
+      "size": 5614070,
+      "artist": "Sssubrinha",
+      "title": "come closer to me",
+      "key": {
+        "tonic": 2,
+        "mode": "major",
+        "name": "D major",
+        "confidence": 0.018
+      },
+      "enabled": true,
+      "duration": 175.36,
+      "starts": [
+        39,
+        86.51,
+        139.01
+      ],
+      "files": [
+        "ambient/8efec4530c03-1.mp3",
+        "ambient/8efec4530c03-2.mp3",
+        "ambient/8efec4530c03-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:25.102Z"
+    },
+    {
+      "id": "c87809f3c7de",
+      "track": "Catalogo/Sssubrinha/Disk Full C/Full_Disk_ (1).mp3",
+      "size": 5023076,
+      "artist": "Sssubrinha",
+      "title": "Disk Full :C",
+      "key": {
+        "tonic": 8,
+        "mode": "major",
+        "name": "Ab major",
+        "confidence": 0.001
+      },
+      "enabled": true,
+      "duration": 156.89,
+      "starts": [
+        39,
+        69.01,
+        109.01
+      ],
+      "files": [
+        "ambient/c87809f3c7de-1.mp3",
+        "ambient/c87809f3c7de-2.mp3",
+        "ambient/c87809f3c7de-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:15.262Z"
+    },
+    {
+      "id": "48f6c26fe619",
+      "track": "Catalogo/Sssubrinha/Eu 3 Gatinho/gatinho_feat_sera.mp3",
+      "size": 3406410,
+      "artist": "Sssubrinha",
+      "title": "Eu <3 Gatinho (feat. Seracidico)",
+      "key": {
+        "tonic": 0,
+        "mode": "major",
+        "name": "C major",
+        "confidence": 0.018
+      },
+      "enabled": true,
+      "duration": 106.38,
+      "starts": [
+        20,
+        49,
+        75.01
+      ],
+      "files": [
+        "ambient/48f6c26fe619-1.mp3",
+        "ambient/48f6c26fe619-2.mp3",
+        "ambient/48f6c26fe619-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:12.507Z"
+    },
+    {
+      "id": "b780aaf8f295",
+      "track": "Catalogo/Sssubrinha/HYPERSHIT/cheeseburbur.mp3",
+      "size": 3724895,
+      "artist": "Sssubrinha",
+      "title": "cheeseburbur",
+      "key": {
+        "tonic": 8,
+        "mode": "major",
+        "name": "Ab major",
+        "confidence": 0.161
+      },
+      "enabled": true,
+      "duration": 116.33,
+      "starts": [
+        29.5,
+        43,
+        89.01
+      ],
+      "files": [
+        "ambient/b780aaf8f295-1.mp3",
+        "ambient/b780aaf8f295-2.mp3",
+        "ambient/b780aaf8f295-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:26.381Z"
+    },
+    {
+      "id": "feed73f922af",
+      "track": "Catalogo/Sssubrinha/HYPERSHIT/Eu_n_vou_entrar.mp3",
+      "size": 4474714,
+      "artist": "Sssubrinha",
+      "title": "eu n vou entrar",
+      "key": {
+        "tonic": 8,
+        "mode": "major",
+        "name": "Ab major",
+        "confidence": 0.019
+      },
+      "enabled": true,
+      "duration": 139.77,
+      "starts": [
+        36,
+        48,
+        85.51
+      ],
+      "files": [
+        "ambient/feed73f922af-1.mp3",
+        "ambient/feed73f922af-2.mp3",
+        "ambient/feed73f922af-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:30.204Z"
+    },
+    {
+      "id": "0e4ffdca5354",
+      "track": "Catalogo/Sssubrinha/HYPERSHIT/mexe_te_krlh (1).mp3",
+      "size": 3282694,
+      "artist": "Sssubrinha",
+      "title": "mexe te krlh",
+      "key": {
+        "tonic": 8,
+        "mode": "minor",
+        "name": "Ab minor",
+        "confidence": 0.258
+      },
+      "enabled": true,
+      "duration": 102.52,
+      "starts": [
+        21.5,
+        39,
+        74.51
+      ],
+      "files": [
+        "ambient/0e4ffdca5354-1.mp3",
+        "ambient/0e4ffdca5354-2.mp3",
+        "ambient/0e4ffdca5354-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:27.700Z"
+    },
+    {
+      "id": "21ed78fd9663",
+      "track": "Catalogo/Sssubrinha/HYPERSHIT/Tentem_inovar_plz_FINAL.mp3",
+      "size": 2697551,
+      "artist": "Sssubrinha",
+      "title": "tentem inovar plz",
+      "key": {
+        "tonic": 4,
+        "mode": "major",
+        "name": "E major",
+        "confidence": 0.002
+      },
+      "enabled": true,
+      "duration": 84.23,
+      "starts": [
+        8.5,
+        41,
+        62.01
+      ],
+      "files": [
+        "ambient/21ed78fd9663-1.mp3",
+        "ambient/21ed78fd9663-2.mp3",
+        "ambient/21ed78fd9663-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:28.940Z"
+    },
+    {
+      "id": "2e9b77a21599",
+      "track": "Catalogo/Sssubrinha/player2/PLayer_2.mp3",
+      "size": 4367716,
+      "artist": "Sssubrinha",
+      "title": "player2",
+      "key": {
+        "tonic": 5,
+        "mode": "minor",
+        "name": "F minor",
+        "confidence": 0.037
+      },
+      "enabled": true,
+      "duration": 136.41,
+      "starts": [
+        16,
+        50,
+        84.01
+      ],
+      "files": [
+        "ambient/2e9b77a21599-1.mp3",
+        "ambient/2e9b77a21599-2.mp3",
+        "ambient/2e9b77a21599-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:23.580Z"
+    },
+    {
+      "id": "3bb5bf125acb",
+      "track": "Catalogo/Sssubrinha/Rainbow Gummies P/RainbowGummies.mp3",
+      "size": 3720715,
+      "artist": "Sssubrinha",
+      "title": "Rainbow Gummies :P",
+      "key": {
+        "tonic": 7,
+        "mode": "minor",
+        "name": "G minor",
+        "confidence": 0.097
+      },
+      "enabled": true,
+      "duration": 116.21,
+      "starts": [
+        21.5,
+        47.5,
+        80.01
+      ],
+      "files": [
+        "ambient/3bb5bf125acb-1.mp3",
+        "ambient/3bb5bf125acb-2.mp3",
+        "ambient/3bb5bf125acb-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:13.909Z"
+    },
+    {
+      "id": "a6cebc2eb8f9",
+      "track": "Catalogo/Sssubrinha/STICKY NOTES/1_quecalooor.mp3",
+      "size": 4274093,
+      "artist": "Sssubrinha",
+      "title": "que calooor",
+      "key": {
+        "tonic": 8,
+        "mode": "minor",
+        "name": "Ab minor",
+        "confidence": 0.106
+      },
+      "enabled": true,
+      "duration": 133.51,
+      "starts": [
+        35.5,
+        63.51,
+        80.51
+      ],
+      "files": [
+        "ambient/a6cebc2eb8f9-1.mp3",
+        "ambient/a6cebc2eb8f9-2.mp3",
+        "ambient/a6cebc2eb8f9-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:16.841Z"
+    },
+    {
+      "id": "4d31d534f5b5",
+      "track": "Catalogo/Sssubrinha/STICKY NOTES/2_hair_holds_memories.mp3",
+      "size": 3640467,
+      "artist": "Sssubrinha",
+      "title": "hair holds memories",
+      "key": {
+        "tonic": 4,
+        "mode": "major",
+        "name": "E major",
+        "confidence": 0.041
+      },
+      "enabled": true,
+      "duration": 113.69,
+      "starts": [
+        26.5,
+        43.5,
+        83.01
+      ],
+      "files": [
+        "ambient/4d31d534f5b5-1.mp3",
+        "ambient/4d31d534f5b5-2.mp3",
+        "ambient/4d31d534f5b5-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:19.526Z"
+    },
+    {
+      "id": "83c8deb6757d",
+      "track": "Catalogo/Sssubrinha/STICKY NOTES/3_Paz_e_amor.mp3",
+      "size": 4836666,
+      "artist": "Sssubrinha",
+      "title": "paz e amor",
+      "key": {
+        "tonic": 8,
+        "mode": "minor",
+        "name": "Ab minor",
+        "confidence": 0.124
+      },
+      "enabled": true,
+      "duration": 151.08,
+      "starts": [
+        35.5,
+        74.51,
+        109.01
+      ],
+      "files": [
+        "ambient/83c8deb6757d-1.mp3",
+        "ambient/83c8deb6757d-2.mp3",
+        "ambient/83c8deb6757d-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:18.356Z"
+    },
+    {
+      "id": "20a5bdf84177",
+      "track": "Catalogo/Sssubrinha/STICKY NOTES/4_pendrive_samefeeling.mp3",
+      "size": 3787589,
+      "artist": "Sssubrinha",
+      "title": "pendrive / same feeling",
+      "key": {
+        "tonic": 5,
+        "mode": "minor",
+        "name": "F minor",
+        "confidence": 0.099
+      },
+      "enabled": true,
+      "duration": 118.29,
+      "starts": [
+        27,
+        39.5,
+        88.01
+      ],
+      "files": [
+        "ambient/20a5bdf84177-1.mp3",
+        "ambient/20a5bdf84177-2.mp3",
+        "ambient/20a5bdf84177-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:20.668Z"
+    },
+    {
+      "id": "cc907e5aa903",
+      "track": "Catalogo/Sssubrinha/STICKY NOTES/diz_ai.mp3",
+      "size": 3921336,
+      "artist": "Sssubrinha",
+      "title": "diz ai (feat. UGLYBOYY)",
+      "key": {
+        "tonic": 7,
+        "mode": "minor",
+        "name": "G minor",
+        "confidence": 0.063
+      },
+      "enabled": true,
+      "duration": 122.49,
+      "starts": [
+        6.5,
+        44,
+        83.51
+      ],
+      "files": [
+        "ambient/cc907e5aa903-1.mp3",
+        "ambient/cc907e5aa903-2.mp3",
+        "ambient/cc907e5aa903-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:21.977Z"
+    },
+    {
+      "id": "d61d3ec2a184",
+      "track": "Catalogo/Tet3/eu tou farto de Madrid ;(/eu tou farto de madrid ;( (V2).mp3",
+      "size": 3007532,
+      "artist": "Tet3",
+      "title": "eu tou farto de madrid ;(",
+      "key": {
+        "tonic": 4,
+        "mode": "major",
+        "name": "E major",
+        "confidence": 0.001
+      },
+      "enabled": true,
+      "duration": 93.91,
+      "starts": [
+        10,
+        43,
+        72.51
+      ],
+      "files": [
+        "ambient/d61d3ec2a184-1.mp3",
+        "ambient/d61d3ec2a184-2.mp3",
+        "ambient/d61d3ec2a184-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:06.548Z"
+    },
+    {
+      "id": "e53cedcbc38d",
+      "track": "Catalogo/Tet3/Morango Azul/Morango azul final.mp3",
+      "size": 6622508,
+      "artist": "Tet3",
+      "title": "Morango Azul",
+      "key": {
+        "tonic": 7,
+        "mode": "major",
+        "name": "G major",
+        "confidence": 0.215
+      },
+      "enabled": true,
+      "duration": 206.9,
+      "starts": [
+        51.5,
+        120.51,
+        160.51
+      ],
+      "files": [
+        "ambient/e53cedcbc38d-1.mp3",
+        "ambient/e53cedcbc38d-2.mp3",
+        "ambient/e53cedcbc38d-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:09.131Z"
+    },
+    {
+      "id": "567ad7765176",
+      "track": "Catalogo/Tet3/pintei um quadro para ti/pintei um quadro para ti .mp3",
+      "size": 7682132,
+      "artist": "Tet3",
+      "title": "pintei um quadro para ti",
+      "key": {
+        "tonic": 4,
+        "mode": "major",
+        "name": "E major",
+        "confidence": 0.028
+      },
+      "enabled": true,
+      "duration": 240,
+      "starts": [
+        57.51,
+        98.51,
+        159.51
+      ],
+      "files": [
+        "ambient/567ad7765176-1.mp3",
+        "ambient/567ad7765176-2.mp3",
+        "ambient/567ad7765176-3.mp3"
+      ],
+      "format": "mp3",
+      "preparedAt": "2026-11-14T18:29:11.194Z"
+    }
+  ]
+}
