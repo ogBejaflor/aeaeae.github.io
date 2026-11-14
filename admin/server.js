@@ -13,6 +13,7 @@ const express = require('express');
 const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { execFile } = require('child_process');
 
 const build = require('../scripts/build.js');
@@ -185,6 +186,100 @@ app.post('/api/ambient/items', upload.array('files', 6), fixNames, ambientChange
 app.patch('/api/ambient/items/:id', ambientChange((req) => ambient.updateItem(req.params.id, req.body)));
 app.post('/api/ambient/sounds/:name', upload.single('file'), fixNames, ambientChange((req) => ambient.saveSound(req.params.name, needFile(req))));
 app.delete('/api/ambient/sounds/:name', ambientChange((req) => ambient.deleteSound(req.params.name)));
+
+// ------------------------------------------------------------------ boot animation (editor)
+// ae-boot/site-options.js holds the animation settings the site uses.
+const BOOT_OPTIONS = path.join(ROOT, 'ae-boot', 'site-options.js');
+const BOOT_HEADER = `// Settings for the startup screen on the live site.
+// Edited in the admin: Startup → Edit the boot animation (Save to site).
+// You can also paste the "options" part of an exported preset here.
+`;
+function readBootOptions() {
+  try {
+    const src = fs.readFileSync(BOOT_OPTIONS, 'utf8');
+    // the real statement starts a line; everything after "=" up to the final ";" is JSON
+    const m = src.match(/^export const options\s*=\s*([\s\S]*)$/m);
+    return m ? JSON.parse(m[1].trim().replace(/;\s*$/, '')) : {};
+  } catch { return {}; }
+}
+app.get('/api/boot-options', async (req, res) => res.json({ options: readBootOptions(), ffmpeg: !!(await ffmpegPath()) }));
+app.put('/api/boot-options', (req, res) => {
+  try {
+    const input = req.body && req.body.options;
+    if (!input || typeof input !== 'object' || Array.isArray(input)) throw new content.UserError('No settings received.');
+    // keep only plain values with sensible keys (the runtime validates ranges itself)
+    const clean = {};
+    for (const [k, v] of Object.entries(input)) {
+      if (!/^[a-zA-Z]{2,40}$/.test(k) || k === 'loop' || k === 'endBehavior') continue;
+      if (typeof v === 'number' && Number.isFinite(v)) clean[k] = v;
+      else if (typeof v === 'boolean' || (typeof v === 'string' && v.length < 40)) clean[k] = v;
+    }
+    fs.writeFileSync(BOOT_OPTIONS, `${BOOT_HEADER}export const options = ${JSON.stringify(clean, null, 2)};\n`, 'utf8');
+    announceChange();
+    res.json({ ok: true });
+  } catch (e) { sendError(res, e); }
+});
+// Frame-exact video: the editor renders each 1/60 s frame and sends it here as a JPEG;
+// ffmpeg then joins them into an MP4. Timing is exact however fast the computer is.
+const videoJobs = new Map(); // id → { dir, frames, created }
+function cleanVideoJobs() {
+  for (const [id, job] of videoJobs) {
+    if (Date.now() - job.created > 30 * 60 * 1000) { fs.rm(job.dir, { recursive: true, force: true }, () => {}); videoJobs.delete(id); }
+  }
+}
+app.post('/api/boot-video/start', async (req, res) => {
+  if (!(await ffmpegPath())) return res.status(501).json({ error: 'Frame-exact video needs ffmpeg (brew install ffmpeg).' });
+  cleanVideoJobs();
+  const id = crypto.randomBytes(6).toString('hex');
+  const dir = path.join(content.TMP, `video-${id}`);
+  fs.mkdirSync(dir, { recursive: true });
+  videoJobs.set(id, { dir, frames: 0, created: Date.now() });
+  res.json({ id });
+});
+app.post('/api/boot-video/:id/frame/:n', express.raw({ type: 'image/jpeg', limit: '25mb' }), (req, res) => {
+  const job = videoJobs.get(req.params.id);
+  const n = Number(req.params.n);
+  if (!job || !Number.isInteger(n) || n < 0 || n > 60 * 120) return res.status(404).json({ error: 'Unknown video.' });
+  if (!Buffer.isBuffer(req.body) || req.body[0] !== 0xff || req.body[1] !== 0xd8) return res.status(400).json({ error: 'Expected a JPEG frame.' });
+  fs.writeFileSync(path.join(job.dir, `f${String(n).padStart(5, '0')}.jpg`), req.body);
+  job.frames = Math.max(job.frames, n + 1);
+  res.json({ ok: true });
+});
+app.post('/api/boot-video/:id/finish', async (req, res) => {
+  const job = videoJobs.get(req.params.id);
+  if (!job) return res.status(404).json({ error: 'Unknown video.' });
+  videoJobs.delete(req.params.id);
+  const bin = await ffmpegPath();
+  const out = path.join(job.dir, 'boot.mp4');
+  execFile(bin, ['-y', '-loglevel', 'error', '-framerate', '60', '-i', path.join(job.dir, 'f%05d.jpg'),
+    '-c:v', 'libx264', '-preset', 'medium', '-crf', '15', '-pix_fmt', 'yuv420p', '-r', '60', '-movflags', '+faststart', out],
+  { timeout: 15 * 60 * 1000 }, (err, _o, stderr) => {
+    const done = () => fs.rm(job.dir, { recursive: true, force: true }, () => {});
+    if (err) { done(); return res.status(500).json({ error: `Making the video failed: ${stderr || err.message}` }); }
+    res.type('video/mp4').sendFile(out, { dotfiles: 'allow' }, (sendErr) => {
+      done();
+      if (sendErr && !res.headersSent) res.status(500).json({ error: 'Couldn\u2019t send the video.' });
+    });
+  });
+});
+
+// A WebM recording from the editor → MP4 (constant 60 fps, for video/DAW timelines).
+app.post('/api/boot-video', upload.single('file'), async (req, res) => {
+  const bin = await ffmpegPath();
+  if (!req.file) return res.status(400).json({ error: 'No video received.' });
+  if (!bin) { cleanupUploads(req); return res.status(501).json({ error: 'MP4 conversion needs ffmpeg (brew install ffmpeg).' }); }
+  const out = `${req.file.path}.mp4`;
+  execFile(bin, ['-y', '-loglevel', 'error', '-i', req.file.path, '-r', '60', '-c:v', 'libx264', '-preset', 'medium', '-crf', '16', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an', out],
+    { timeout: 10 * 60 * 1000 }, (err, _o, stderr) => {
+      fs.rm(req.file.path, { force: true }, () => {});
+      if (err) { fs.rm(out, { force: true }, () => {}); return res.status(500).json({ error: `Converting failed: ${stderr || err.message}` }); }
+      // (the temp folder's name starts with a dot, which sendFile refuses unless allowed)
+      res.type('video/mp4').sendFile(out, { dotfiles: 'allow' }, (sendErr) => {
+        fs.rm(out, { force: true }, () => {});
+        if (sendErr && !res.headersSent) res.status(500).json({ error: 'Couldn\u2019t send the video.' });
+      });
+    });
+});
 
 // ------------------------------------------------------------------ trash
 app.post('/api/trash/:id/restore', change((req) => content.restoreTrash(req.params.id)));

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Turn on the æ computer. A quiet, shimmering light opens into a celestial boot sequence and a chrome signature. Drawn entirely in code.">
+  <title>æ · Boot animation editor</title>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="/ae-boot/power-screen.css">
+  <style>
+    /* admin additions: site settings + video export */
+    .site-tools { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 10px; }
+    .site-tools button { flex: 1 1 auto; }
+    .site-tools .primary { background: #e8eefc; color: #0b0d12; border-color: #e8eefc; }
+    .site-tools .primary:hover { background: #fff; }
+    .rec-badge { position: fixed; z-index: 20; top: 22px; left: 50%; transform: translateX(-50%); padding: 7px 14px; border-radius: 999px; background: rgba(200, 40, 40, .85); color: #fff; font: 500 12px/1 -apple-system, BlinkMacSystemFont, sans-serif; letter-spacing: .04em; }
+    .rec-badge[hidden] { display: none; }
+    .admin-link { color: #84848e; text-decoration: none; margin-left: auto; letter-spacing: 1.2px; }
+    .admin-link:hover { color: #e4e5ed; }
+  </style>
+</head>
+<body class="power-off">
+  <main id="stage" aria-label="Turn on the æ computer"></main>
+  <noscript><div class="no-script"><img src="./assets/logo-compact.svg" alt="æ music label"><p>Enable JavaScript to play the boot sequence.</p></div></noscript>
+
+  <header class="masthead interface" aria-label="Preview information">
+    <span class="wordmark">æ</span><span class="divider"></span><span>STARTUP STUDY <span class="edition">/ 04.1</span></span>
+    <span class="built">LIGHT → FORM</span>
+    <a class="admin-link" href="/admin/#startup">← ADMIN</a>
+  </header>
+
+  <button id="skip" class="skip" aria-label="Skip animation">Skip <span>↗</span></button>
+  <div id="status" class="sr-only" role="status" aria-live="polite"></div>
+
+  <section id="settings" class="settings" aria-label="Sequence settings" hidden>
+    <div class="settings-heading"><div><span class="eyebrow">LIGHT · MOTION · METAL</span><h1>Sequence editor</h1></div><button id="close-settings" class="icon-button" aria-label="Close settings"><svg viewBox="0 0 20 20"><path d="m5 5 10 10M15 5 5 15"/></svg></button></div>
+    <div id="settings-tabs" class="settings-tabs" role="tablist" aria-label="Control groups"></div>
+    <div class="inspection-bar"><span>Inspect</span><button data-inspect="light">Light</button><button data-inspect="flare">Flare</button><button data-inspect="blend">Blend</button><button data-inspect="chrome">Logo</button></div>
+    <div id="settings-scroll" class="settings-scroll"></div>
+    <div class="editor-footer">
+      <div class="site-tools"><button id="save-site" class="primary">Save to site</button><button id="load-site">Load site settings</button><button id="export-video">Export video</button></div>
+      <div class="preset-tools"><button id="copy-settings">Copy settings</button><button id="export-settings">Export</button><button id="import-settings">Import</button><input type="file" id="preset-file" accept="application/json,.json" hidden></div>
+      <div class="settings-bottom"><button id="reset" class="text-button">Reset all</button><button id="replay-settings" class="small-button">Replay sequence <span>↻</span></button></div>
+      <p id="save-state" class="save-state" role="status">Changes save automatically on this device.</p>
+    </div>
+  </section>
+
+  <footer class="controls interface" aria-label="Animation controls">
+    <div class="sequence-label"><svg class="star-icon" viewBox="0 0 28 28" aria-hidden="true"><path d="M14 1C13 11 11 13 1 14c10 1 12 3 13 13 1-10 3-12 13-13C17 13 15 11 14 1Z"/></svg><div><span class="control-title">HEAVENLY BOOT</span><span id="phase" class="phase">A point of light.</span></div></div>
+    <div class="transport">
+      <button id="play" class="play-button" aria-label="Replay boot animation" title="Replay (R)"><svg id="play-icon" viewBox="0 0 24 24"><path d="M5 9a7.2 7.2 0 1 1-.2 5M5 4v5h5"/></svg></button>
+      <input id="timeline" class="timeline" type="range" min="0" max="9.2" step="0.01" value="0" aria-label="Animation time" aria-valuetext="0 seconds">
+      <span id="time" class="time">0.0 <span>/ 9.2</span></span>
+    </div>
+    <div class="actions">
+      <button id="tune" class="icon-button edit-button" aria-label="Adjust sequence" aria-expanded="false" aria-controls="settings" title="Adjust sequence (C)"><svg viewBox="0 0 24 24"><path d="M4 7h5m4 0h7M4 17h9m4 0h3M9 4v6m4 4v6"/><circle cx="11" cy="7" r="2"/><circle cx="15" cy="17" r="2"/></svg><span>Edit</span></button>
+      <button id="fullscreen" class="icon-button" aria-label="Enter fullscreen" title="Fullscreen (F)"><svg viewBox="0 0 24 24"><path d="M8 4H4v4m12-4h4v4M4 16v4h4m12-4v4h-4"/></svg></button>
+    </div>
+  </footer>
+  <p class="caption interface">Tweak it, then Save to site — and Publish in the admin to put it live.</p>
+  <div id="rec-badge" class="rec-badge" hidden>● Recording</div>
+  <script type="module" src="./editor.js"></script>
+</body>
+</html>

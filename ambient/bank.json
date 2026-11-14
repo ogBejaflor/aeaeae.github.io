@@ -6,7 +6,12 @@
   "ambient": true,
   "volume": 0.8,
   "stringVolume": 0.6,
-  "effectsVolume": 0.9
+  "effectsVolume": 0.9,
+  "bubbleReverb": 0.45,
+  "bubbleSpace": 3,
+  "dropPitch": 1,
+  "stringReverb": 0.35,
+  "stringSpace": 4
  },
  "sounds": {},
  "items": [

@@ -12,8 +12,12 @@
 // A string sound rises as you near the button. On click: the cloud stops, a bubble
 // plays, and the boot sound starts with the animation.
 //
-// Browsers only allow sound after the visitor clicks, taps or presses a key, so the
-// cloud wakes on the first such gesture (or right away if the browser already allows it).
+// Browsers only allow sound after the visitor clicks, taps or presses a key. Until then
+// the screen shows a quiet "click anywhere to start audio" and keeps the power button
+// hidden; the click starts the cloud and the button fades in. If the browser already
+// allows sound (or the visitor turned sound off before), the button shows right away.
+
+import { impulse, makeReverb, waterDrop, stringStandIn, SFX_DEFAULTS } from './sfx.js';
 
 const TAU = Math.PI * 2;
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
@@ -58,6 +62,7 @@ export class AEAmbient {
     this.ctx = new AC({ latencyHint: 'playback' });
     this.buildGraph();
     this.buildToggle();
+    if (!this.muted) this.openGate();
     this.listen();
     this.ready = this.load().catch((e) => console.warn('æ sound:', e.message));
     // Allowed already (returning visitor, or the browser trusts the site)? Then start.
@@ -104,18 +109,45 @@ export class AEAmbient {
     merge.connect(this.reverbSend); // echoes bloom into the reverb too
     this.cloudIn.connect(this.echoSend);
 
-    // string (tension) and effects (bubble, boot)
+    // string (tension) with its own reverb
     this.stringGain = c.createGain(); this.stringGain.gain.value = 0;
     this.stringGain.connect(this.out);
-    const stringVerb = c.createGain(); stringVerb.gain.value = 0.35;
-    this.stringGain.connect(stringVerb).connect(this.reverbSend);
+    this.stringVerb = makeReverb(c, { amount: SFX_DEFAULTS.stringReverb, seconds: SFX_DEFAULTS.stringSpace });
+    this.stringGain.connect(this.stringVerb.input);
+    this.stringVerb.output.connect(this.out);
+    // effects: the drop (with its own reverb) and the boot sound
     this.fx = c.createGain(); this.fx.gain.value = 1;
     this.fx.connect(this.out);
+    this.bubbleVerb = makeReverb(c, { amount: SFX_DEFAULTS.bubbleReverb, seconds: SFX_DEFAULTS.bubbleSpace });
+    this.bubbleVerb.output.connect(this.fx);
     // the effects' own reverb, so it keeps ringing after the cloud has faded
     this.fxVerb = c.createGain();
     const fxRev = c.createConvolver(); fxRev.buffer = this.reverb.buffer;
     const fxRevOut = c.createGain(); fxRevOut.gain.value = 0.8;
     this.fxVerb.connect(fxRev).connect(fxRevOut).connect(this.fx);
+  }
+
+  // ------------------------------------------------------------------ "click anywhere to start audio"
+  openGate() {
+    this.overlay.classList.add('ae-audio-gate');
+    const g = document.createElement('button');
+    g.type = 'button';
+    g.className = 'ae-audio-start';
+    g.textContent = 'click anywhere to start audio';
+    this.overlay.append(g);
+    this.gate = g;
+  }
+
+  closeGate() {
+    if (!this.gate) return;
+    const o = this.overlay;
+    const g = this.gate;
+    this.gate = null;
+    o.classList.add('ae-audio-reveal');   // slow fade-in for the button and its halo
+    o.classList.remove('ae-audio-gate');
+    g.classList.add('is-leaving');
+    setTimeout(() => g.remove(), 900);
+    setTimeout(() => o.classList.remove('ae-audio-reveal'), 1800);
   }
 
   // ------------------------------------------------------------------ sound toggle
@@ -143,7 +175,7 @@ export class AEAmbient {
     if (!this.toggle) return;
     const on = !this.muted && this.ctx.state === 'running' && this.state !== 'idle';
     this.toggle.dataset.on = String(on);
-    this.toggle.innerHTML = `${on ? SPEAKER_ON : SPEAKER_OFF}<span>${on ? 'sound on' : this.state === 'idle' ? 'click anywhere for sound' : 'sound off'}</span>`;
+    this.toggle.innerHTML = `${on ? SPEAKER_ON : SPEAKER_OFF}<span>${on ? 'sound on' : 'sound off'}</span>`;
     this.toggle.setAttribute('aria-label', on ? 'Turn sound off' : 'Turn sound on');
   }
 
@@ -177,6 +209,13 @@ export class AEAmbient {
       if (e.type === 'pointerdown') move(e);
       const onButton = e.target && e.target.closest && e.target.closest('.ae-power-button');
       if (this.ctx.state !== 'running') this.ctx.resume().then(() => this.updateToggle()).catch(() => {});
+      if (this.gate) {
+        // the opening "click anywhere": start the sound and reveal the button
+        e.preventDefault();
+        this.closeGate();
+        this.ctx.resume().then(() => this.wake(true)).catch(() => {});
+        return;
+      }
       if (!onButton && this.state === 'idle' && !(e.target && e.target.closest && e.target.closest('.ae-sound-toggle'))) {
         if (this.muted && e.type === 'pointerdown') { /* respect an explicit "sound off" */ return; }
         this.ctx.resume().then(() => this.wake(true)).catch(() => {});
@@ -208,6 +247,12 @@ export class AEAmbient {
     this.level = { cloud: s.volume ?? 0.8, string: s.stringVolume ?? 0.6, fx: s.effectsVolume ?? 0.9 };
     this.fx.gain.value = this.level.fx;
     this.targetKey = this.bank.targetKey || 0;
+    const fxs = { ...SFX_DEFAULTS, ...s };
+    this.dropPitch = fxs.dropPitch;
+    this.bubbleVerb.input.gain.value = fxs.bubbleReverb;
+    this.stringVerb.input.gain.value = fxs.stringReverb;
+    if (fxs.bubbleSpace !== SFX_DEFAULTS.bubbleSpace) this.bubbleVerb.conv.buffer = impulse(this.ctx, fxs.bubbleSpace, 2.4);
+    if (fxs.stringSpace !== SFX_DEFAULTS.stringSpace) this.stringVerb.conv.buffer = impulse(this.ctx, fxs.stringSpace, 2.4);
 
     // sound effects (files when added in the admin, built-in stand-ins otherwise)
     this.sfx = {};
@@ -251,6 +296,7 @@ export class AEAmbient {
   // ------------------------------------------------------------------ cloud
   wake(fromGesture) {
     if (this.state !== 'idle' || this.ctx.state !== 'running') { this.updateToggle(); return; }
+    this.closeGate();
     this.state = 'listening';
     if (fromGesture && this.muted) this.setMuted(false);
     const t = this.ctx.currentTime;
@@ -391,26 +437,7 @@ export class AEAmbient {
       return;
     }
     // Stand-in: a soft, slowly beating high cluster in the shared key.
-    const tonic = 69 + (((this.targetKey ?? 0) - 9 + 12) % 12) + 12; // tonic around A5
-    const notes = [0, 7, 14, 19].map((d) => tonic + d - 12);
-    const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600; lp.Q.value = 0.7;
-    const trem = c.createGain(); trem.gain.value = 0.7;
-    const lfo = c.createOscillator(); lfo.frequency.value = 5.2;
-    const lfoAmt = c.createGain(); lfoAmt.gain.value = 0.25;
-    lfo.connect(lfoAmt).connect(trem.gain);
-    const oscs = notes.map((m, i) => {
-      const o = c.createOscillator();
-      o.type = 'sawtooth';
-      o.frequency.value = 440 * 2 ** ((m - 69) / 12);
-      o.detune.value = (i % 2 ? 1 : -1) * 6;
-      const g = c.createGain(); g.gain.value = 0.06 / (i + 1);
-      o.connect(g).connect(lp);
-      o.start();
-      return o;
-    });
-    lp.connect(trem).connect(this.stringGain);
-    lfo.start();
-    this.stringNode = { stop: (t) => { oscs.forEach((o) => o.stop(t)); lfo.stop(t); } };
+    this.stringNode = stringStandIn(c, this.stringGain, this.targetKey ?? 0);
   }
 
   // ------------------------------------------------------------------ click → bubble
@@ -429,28 +456,21 @@ export class AEAmbient {
     }
     this.stringNode && this.stringNode.stop(t + 0.5);
     this.toggle && this.toggle.remove();
+    this.closeGate();
     this.playBubble(t + 0.01);
   }
 
   playBubble(t) {
     const c = this.ctx;
+    const bus = c.createGain();
+    bus.connect(this.fx);
+    bus.connect(this.bubbleVerb.input);
     if (this.sfx && this.sfx.bubble) {
-      const s = c.createBufferSource(); s.buffer = this.sfx.bubble; s.connect(this.fx); s.start(t);
+      const src = c.createBufferSource(); src.buffer = this.sfx.bubble; src.connect(bus); src.start(t);
       return;
     }
-    // Stand-in: two small water "bloops" (a sine swept upward, with a fast decay).
-    for (const [d, f0, f1, len, lv] of [[0, 260, 900, 0.16, 0.5], [0.075, 520, 1500, 0.1, 0.25]]) {
-      const o = c.createOscillator(); o.type = 'sine';
-      const g = c.createGain();
-      o.frequency.setValueAtTime(f0, t + d);
-      o.frequency.exponentialRampToValueAtTime(f1, t + d + len);
-      g.gain.setValueAtTime(0, t + d);
-      g.gain.linearRampToValueAtTime(lv, t + d + 0.008);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + d + len);
-      o.connect(g); g.connect(this.fx);
-      const verb = c.createGain(); verb.gain.value = 0.3; g.connect(verb).connect(this.fxVerb);
-      o.start(t + d); o.stop(t + d + len + 0.05);
-    }
+    // Built-in: a single water drop
+    waterDrop(c, bus, t, { pitch: this.dropPitch || 1 });
   }
 
   // ------------------------------------------------------------------ boot sound (in sync)
@@ -533,23 +553,3 @@ function readPref() { try { return localStorage.getItem('ae-sound'); } catch { r
 function writePref(v) { try { localStorage.setItem('ae-sound', v); } catch { /* private mode */ } }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-
-// A generated stereo hall: decorrelated noise with an exponential decay that also
-// darkens over time (high frequencies die first), and a short build-up.
-function impulse(ctx, seconds, decay) {
-  const rate = ctx.sampleRate;
-  const len = Math.floor(rate * seconds);
-  const buf = ctx.createBuffer(2, len, rate);
-  for (let ch = 0; ch < 2; ch++) {
-    const d = buf.getChannelData(ch);
-    let lp = 0;
-    for (let i = 0; i < len; i++) {
-      const t = i / len;
-      const coef = 0.15 + 0.8 * t;           // more smoothing later → darker tail
-      lp = lp * coef + (Math.random() * 2 - 1) * (1 - coef);
-      const build = Math.min(1, i / (rate * 0.06));
-      d[i] = lp * (1 - t) ** decay * build * 1.6;
-    }
-  }
-  return buf;
-}

@@ -423,9 +423,13 @@ function saveSettings(next) {
   s.popups.welcome = { ...cur.popups.welcome, ...((next.popups || {}).welcome || {}) };
   s.gallery = { ...cur.gallery, ...(next.gallery || {}) };
   s.startup = { ...cur.startup, ...(next.startup || {}) };
-  for (const k of ['volume', 'stringVolume', 'effectsVolume']) {
+  for (const k of ['volume', 'stringVolume', 'effectsVolume', 'bubbleReverb', 'stringReverb']) {
     const v = Number(s.startup[k]);
-    s.startup[k] = Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 0.8;
+    s.startup[k] = Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 0.5;
+  }
+  for (const [k, lo, hi, def] of [['bubbleSpace', 0.3, 10, 3], ['stringSpace', 0.3, 10, 4], ['dropPitch', 0.5, 2, 1]]) {
+    const v = Number(s.startup[k]);
+    s.startup[k] = Number.isFinite(v) ? Math.max(lo, Math.min(hi, v)) : def;
   }
   s.startup.ambient = s.startup.ambient !== false;
   if (!(s.startup.targetKey === 'auto' || (Number.isInteger(s.startup.targetKey) && s.startup.targetKey >= 0 && s.startup.targetKey < 12))) s.startup.targetKey = 'auto';

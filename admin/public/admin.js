@@ -826,6 +826,44 @@
     else renderSide();
   }
 
+  // Plays the drop / string exactly as the site does, with the current settings.
+  let sfxCtx = null;
+  let sfxStop = null;
+  async function previewSfx(kind) {
+    try {
+      const { waterDrop, makeReverb, stringStandIn } = await import('/ae-boot/sfx.js');
+      sfxCtx = sfxCtx || new (window.AudioContext || window.webkitAudioContext)();
+      await sfxCtx.resume();
+      if (sfxStop) { sfxStop(); sfxStop = null; }
+      const c = sfxCtx;
+      const st = { bubbleReverb: 0.45, bubbleSpace: 3, dropPitch: 1, stringReverb: 0.35, stringSpace: 4, effectsVolume: 0.9, stringVolume: 0.6, ...(S.settings.startup || {}) };
+      const out = c.createGain();
+      out.gain.value = kind === 'bubble' ? st.effectsVolume : st.stringVolume * 0.4;
+      out.connect(c.destination);
+      const verb = makeReverb(c, kind === 'bubble' ? { amount: st.bubbleReverb, seconds: st.bubbleSpace } : { amount: st.stringReverb, seconds: st.stringSpace });
+      verb.output.connect(out);
+      const bus = c.createGain();
+      bus.connect(out); bus.connect(verb.input);
+      const file = (S.ambient && S.ambient.sounds || {})[kind];
+      const t = c.currentTime + 0.03;
+      if (file) {
+        const buf = await c.decodeAudioData(await (await fetch(site(file.url))).arrayBuffer());
+        const src = c.createBufferSource(); src.buffer = buf; src.loop = kind === 'string'; src.connect(bus); src.start(t);
+        if (kind === 'string') { bus.gain.setValueAtTime(1, t + 3); bus.gain.linearRampToValueAtTime(0, t + 3.6); src.stop(t + 3.7); }
+        sfxStop = () => { try { src.stop(); } catch { /* ended */ } };
+      } else if (kind === 'bubble') {
+        waterDrop(c, bus, t, { pitch: st.dropPitch });
+      } else {
+        const node = stringStandIn(c, bus, (S.ambient && S.ambient.targetKey) || 0);
+        bus.gain.setValueAtTime(1, t + 3); bus.gain.linearRampToValueAtTime(0, t + 3.6);
+        node.stop(t + 3.7);
+        sfxStop = () => node.stop();
+      }
+    } catch (e) {
+      toast(`Couldn't play: ${e.message}`, 'error');
+    }
+  }
+
   function startupPage() {
     const A = S.ambient || { songs: [], sounds: {} };
     const st = S.settings.startup || {};
@@ -875,25 +913,48 @@
           h('input', { type: 'checkbox', role: 'switch', checked: s.enabled, disabled: !s.key, 'aria-label': `Use ${s.title}`, 'data-k': `on:${s.id}`,
             onchange: (e) => act('PATCH', `/api/ambient/items/${s.id}`, { enabled: e.target.checked }) }))))));
 
-    const slider = (label, k, hint) => h('label', { class: 'field' },
-      h('span', {}, label),
-      h('input', { type: 'range', class: 'range', min: 0, max: 1, step: 0.05, value: st[k] ?? 0.8, 'data-k': `st:${k}`,
-        onchange: (e) => saveSet({ [k]: Number(e.target.value) }) }),
-      hint ? h('small', {}, hint) : null);
+    const FX_DEF = { bubbleReverb: 0.45, bubbleSpace: 3, dropPitch: 1, stringReverb: 0.35, stringSpace: 4 };
+    const slider = (label, k, hint, { min = 0, max = 1, step = 0.05, fmt = (v) => `${Math.round(v * 100)}%`, after } = {}) => {
+      const v = st[k] ?? FX_DEF[k] ?? 0.8;
+      const out = h('output', { class: 'muted' }, fmt(v));
+      return h('label', { class: 'field' },
+        h('span', { class: 'split' }, label, out),
+        h('input', { type: 'range', class: 'range', min, max, step, value: v, 'data-k': `st:${k}`,
+          oninput: (e) => { out.textContent = fmt(Number(e.target.value)); },
+          onchange: (e) => { const val = Number(e.target.value); S.settings.startup = { ...st, [k]: val }; saveSet({ [k]: val }); if (after) after(); } }),
+        hint ? h('small', {}, hint) : null);
+    };
+    const secs = (v) => `${v.toFixed(1)} s`;
 
     const SOUND_INFO = {
-      bubble: ['Bubble', 'Plays when the button is clicked.'],
-      string: ['String', 'Loops while waiting; louder the closer the pointer is to the button.'],
-      boot: ['Boot', 'Starts with the animation (after the ripple) and plays in sync with it.'],
+      bubble: ['Bubble', 'Plays when the button is clicked.', 'A single water drop (built in) plays until you add a file.'],
+      string: ['String', 'Loops while waiting; louder the closer the pointer is to the button.', 'A soft built-in stand-in plays until you add a file.'],
+      boot: ['Boot', 'Starts with the animation (after the ripple) and plays in sync with it.', 'A soft built-in stand-in plays until you add a file.'],
+    };
+    const CONTROLS = {
+      bubble: [
+        slider('Reverb', 'bubbleReverb', null, { after: () => previewSfx('bubble') }),
+        slider('Reverb size', 'bubbleSpace', null, { min: 0.3, max: 10, step: 0.1, fmt: secs, after: () => previewSfx('bubble') }),
+        (A.sounds || {}).bubble ? null : slider('Drop pitch', 'dropPitch', null, { min: 0.5, max: 2, step: 0.05, fmt: (v) => `${v.toFixed(2)}×`, after: () => previewSfx('bubble') }),
+      ],
+      string: [
+        slider('Reverb', 'stringReverb', null, { after: () => previewSfx('string') }),
+        slider('Reverb size', 'stringSpace', null, { min: 0.3, max: 10, step: 0.1, fmt: secs, after: () => previewSfx('string') }),
+      ],
+      boot: [
+        h('a', { class: 'btn small', href: '/admin/boot-editor/', target: '_blank', rel: 'noopener', style: { justifySelf: 'start' } }, 'Edit the boot animation ↗'),
+      ],
     };
     const soundRow = (name) => {
-      const [label, info] = SOUND_INFO[name];
+      const [label, info, standIn] = SOUND_INFO[name];
       const f = (A.sounds || {})[name];
       const key = `snd:${name}`;
       return h('div', { class: 'sound-row' },
-        h('div', {}, h('b', {}, label), h('span', { class: 'muted' }, f ? `${info} (${mb(f.size)})` : `${info} Not added yet — a soft built-in stand-in plays.`)),
+        h('div', {}, h('b', {}, label), h('span', { class: 'muted' }, f ? `${info} (${mb(f.size)})` : `${info} ${standIn}`)),
+        CONTROLS[name],
         h('div', { class: 'row' },
-          f ? h('button', { class: 'btn small', onclick: () => preview(f.url) }, 'Play') : null,
+          name === 'boot' ? (f ? h('button', { class: 'btn small', onclick: () => preview(f.url) }, 'Play') : null)
+            : h('button', { class: 'btn small', onclick: () => previewSfx(name) }, 'Play'),
           dropZone({ key, accept: 'audio/*,.mp3,.wav,.m4a,.ogg', label: f ? 'Replace' : 'Add file', cls: 'sound-drop',
             onFiles: (files) => upload(`/api/ambient/sounds/${name}`, files, null, key, () => toast(`${label} sound saved.`)) }),
           f ? h('button', { class: 'btn quiet small', onclick: () => { if (confirm(`Remove the ${label.toLowerCase()} sound?`)) act('DELETE', `/api/ambient/sounds/${name}`, null, () => toast('Removed.')); } }, 'Remove') : null));

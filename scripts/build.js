@@ -72,6 +72,11 @@ const DEFAULT_SETTINGS = {
     stringVolume: 0.6,    // tension sound, louder near the button
     effectsVolume: 0.9,   // bubble on click + boot sound
     targetKey: 'auto',    // 'auto' or 0–11 (C … B): the major key every song is tuned to
+    bubbleReverb: 0.45,   // the drop on click: reverb send 0–1 and size in seconds
+    bubbleSpace: 3,
+    dropPitch: 1,         // 0.5–2
+    stringReverb: 0.35,   // the string: reverb send 0–1 and size in seconds
+    stringSpace: 4,
   },
 };
 
@@ -363,6 +368,11 @@ function buildAmbient(settings) {
       volume: s.volume ?? 0.8,
       stringVolume: s.stringVolume ?? 0.6,
       effectsVolume: s.effectsVolume ?? 0.9,
+      bubbleReverb: s.bubbleReverb ?? 0.45,
+      bubbleSpace: s.bubbleSpace ?? 3,
+      dropPitch: s.dropPitch ?? 1,
+      stringReverb: s.stringReverb ?? 0.35,
+      stringSpace: s.stringSpace ?? 4,
     },
     sounds,
     items: items.map((it) => ({
