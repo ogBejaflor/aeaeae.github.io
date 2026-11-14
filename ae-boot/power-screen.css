@@ -1,0 +1,67 @@
+.ae-power-screen{
+  position:absolute;inset:0;z-index:4;display:grid;place-items:center;
+  overflow:hidden;isolation:isolate;background:#000;color:#eef2f8;
+  opacity:1;
+  font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  -webkit-tap-highlight-color:transparent;
+}
+.ae-power-screen[hidden]{display:none!important}
+.ae-power-screen[data-state="starting"]{pointer-events:none}
+.ae-power-canvas,.ae-power-aura{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  pointer-events:none;user-select:none;
+}
+.ae-power-canvas{z-index:0;display:block}
+.ae-power-canvas,.ae-power-aura{opacity:1;transition:opacity 250ms ease-out}
+.ae-power-screen[data-state="starting"] .ae-power-canvas,
+.ae-power-screen[data-state="starting"] .ae-power-aura{opacity:0!important}
+.ae-power-ripple{
+  position:absolute;left:50%;top:50%;z-index:1;box-sizing:border-box;
+  transform:translate(-50%,-50%) scale(.018);transform-origin:50% 50%;
+  border-radius:50%;border:1px solid rgba(var(--ae-power-tint,238,244,255),.52);
+  background:radial-gradient(circle closest-side,transparent 65%,rgba(var(--ae-power-tint,238,244,255),.006) 80%,rgba(var(--ae-power-tint,238,244,255),.065) 94%,rgba(var(--ae-power-tint,238,244,255),.17) 99%,transparent 100%);
+  box-shadow:0 0 22px rgba(var(--ae-power-tint,238,244,255),.12),inset 0 0 16px rgba(var(--ae-power-tint,238,244,255),.075);
+  opacity:0;pointer-events:none;will-change:transform,opacity;
+}
+.ae-power-screen[data-state="starting"][data-ripple-engine="css"] .ae-power-ripple{
+  animation:ae-power-ripple var(--ae-power-ripple-duration,900ms) linear both;
+}
+@keyframes ae-power-ripple{
+  0%{transform:translate(-50%,-50%) scale(.018);opacity:0}
+  12%{transform:translate(-50%,-50%) scale(.12);opacity:var(--ae-power-ripple-peak,.62)}
+  52%{transform:translate(-50%,-50%) scale(.55);opacity:calc(var(--ae-power-ripple-peak,.62)*.55)}
+  88%{transform:translate(-50%,-50%) scale(.95);opacity:calc(var(--ae-power-ripple-peak,.62)*.12)}
+  100%{transform:translate(-50%,-50%) scale(1.04);opacity:0}
+}
+.ae-power-aura{
+  z-index:0;display:none;width:var(--ae-power-aura-size,560px);
+  height:var(--ae-power-aura-size,560px);border-radius:50%;
+  background:radial-gradient(circle,rgba(var(--ae-power-tint,238,244,255),.48) 0%,rgba(var(--ae-power-tint,238,244,255),.16) 22%,rgba(var(--ae-power-tint,238,244,255),.035) 48%,transparent 72%);
+}
+.ae-power-screen[data-renderer="css"] .ae-power-canvas{display:none}
+.ae-power-screen[data-renderer="css"] .ae-power-aura{display:block}
+.ae-power-button{
+  appearance:none;-webkit-appearance:none;position:relative;z-index:1;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-height:44px;margin:0;padding:12px 23px;border:1px solid rgba(224,235,255,.24);
+  border-radius:999px;background:rgba(4,6,10,.79);color:#e2e8f2;
+  box-shadow:0 3px 24px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.045);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  font:400 13px/1.25 -apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  letter-spacing:.025em;text-transform:none;white-space:nowrap;
+  cursor:pointer;touch-action:manipulation;user-select:none;
+  opacity:1;transition:opacity 150ms ease-out,color .2s ease,border-color .2s ease,background .2s ease,box-shadow .2s ease;
+}
+.ae-power-screen[data-state="starting"] .ae-power-button{opacity:0}
+.ae-power-button:hover:not(:disabled){
+  color:#fff;border-color:rgba(233,242,255,.46);background:rgba(5,8,13,.86);
+  box-shadow:0 4px 30px rgba(0,0,0,.32),0 0 15px rgba(218,234,255,.035),inset 0 1px 0 rgba(255,255,255,.07);
+}
+.ae-power-button:active:not(:disabled){background:rgba(13,18,25,.94);border-color:rgba(237,246,255,.55)}
+.ae-power-button:focus-visible{outline:2px solid rgba(222,237,255,.9);outline-offset:5px}
+.ae-power-button:disabled{cursor:default;opacity:1;color:#e2e8f2}
+.ae-power-screen[data-reduced-motion="true"],.ae-power-screen[data-reduced-motion="true"] .ae-power-button,
+.ae-power-screen[data-reduced-motion="true"] .ae-power-canvas,.ae-power-screen[data-reduced-motion="true"] .ae-power-aura{transition:none}
+.ae-power-screen[data-reduced-motion="true"] .ae-power-ripple{animation:none!important;opacity:0!important}
+@media(max-width:480px){.ae-power-button{font-size:12px;padding:12px 21px;min-height:44px}}
+@media(prefers-reduced-motion:reduce){.ae-power-screen,.ae-power-button,.ae-power-canvas,.ae-power-aura{transition:none}}

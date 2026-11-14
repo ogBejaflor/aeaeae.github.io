@@ -429,17 +429,23 @@
 
     // Watchdog: if truly nothing rendered, show a hello toast (helps diagnose)
     setTimeout(() => {
-      if (!cards.length && ENABLED && WELCOME.enabled !== false) {
+      // (skip it when Clippy's welcome was already sent — it can still be on its way)
+      if (!cards.length && !__aeMascotShown && ENABLED && WELCOME.enabled !== false) {
         push({ title: 'Hello', body: 'Notifications are active.' });
         if (!timer && queue.length) schedule();
       }
     }, 2000);
   }
 
+  // Wait until the computer is turned on (startup screen), then start.
+  function startWhenDesktopOn() {
+    if (window.aeBootPending) window.addEventListener('ae:desktop-on', startScheduleOnce, { once: true });
+    else startScheduleOnce();
+  }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', startScheduleOnce, { once: true });
+    document.addEventListener('DOMContentLoaded', startWhenDesktopOn, { once: true });
   } else {
-    startScheduleOnce();
+    startWhenDesktopOn();
   }
 
   // If physics already ON at load, freeze any existing (defensive)

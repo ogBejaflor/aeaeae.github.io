@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# The boot screen logo textures hold distance data in their pixels: never alter them
+ae-boot/assets/*.png binary

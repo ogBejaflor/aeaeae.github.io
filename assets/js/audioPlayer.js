@@ -574,6 +574,7 @@ els.root.addEventListener('keydown', e => {
 window.addEventListener('keydown', e => {
   const t = e.target;
   if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable) return;
+  if (t.closest && t.closest('#ae-boot')) return; // the startup screen's button
   if (e.code === 'Space' && (state.index >= 0 || els.root.contains(t))) {
     if (t.closest && t.closest('.aep-ring')) return; // the ring uses Space to pick an artist
     e.preventDefault();

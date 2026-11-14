@@ -214,7 +214,7 @@ app.use('/admin', express.static(path.join(__dirname, 'public'), { setHeaders: n
 app.use('/admin', (req, res) => res.status(404).send('Not found'));
 
 // The site's index.html gets a tiny script that refreshes it when content changes.
-const LIVE = `<script>(function(){try{var es=new EventSource('/api/live');es.addEventListener('change',function(){location.reload();});}catch(e){}})();</script>`;
+const LIVE = `<script>(function(){try{var es=new EventSource('/api/live');es.addEventListener('change',function(){try{sessionStorage.setItem('ae-skip-boot','1');}catch(e){}location.reload();});}catch(e){}})();</script>`;
 app.get(['/', '/index.html'], (req, res) => {
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   noStore(res);

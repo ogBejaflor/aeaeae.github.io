@@ -11,6 +11,61 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" />
   <link rel="stylesheet" href="assets/css/player.css" />
+
+  <!-- Startup screen ("turn on computer" → boot). Runtime lives in ae-boot/ -->
+  <link id="ae-power-style" rel="stylesheet" href="ae-boot/power-screen.css" />
+  <style>
+    html.ae-boot-importing,
+    html.ae-boot-importing body { background: #000; }
+    .ae-boot-importing #desktop-root { visibility: hidden; }
+    /* The wrapper only groups the desktop for the startup screen: it adds no box,
+       so window dragging, positioning and physics behave exactly as before. */
+    #desktop-root { display: contents; }
+
+    #ae-boot {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483646;
+      background: #000;
+    }
+    #ae-boot > .ae-boot-canvas { display: block; width: 100%; height: 100%; }
+    #ae-boot .ae-boot-fallback {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: min(65vw, 680px);
+      transform: translate(-50%, -50%);
+      filter: invert(1);
+      transition: opacity .6s;
+    }
+    #ae-boot-skip {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      z-index: 2147483647;
+      padding: 12px;
+      border: 0;
+      background: transparent;
+      color: #aaa;
+      cursor: pointer;
+      font: inherit;
+    }
+    #ae-boot-skip[hidden] { display: none; }
+  </style>
+  <script>
+    // Skip the intro for one load when asked: ?boot=off, or after the admin
+    // preview refreshes itself following an edit.
+    (function () {
+      var skip = /[?&]boot=off\b/.test(location.search);
+      try { if (sessionStorage.getItem('ae-skip-boot') === '1') { skip = true; sessionStorage.removeItem('ae-skip-boot'); } } catch (e) {}
+      window.aeBootSkip = skip;
+      window.aeBootPending = !skip; // pop-ups wait for the desktop to turn on
+      if (!skip) document.documentElement.classList.add('ae-boot-importing');
+    })();
+  </script>
+  <noscript>
+    <style>#ae-boot, #ae-boot-skip { display: none !important; }</style>
+  </noscript>
   <script type="importmap">
     {
       "imports": {
@@ -21,6 +76,12 @@
   </script>
 </head>
 <body>
+  <!-- Startup screen: sits above the desktop until the computer is turned on -->
+  <div id="ae-boot"></div>
+  <button id="ae-boot-skip" type="button" hidden disabled>Skip intro</button>
+
+  <!-- Everything the visitor uses after start-up -->
+  <div id="desktop-root">
 
   <!-- Top bar with system information -->
   <div id="top-bar" role="banner">
@@ -330,6 +391,8 @@
     </div>
   </div>
 
+  </div><!-- /#desktop-root -->
+
   <!-- Scripts (order matters) -->
   <!-- Content first: settings + catalog, then siteContent builds artist folders/windows
        before the desktop scripts below bind their events. -->
@@ -358,5 +421,94 @@
 
   <!-- Audio Player Apps -->
   <script type="module" src="assets/js/audioPlayer.js"></script>
+  <!-- Startup screen controller (after the desktop scripts, which keep their normal order) -->
+  <script>
+  (() => {
+    const overlay = document.getElementById('ae-boot');
+    const desktop = document.getElementById('desktop-root');
+    const skip = document.getElementById('ae-boot-skip');
+    const stylesheet = document.getElementById('ae-power-style');
+    const root = document.documentElement;
+    const focusTarget = document.getElementById('desktop') || desktop;
+
+    // Tell the site the desktop is on (pop-ups start then).
+    const desktopOn = (reason) => {
+      window.aeBootPending = false;
+      window.dispatchEvent(new CustomEvent('ae:desktop-on', { detail: { reason } }));
+    };
+
+    function focusDesktop() {
+      if (focusTarget.closest('[inert], [aria-hidden="true"]')) return;
+      const temporary = !focusTarget.hasAttribute('tabindex') && focusTarget.tabIndex < 0;
+      if (temporary) focusTarget.setAttribute('tabindex', '-1');
+      focusTarget.focus({ preventScroll: true });
+      if (temporary) focusTarget.removeAttribute('tabindex');
+    }
+
+    if (!overlay || !desktop || window.aeBootSkip) {
+      overlay?.remove();
+      skip?.remove();
+      root.classList.remove('ae-boot-importing');
+      desktopOn('off');
+      return;
+    }
+
+    const previous = { inert: desktop.getAttribute('inert'), ariaHidden: desktop.getAttribute('aria-hidden') };
+    let computer = null;
+    let exited = false;
+    let loadingWatchdog = 0;
+
+    function restoreAttribute(name, value) {
+      if (value === null) desktop.removeAttribute(name);
+      else desktop.setAttribute(name, value);
+    }
+
+    function openAfterLoadingFailure(error) {
+      if (exited) return;
+      exited = true;
+      clearTimeout(loadingWatchdog);
+      computer?.destroy();
+      restoreAttribute('inert', previous.inert);
+      restoreAttribute('aria-hidden', previous.ariaHidden);
+      overlay.remove();
+      skip?.remove();
+      root.classList.remove('ae-boot-importing');
+      focusDesktop();
+      desktopOn('error');
+      console.warn('Startup could not load; desktop opened directly.', error);
+    }
+
+    function waitForStylesheet(link) {
+      if (!link) return Promise.reject(new Error('Power stylesheet link missing.'));
+      if (link.sheet) return Promise.resolve();
+      return new Promise((resolve, reject) => {
+        link.addEventListener('load', resolve, { once: true });
+        link.addEventListener('error', () => reject(new Error('Power stylesheet could not load.')), { once: true });
+      });
+    }
+
+    // Covers loading the startup files only — never someone deciding whether to click.
+    loadingWatchdog = setTimeout(() => openAfterLoadingFailure(new Error('Startup files took too long to load.')), 15000);
+
+    Promise.all([
+      import('./ae-boot/computer-boot.js'),
+      import('./ae-boot/site-options.js').catch(() => ({ options: {} })),
+      waitForStylesheet(stylesheet)
+    ]).then(([{ AEComputerBoot }, { options }]) => {
+      if (exited) return;
+      computer = new AEComputerBoot(overlay, { desktop, skipButton: skip, focusTarget, options: options || {} });
+      computer.addEventListener('enter', (event) => {
+        exited = true;
+        clearTimeout(loadingWatchdog);
+        root.classList.remove('ae-boot-importing');
+        desktop.dataset.bootResult = event.detail.reason;
+        desktopOn(event.detail.reason);
+      }, { once: true });
+      clearTimeout(loadingWatchdog);
+      root.classList.remove('ae-boot-importing');
+      // The visible button starts it — never call computer.start() here.
+    }).catch(openAfterLoadingFailure);
+  })();
+  </script>
 </body>
 </html>
