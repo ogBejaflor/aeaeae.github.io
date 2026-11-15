@@ -9,11 +9,14 @@
 //                              near: drier, clearer, the songs actually play
 //   left ↔ right             → where in the songs (through their excerpts)
 //   top ↕ bottom             → grain size and shimmer (small and bright ↔ long and smeared)
+//   x/y together             → "texture zones": islands of tiny stuttering grains and long
+//                              smears across the screen, some even, some wildly mixed
+//   moving fast              → grains shrink into a stutter, then relax when you slow down
 // A string sound rises as you near the button. On click: the cloud stops, a bubble
 // plays, and the boot sound starts with the animation.
 //
 // Browsers only allow sound after the visitor clicks, taps or presses a key. Until then
-// the screen shows a quiet "click anywhere to start audio" and keeps the power button
+// the screen shows a quiet "click to turn on audio and move your mouse around" and keeps the power button
 // hidden; the click starts the cloud and the button fades in. If the browser already
 // allows sound (or the visitor turned sound off before), the button shows right away.
 
@@ -51,7 +54,7 @@ export class AEAmbient {
     this.stats = { grains: 0, loaded: 0 };
     this.abort = new AbortController();
     this.pointer = { x: 0.5, y: 0.5, active: false, last: 0 };
-    this.smooth = { focus: 0.15, angle: 0, nx: 0.5, ny: 0.5 };
+    this.smooth = { focus: 0.15, angle: 0, nx: 0.5, ny: 0.5, speed: 0 };
     this.playhead = 0;        // seconds, advances with the music when near the button
     this.nextGrain = 0;
     this.muted = readPref() === 'off';
@@ -133,7 +136,7 @@ export class AEAmbient {
     const g = document.createElement('button');
     g.type = 'button';
     g.className = 'ae-audio-start';
-    g.textContent = 'click anywhere to start audio';
+    g.textContent = 'click to turn on audio and move your mouse around';
     this.overlay.append(g);
     this.gate = g;
   }
@@ -343,6 +346,26 @@ export class AEAmbient {
     s.angle += da * k;
     s.nx = lerp(s.nx, clamp(px / innerWidth), k);
     s.ny = lerp(s.ny, clamp(py / innerHeight), k);
+    // pointer speed in screen-diagonals per second (rises fast, settles slowly)
+    const diag = Math.hypot(innerWidth, innerHeight);
+    const v = this.prevPx === undefined || !dt ? 0 : Math.hypot(px - this.prevPx, py - this.prevPy) / diag / dt;
+    this.prevPx = px; this.prevPy = py;
+    const kv = 1 - Math.exp(-dt * (v > s.speed ? 8 : 1.2));
+    s.speed = lerp(s.speed, idle ? 0 : Math.min(v, 3), kv);
+  }
+
+  // Grain size from where and how the pointer moves → { mean (seconds), spread (octaves) }
+  grainShape() {
+    const { focus, nx, ny, speed } = this.smooth;
+    const base = lerp(0.9, 0.32, focus);                         // distance: far = long smears
+    const height = 2 ** lerp(-2.6, 1.4, ny);                     // top tiny … bottom long
+    const zone = Math.sin(nx * TAU * 1.25 + 0.6) * Math.cos(ny * TAU * 0.9 - 0.4);
+    const texture = 2 ** (1.9 * zone);                           // islands of stutter and smear
+    const rush = lerp(1, 0.25, clamp(speed * 1.8));              // fast moves → stutter
+    const mean = clamp(base * height * texture * rush, 0.03, 2.4);
+    // how mixed the sizes are: even in some areas, wildly varied in others
+    const spread = lerp(0.2, 1.6, 0.5 + 0.5 * Math.sin(nx * TAU * 0.7 + ny * TAU * 1.1 + 1.3));
+    return { mean, spread };
   }
 
   tick() {
@@ -368,9 +391,12 @@ export class AEAmbient {
 
     const ready = this.songs.filter((s) => s.buffers.length);
     if (!ready.length) return;
-    const density = lerp(26, 10, focus);                       // grains per second
+    // grains per second: fewer up close; more when the grains are tiny, so they stay a texture
+    this.shape = this.grainShape();
+    const density = lerp(26, 10, focus) * clamp(0.4 / this.shape.mean, 0.7, 3.2);
+    this.density = density;
     while (this.nextGrain < now + 0.12) {
-      if (this.grains < 70) this.grain(this.nextGrain, ready);
+      if (this.grains < 90) this.grain(this.nextGrain, ready);
       this.nextGrain += (1 / density) * rand(0.55, 1.45);
     }
     if (this.nextGrain < now) this.nextGrain = now + 0.01;
@@ -389,8 +415,9 @@ export class AEAmbient {
     const song = ready[i];
     const buf = song.buffers[Math.floor(Math.random() * song.buffers.length)];
 
-    // grain size: near → follows the song (≈0.3 s), far → long smears; y scales it
-    const size = lerp(0.9, 0.32, focus) * lerp(0.28, 1.7, ny) * rand(0.75, 1.3);
+    // grain size: from distance, height, texture zones and pointer speed (see grainShape)
+    const shape = this.shape || this.grainShape();
+    const size = clamp(shape.mean * 2 ** rand(-shape.spread, shape.spread), 0.018, 2.6);
     // pitch: tuned to the shared key; far away, some grains jump an octave
     let rate = 2 ** ((song.item.shift || 0) / 12) * cents(rand(-1, 1) * lerp(16, 3, focus));
     const octave = Math.random();
@@ -409,7 +436,7 @@ export class AEAmbient {
     src.buffer = buf;
     src.playbackRate.value = rate;
     const env = c.createGain();
-    const amp = Math.min(1.1, 1.25 / Math.sqrt(Math.max(1, lerp(26, 10, focus) * size)));
+    const amp = Math.min(1.1, 1.25 / Math.sqrt(Math.max(1, (this.density || lerp(26, 10, focus)) * size)));
     const curve = new Float32Array(HANN.length);
     for (let k = 0; k < curve.length; k++) curve[k] = HANN[k] * amp;
     env.gain.setValueAtTime(0, when);
