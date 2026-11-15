@@ -130,6 +130,7 @@
 
   /* ---------------- Physics toggle behavior ---------------- */
   window.addEventListener('physics-mode-changed', (e) => {
+    if (!started) return; // nothing to resume before the desktop is on
     const on = !!e.detail?.on;
 
     if (on) {
@@ -391,7 +392,9 @@
   }
 
   document.addEventListener('visibilitychange', () => {
-    if (!queue.length) return;
+    // Only resume a schedule that has started — otherwise coming back to the tab
+    // during the startup screen fired a pop-up straight away.
+    if (!started || !queue.length) return;
     if (document.hidden) {
       clearTimeout(timer);
       timer = null;
@@ -421,7 +424,10 @@
   };
 
   /* ---------------- Start scheduling ---------------- */
+  let started = false;
   function startScheduleOnce() {
+    if (started) return;
+    started = true;
     ensureMascotCSS();
     // Nudge mascot after the API is surely present
     setTimeout(pushMascotWelcome, 800);
