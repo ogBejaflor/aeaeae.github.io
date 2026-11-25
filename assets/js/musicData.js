@@ -551,14 +551,6 @@ window.musicArtists = [
   },
   {
     "id": "ar_6",
-    "name": "Fausto Lobo",
-    "photo": null,
-    "bio": "",
-    "files": [],
-    "albums": []
-  },
-  {
-    "id": "ar_7",
     "name": "Lil Audio",
     "photo": null,
     "bio": "",
@@ -566,7 +558,7 @@ window.musicArtists = [
     "albums": []
   },
   {
-    "id": "ar_8",
+    "id": "ar_7",
     "name": "Miana",
     "photo": "Catalogo/Miana/photo.jpg",
     "bio": "Miana leva as suas bases de conservatório ao PC para criar composições simples, mas\ninteressantes. No seu EP Miana Barroco Midi encontram-se vestígios contrapontísticos em\ninstrumentais eletrónicos, que, nos singles lançados no SoundCloud, são sobrepostos por\nvocals modernos mergulhados em reverb e autotune, sobre batidas que harmonizam o\nbedroom com o trap.",
@@ -574,7 +566,7 @@ window.musicArtists = [
     "albums": []
   },
   {
-    "id": "ar_9",
+    "id": "ar_8",
     "name": "Nicø",
     "photo": null,
     "bio": "",
@@ -582,7 +574,7 @@ window.musicArtists = [
     "albums": []
   },
   {
-    "id": "ar_10",
+    "id": "ar_9",
     "name": "Phaser",
     "photo": null,
     "bio": "",
@@ -590,7 +582,7 @@ window.musicArtists = [
     "albums": []
   },
   {
-    "id": "ar_11",
+    "id": "ar_10",
     "name": "Proxy Fae",
     "photo": "Catalogo/Proxy%20Fae/photo.jpg",
     "bio": "",
@@ -640,7 +632,7 @@ window.musicArtists = [
     ]
   },
   {
-    "id": "ar_12",
+    "id": "ar_11",
     "name": "Tet3",
     "photo": "Catalogo/Tet3/photo.jpg",
     "bio": "Tét3 é um artista multifacetado, baseado em Lisboa, dedicado a criar um universo sonoro dinâmico, caótico, disfuncional, swaggy, imersivo e monstruoso onde a autoexpressão é a chave para a sobrevivência 💯✮⋆˙💯. Com a motivação para desconstruir as banalidades humanas e as nossas perceções das mesmas, Tét3 cruza as formas das mais variadas abordagens do pop contemporâneo numa paisagem eletrónica sintetizada por alguém que quer estragar com basses pesados e amigues ⋆˚˖𓍢ִ໋🌷͙֒✧˚.🎀༘⋆˚ :p",
@@ -652,7 +644,7 @@ window.musicArtists = [
     ]
   },
   {
-    "id": "ar_13",
+    "id": "ar_12",
     "name": "Xaulaura",
     "photo": null,
     "bio": "",
@@ -660,7 +652,7 @@ window.musicArtists = [
     "albums": []
   },
   {
-    "id": "ar_14",
+    "id": "ar_13",
     "name": "Sssubrinha",
     "photo": null,
     "bio": "",
@@ -676,7 +668,7 @@ window.musicArtists = [
     ]
   },
   {
-    "id": "ar_15",
+    "id": "ar_14",
     "name": "Levi",
     "photo": null,
     "bio": "",

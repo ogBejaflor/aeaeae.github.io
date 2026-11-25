@@ -4,16 +4,18 @@
  "targetName": "Ab major / F minor",
  "settings": {
   "ambient": true,
-  "volume": 0.8,
-  "stringVolume": 0.6,
+  "volume": 0.85,
+  "stringVolume": 0.2,
   "effectsVolume": 0.9,
   "bubbleReverb": 0.45,
   "bubbleSpace": 3,
   "dropPitch": 1,
-  "stringReverb": 0.35,
+  "stringReverb": 0.5,
   "stringSpace": 4
  },
- "sounds": {},
+ "sounds": {
+  "string": "ambient/sounds/string.wav?v=3z62o"
+ },
  "items": [
   {
    "id": "40e7bc1819f3",

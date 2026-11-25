@@ -18,5 +18,17 @@
   },
   "gallery": {
     "includeCatalog": true
+  },
+  "startup": {
+    "ambient": true,
+    "volume": 0.85,
+    "stringVolume": 0.2,
+    "effectsVolume": 0.9,
+    "targetKey": "auto",
+    "bubbleReverb": 0.45,
+    "bubbleSpace": 3,
+    "dropPitch": 1,
+    "stringReverb": 0.5,
+    "stringSpace": 4
   }
 }

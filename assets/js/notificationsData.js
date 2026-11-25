@@ -19,9 +19,5 @@ window.aeNotificationsData = [
   {
     "title": "Tip",
     "body": "Double-click folders to open; drag to group-move."
-  },
-  {
-    "title": "Concerto miana",
-    "body": "dskjngkljfsdnbluasgjrnhçajsbdjlkbvnkrg"
   }
 ];
